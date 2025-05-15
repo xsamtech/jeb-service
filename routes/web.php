@@ -28,12 +28,14 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 | ADMIN Web Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/admin', [DashboardController::class, 'index'])->name('dashboard.home');
 Route::middleware('auth')->group(function () {
-    Route::get('/admin', [DashboardController::class, 'index'])->name('dashboard.home');
     Route::get('/customers', [DashboardController::class, 'customers'])->name('dashboard.customers');
     Route::get('/customers/{id}', [DashboardController::class, 'customerDatas'])->whereNumber('id')->name('dashboard.customers.datas');
     Route::delete('/customers/{id}', [DashboardController::class, 'removeCustomer'])->whereNumber('id');
     Route::get('/statistics', [DashboardController::class, 'statistics'])->name('dashboard.statistics');
+    Route::get('/messages', [DashboardController::class, 'messages'])->name('dashboard.messages');
+    Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
 });
 
 require __DIR__.'/auth.php';

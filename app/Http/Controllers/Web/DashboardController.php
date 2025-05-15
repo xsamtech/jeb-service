@@ -18,7 +18,19 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('dashboard');
+        $total_orders = 1245999.73;
+        $orders_paid = 57709.95;
+        $tithe = $orders_paid / 10;
+        $tva = ($orders_paid * 16) / 100;
+        $rest_of_money = $orders_paid - ($tithe + $tva);
+
+        return view('dashboard', [
+            'total_orders' => formatIntegerNumber($total_orders),
+            'orders_paid' => formatIntegerNumber($orders_paid),
+            'tithe' => formatIntegerNumber($tithe),
+            'tva' => formatIntegerNumber($tva),
+            'rest_of_money' => formatIntegerNumber($rest_of_money),
+        ]);
     }
 
     /**
@@ -50,6 +62,26 @@ class DashboardController extends Controller
     public function statistics()
     {
         return view('statistics');
+    }
+
+    /**
+     * GET: Messages page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function messages()
+    {
+        return view('messages');
+    }
+
+    /**
+     * GET: account page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function account()
+    {
+        return view('account');
     }
 
     // ==================================== HTTP DELETE METHODS ====================================
