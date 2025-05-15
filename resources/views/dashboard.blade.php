@@ -1,4 +1,4 @@
-@extends('layouts.app', ['page_title' => 'Nos services'])
+@extends('layouts.app', ['page_title' => 'Tableau de bord'])
 
 @section('app-content')
 
