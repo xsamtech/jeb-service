@@ -1,47 +1,54 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.auth', ['page_title' => 'Se connecter'])
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@section('auth-content')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+            <!-- Title Section-->
+            <section class="pb-1">
+                <div class="container px-5">
+                    <div class="text-center mb-5">
+                        <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">Se connecter</span></h1>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <!-- Login Section-->
+            <section class="pb-3">
+                <div class="container">
+                    <div class="row g-3">
+                        <div class="col-lg-5 col-sm-7 mx-auto">
+                            <div class="card card-body p-sm-4">
+                                <form method="POST" action="{{ route('login') }}">
+    @csrf
+                                    <div class="mb-3">
+                                        <label for="login" class="form-label">Email ou n° de téléphone</label>
+                                        <input type="text" name="login" class="form-control @error('login') is-invalid @enderror" id="login" value="{{ old('login') }}" required autofocus>
+    @error('login')
+                                        <small class="text-danger d-inline-block mt-1 float-end">{{ $message }}</small>
+    @enderror
+                                    </div>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Mot de passe</label>
+                                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password" required>
+    @error('password')
+                                        <small class="text-danger d-inline-block mt-1 float-end">{{ $message }}</small>
+    @enderror
+                                    </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+                                    <div class="mb-3 form-check d-flex justify-content-center">
+                                        <input type="checkbox" name="remember" class="form-check-input me-2" id="remember">
+                                        <label role="button" class="form-check-label" for="remember">Rester connecté</label>
+                                    </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-pill">Connexion</button>
+    @if (!$admins_exist)
+                                    <a href="{{ route('register') }}" class="btn btn-secondary w-100 mt-2 rounded-pill text-white">Créer un compte</a>
+    @endif
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+@endsection

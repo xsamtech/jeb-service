@@ -4,7 +4,7 @@
 
             <!-- Title Section-->
             <section class="pb-3">
-                <div class="container px-5">
+                <div class="container px-sm-5">
                     <div class="text-center mb-5">
                         <h1 class="display-5 fw-bolder mb-0"><span class="text-gradient d-inline">Tableau de bord</span></h1>
                     </div>
@@ -13,7 +13,7 @@
 
             <!-- Widget Section-->
             <section class="pb-3">
-                <div class="container px-5">
+                <div class="container px-sm-5">
                     <div class="row g-3">
                         <!-- Customers -->
                         <div class="col-lg-5 col-sm-6 ms-auto">

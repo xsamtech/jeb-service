@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
@@ -31,20 +32,37 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'firstname' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'firstname.required' => 'Le prénom est requis.',
+            'email.required' => 'L\'email est requis.',
+            'email.email' => 'Le format de l\'email est invalide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
+            'password.required' => 'Le mot de passe est requis.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'surname' => $request->surname,
+            'gender' => $request->gender,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        $role_admin = Role::create([
+            'role_name' => 'Administrateur',
+            'role_description' => 'Gestion de toutes les données'
+        ]);
 
-        Auth::login($user);
+        // Register user with role
+        $user->roles()->attach([$role_admin->id]);
+
+        auth()->login($user);
 
         return redirect(RouteServiceProvider::HOME);
     }
