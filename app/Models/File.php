@@ -25,19 +25,10 @@ class File extends Model
 
     /**
      * ONE-TO-MANY
-     * One type for several files
+     * One panel for several files
      */
-    public function type(): BelongsTo
+    public function panel(): BelongsTo
     {
-        return $this->belongsTo(Type::class);
-    }
-
-    /**
-     * ONE-TO-MANY
-     * One work for several files
-     */
-    public function work(): BelongsTo
-    {
-        return $this->belongsTo(Work::class);
+        return $this->belongsTo(Panel::class);
     }
 }

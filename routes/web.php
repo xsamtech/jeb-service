@@ -5,7 +5,7 @@
  */
 
 use App\Http\Controllers\Web\DashboardController;
-use App\Http\Controllers\Web\HomeController;
+// use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
 
 // Symbolic link
@@ -34,12 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/panels', [DashboardController::class, 'addPanel']);
     Route::get('/panels/{id}', [DashboardController::class, 'panelDatas'])->whereNumber('id')->name('dashboard.panel.datas');
     Route::put('/panels/{id}', [DashboardController::class, 'updatePanel'])->whereNumber('id');
-    Route::get('/delete/panels/{id}', [DashboardController::class, 'removeCustomer'])->whereNumber('id')->name('dashboard.panel.delete');
-    Route::get('/customers', [DashboardController::class, 'customers'])->name('dashboard.customers');
-    Route::post('/customers', [DashboardController::class, 'addCustomer']);
-    Route::get('/customers/{id}', [DashboardController::class, 'customerDatas'])->whereNumber('id')->name('dashboard.customer.datas');
-    Route::put('/customers/{id}', [DashboardController::class, 'updateCustomer'])->whereNumber('id');
-    Route::get('/delete/customers/{id}', [DashboardController::class, 'removeCustomer'])->whereNumber('id')->name('dashboard.customer.delete');
+    Route::get('/delete/panels/{id}', [DashboardController::class, 'removePanel'])->whereNumber('id')->name('dashboard.panel.delete');
+    Route::get('/users', [DashboardController::class, 'users'])->name('dashboard.users');
+    Route::post('/users', [DashboardController::class, 'addUser']);
+    Route::get('/users/{id}', [DashboardController::class, 'userDatas'])->whereNumber('id')->name('dashboard.user.datas');
+    Route::put('/users/{id}', [DashboardController::class, 'updateUser'])->whereNumber('id');
+    Route::get('/delete/users/{id}', [DashboardController::class, 'removeUser'])->whereNumber('id')->name('dashboard.user.delete');
     Route::get('/statistics', [DashboardController::class, 'statistics'])->name('dashboard.statistics');
     Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
 });

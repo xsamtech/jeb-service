@@ -15,7 +15,6 @@
             <section class="pb-3">
                 <div class="container px-sm-5">
                     <div class="row g-3">
-                        <!-- Customers -->
                         <div class="col-lg-5 col-sm-6 ms-auto">
                             <div class="card card-body bg-primary flex-row align-items-center">
                                 <i class="bi bi-person display-1 text-white"></i>
@@ -27,7 +26,6 @@
                             </div>
                         </div>
 
-                        <!-- Customers -->
                         <div class="col-lg-5 col-sm-6 me-auto">
                             <div class="card card-body bg-danger flex-row align-items-center">
                                 <i class="bi bi-envelope display-1 text-white"></i>
@@ -46,7 +44,6 @@
             <section class="pb-3">
                 <div class="container px-5">
                     <div class="row g-3">
-                        <!-- Customers -->
                         <div class="col-lg-6 col-sm-10 mx-auto">
                             <div class="card card-body border">
                                 <h3 class="card-title text-center fw-bold mb-3">Comptes</h3>
