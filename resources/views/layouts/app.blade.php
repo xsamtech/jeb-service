@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="author" content="jebservice.com">
         <meta name="keywords" content="jeb,service,jebservice">
+        <meta name="jeb-url" content="{{ getWebURL() }}">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="description" content="">
 
@@ -21,7 +22,8 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" />
 
         <!-- Bootstrap icons-->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+        {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"> --}}
+        <link rel="stylesheet" href="{{ asset('assets/addons/bootstrap-icons/font/bootstrap-icons.min.css') }}">
 
         <!-- Addons CSS-->
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/jquery/jquery-ui/jquery-ui.min.css') }}">
@@ -31,6 +33,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}" />
         <style>
             textarea { resize: none; }
+            th, td, .form-label { font-size: 14px }
             .user-account { text-decoration: none; color: #000; }
             .navbar-toggler { position: absolute; right: 1rem; z-index: 9999; }
             .navbar-toggler:focus { box-shadow: none!important; }
@@ -50,15 +53,61 @@
     </head>
 
     <body class="d-flex flex-column h-100">
+        <!-- MODALS-->
+        <!-- ### Crop user image ### -->
+        <div class="modal fade" id="cropModalUser" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header py-0">
+                        <button type="button" class="btn-close mt-1" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body pb-3">
+                        <h5 class="text-center text-muted">{{ __('miscellaneous.crop_before_save') }}</h5>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12 mb-sm-0 mb-4">
+                                    <div class="bg-image">
+                                        <img src="" id="retrieved_image" class="img-fluid">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer pb-0 d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">@lang('miscellaneous.cancel')</button>
+                        <button type="button" id="crop_avatar" class="btn btn-primary px-4 rounded-pill"data-bs-dismiss="modal">{{ __('miscellaneous.register') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- MODALS-->
+
         <main class="flex-shrink-0">
+            <div id="ajax-alert-container"></div>
+@if (\Session::has('success_message'))
+            <!-- Alert Start -->
+            <div class="position-relative">
+                <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                    <div class="col-lg-4 col-sm-6 mx-auto">
+                        <div class="alert alert-success alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                            <i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i> {!! \Session::get('success_message') !!}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Alert End -->
+@endif
+
             <!-- Navigation-->
             <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
                 <div class="container-fluid container-sm px-sm-5 position-relative">
                     <a class="navbar-brand" href="{{ route('dashboard.home') }}">
                         <img src="{{ asset('assets/img/brand.png') }}" alt="Logo" width="150">
                     </a>
-                    <a href="{{ route('dashboard.account') }}" class="position-absolute d-lg-none d-inline-block me-2 rounded-circle user-account" style="top: 2rem; right: 3rem;">
-                        <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle">
+                    <a href="{{ route('dashboard.account') }}" class="position-absolute d-lg-none d-inline-block me-2 rounded-circle user-account user-image" style="top: 2rem; right: 3rem;">
+                        <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle img-thumbnail">
                     </a>
                     <button class="navbar-toggler px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarLinksContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navbarLinksContent">
@@ -75,9 +124,9 @@
                         </ul>
                     </div>
                     <div class="dropdown">
-                        <a role="button" class="d-lg-inline-block d-none flex-row ms-5 my-3 rounded-pill user-account" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a role="button" class="d-lg-inline-block d-none flex-row ms-5 my-3 rounded-pill user-account user-image" data-bs-toggle="dropdown" aria-expanded="false">
                             <strong class="d-inline-block text-gradient">{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}</strong>
-                            <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle">
+                            <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle img-thumbnail">
                         </a>
 
                         <ul class="dropdown-menu">
@@ -115,7 +164,8 @@
         <script src="{{ asset('assets/addons/cropper/js/cropper.min.js') }}"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
         <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> --}}
+        <script src="{{ asset('assets/addons/bootstrap/js/bootstrap.bundle.js') }}"></script>
         <!-- Core theme JS-->
         <script src="{{ asset('assets/js/scripts.js') }}"></script>
         <!-- Custom JS-->

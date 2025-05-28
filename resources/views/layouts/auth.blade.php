@@ -21,7 +21,8 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" />
 
         <!-- Bootstrap icons-->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+        {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"> --}}
+        <link rel="stylesheet" href="{{ asset('assets/addons/bootstrap-icons/font/bootstrap-icons.min.css') }}">
 
         <!-- Addons CSS-->
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/jquery/jquery-ui/jquery-ui.min.css') }}">
@@ -52,7 +53,7 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header py-0">
-                        <button type="button" class="btn-close mt-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close mt-1" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">
                         <h5 class="text-center text-muted">Recadrer l'image avant de l'enregistrer</h5>
@@ -120,7 +121,8 @@
         <script src="{{ asset('assets/addons/sweetalert2/dist/sweetalert2.min.js') }}"></script>
         <script src="{{ asset('assets/addons/cropper/js/cropper.min.js') }}"></script>
         <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> --}}
+        <script src="{{ asset('assets/addons/bootstrap/js/bootstrap.bundle.js') }}"></script>
         <!-- Core theme JS-->
         <script src="{{ asset('assets/js/scripts.js') }}"></script>
         <!-- Custom JS-->

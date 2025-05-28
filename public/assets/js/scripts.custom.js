@@ -196,10 +196,7 @@ $(function () {
     });
 
     $('#cropModalUser #crop_avatar').click(function () {
-        // Ajax loading image to tell user to wait
         $('.user-image').attr('src', currentHost + '/assets/img/ajax-loading.gif');
-
-        console.log(headers);
 
         var canvas = cropper.getCroppedCanvas({
             width: 700,
@@ -207,32 +204,38 @@ $(function () {
         });
 
         canvas.toBlob(function (blob) {
-            URL.createObjectURL(blob);
-
             var reader = new FileReader();
 
             reader.readAsDataURL(blob);
             reader.onloadend = function () {
                 var base64_data = reader.result;
-                var mUrl = apiHost + '/user/update_avatar_picture/' + parseInt(currentUser);
-                var datas = JSON.stringify({ '_token': $('[name="csrf-token"]').attr('content'), 'id': parseInt(currentUser), 'user_id': currentUser, 'image_64': base64_data });
+                // Prepare data as in an HTML form
+                var formData = new FormData();
+
+                formData.append('_token', $('meta[name="csrf-token"]').attr('content')); // important
+                formData.append('image_64', base64_data);
 
                 $.ajax({
-                    headers: headers,
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    url: mUrl,
-                    dataType: 'json',
-                    data: datas,
+                    url: currentHost + '/account/settings',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false, // IMPORTANT : do not specify a contentType
+                    processData: false, // IMPORTANT : do not transform the data
                     success: function (res) {
-                        $('.user-image').attr('src', res);
-                        location.reload(true);
+                        $('.user-image').attr('src', currentHost + '/storage/' + res.avatar_url);
+                        $('#ajax-alert-container').html(`<div class="position-relative">
+                                                            <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                                                                <div class="col-lg-4 col-sm-6 mx-auto">
+                                                                    <div class="alert alert-success alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                                                                        <i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i>Photo mise à jour.
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>`);
                     },
-                    error: function (xhr, error, status_description) {
-                        console.log(xhr.responseJSON);
-                        console.log(xhr.status);
-                        console.log(error);
-                        console.log(status_description);
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseJSON || xhr.responseText);
                     }
                 });
             };

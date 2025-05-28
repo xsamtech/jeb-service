@@ -28,9 +28,9 @@
 
                         <div class="col-lg-5 col-sm-6 me-auto">
                             <div class="card card-body bg-danger flex-row align-items-center">
-                                <i class="bi bi-envelope display-1 text-white"></i>
+                                <i class="bi bi-card-heading display-1 text-white"></i>
                                 <div class="ms-4">
-                                    <h2 class="text-white fw-light mt-2">Messages</h2>
+                                    <h2 class="text-white fw-light mt-2">Panneaux</h2>
                                     <h5 class="text-white">317</h5>
                                 </div>
                                 <a role="button" class="stretched-link"></a>

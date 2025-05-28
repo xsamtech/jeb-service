@@ -42,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/delete/users/{id}', [DashboardController::class, 'removeUser'])->whereNumber('id')->name('dashboard.user.delete');
     Route::get('/statistics', [DashboardController::class, 'statistics'])->name('dashboard.statistics');
     Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
+    Route::get('/account/settings', [DashboardController::class, 'account'])->name('dashboard.account.settings');
+    Route::post('/account/settings', [DashboardController::class, 'updateAccount']);
 });
 
 require __DIR__.'/auth.php';

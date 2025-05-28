@@ -20,6 +20,7 @@
                             <div class="card card-body text-center">
                                 <h2 class="card-title fw-bold">@lang('notifications.500_title')</h2>
                                 <p class="card-text">@lang('notifications.500_description')</p>
+                                <a href="{{ route('dashboard.home') }}" class="btn btn-danger w-75 mx-auto mt-3 rounded-pill">@lang('miscellaneous.back_home')</a>
                             </div>
                         </div>
                     </div>
