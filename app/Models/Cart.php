@@ -53,7 +53,7 @@ class Cart extends Model
     }
 
     /**
-     * Total price of consultation of works
+     * Total price of panels
      *
      * @return float
      */

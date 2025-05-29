@@ -1,43 +1,32 @@
-<?php
+namespace App\Services;
 
-namespace App\Providers;
-
-use App\Models\Panel;
-use App\Models\User;
-use Illuminate\Support\ServiceProvider;
-use App\Http\Resources\User as ResourcesUser;
-use App\Http\Resources\Panel as ResourcesPanel;
 use App\Models\Accountancy;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
-/**
- * @author Xanders
- * @see https://team.xsamtech.com/xanderssamoth
- */
-class AppServiceProvider extends ServiceProvider
+class AccountancyService
 {
-    public function getBalanceSummary($groupBy = 'month')
+    public function getBalanceSummary($groupBy = 'month', $startDate = null, $endDate = null, $perPage = 10, $page = null)
     {
+        $startDate = $startDate ? Carbon::parse($startDate)->startOfDay() : Carbon::minValue();
+        $endDate = $endDate ? Carbon::parse($endDate)->endOfDay() : Carbon::maxValue();
+
         // Actifs
         $assetAccountancies = Accountancy::with(['cart.panels'])
             ->whereNotNull('cart_id')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->get()
             ->map(function ($accountancy) use ($groupBy) {
                 $date = Carbon::parse($accountancy->created_at);
                 $period = match ($groupBy) {
                     'week' => $date->format('o-\WW'),
                     'year' => $date->format('Y'),
-                    default => $date->format('Y-m')
+                    default => $date->format('Y-m'),
                 };
 
                 $total = $accountancy->cart->panels->sum(function ($panel) {
-                    $unitPrice = $panel->unit_price ?? 0;
-                    $quantity = $panel->pivot->quantity ?? 1;
-                    $isValid = $panel->pivot->is_valid ?? 1;
-
-                    return $isValid ? $unitPrice * $quantity : 0;
+                    return ($panel->pivot->is_valid ?? 1) ? ($panel->pivot->quantity ?? 1) * ($panel->unit_price ?? 0) : 0;
                 });
 
                 return [
@@ -51,13 +40,14 @@ class AppServiceProvider extends ServiceProvider
         // Passifs
         $liabilityAccountancies = Accountancy::with('expense')
             ->whereNotNull('expense_id')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->get()
             ->map(function ($accountancy) use ($groupBy) {
                 $date = Carbon::parse($accountancy->created_at);
                 $period = match ($groupBy) {
                     'week' => $date->format('o-\WW'),
                     'year' => $date->format('Y'),
-                    default => $date->format('Y-m')
+                    default => $date->format('Y-m'),
                 };
 
                 $total = $accountancy->expense->amount ?? 0;
@@ -70,10 +60,10 @@ class AppServiceProvider extends ServiceProvider
                 ];
             });
 
-        // Fusionner et grouper
+        // Fusion et groupement
         $merged = $assetAccountancies->merge($liabilityAccountancies);
 
-        $summary = $merged->groupBy('period')->map(function ($items, $period) {
+        $grouped = $merged->groupBy('period')->map(function (Collection $items, $period) {
             $assets = $items->sum('total_assets');
             $liabilities = $items->sum('total_liabilities');
             return [
@@ -84,30 +74,16 @@ class AppServiceProvider extends ServiceProvider
             ];
         })->sortBy('period')->values();
 
-        return $summary;
-    }
+        // Pagination manuelle
+        $page = $page ?: LengthAwarePaginator::resolveCurrentPage();
+        $paginated = new LengthAwarePaginator(
+            $grouped->forPage($page, $perPage),
+            $grouped->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        $users = User::all();
-        $panels = Panel::all();
-        $request = App::make(Request::class);
-
-        view()->composer('*', function ($view) use ($users, $panels, $request) {
-            $view->with('users', ResourcesUser::collection($users));
-            $view->with('panels', ResourcesPanel::collection($panels));
-            $view->with('balance_summary', $this->getBalanceSummary($request->group_by));
-        });
+        return $paginated;
     }
 }
