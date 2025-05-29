@@ -1,3 +1,5 @@
+<?php
+
 namespace App\Services;
 
 use App\Models\Accountancy;
@@ -29,10 +31,15 @@ class AccountancyService
                     return ($panel->pivot->is_valid ?? 1) ? ($panel->pivot->quantity ?? 1) * ($panel->unit_price ?? 0) : 0;
                 });
 
+                $total_panels = $accountancy->cart->panels->sum(function ($panel) {
+                    return ($panel->pivot->is_valid ?? 1) ? $panel->pivot->quantity ?? 1 : 0;
+                });
+
                 return [
                     'period' => $period,
                     'total_assets' => $total,
                     'total_liabilities' => 0,
+                    'total_panels' => $total_panels,
                     'balance' => $total,
                 ];
             });

@@ -7,10 +7,8 @@ use App\Models\User;
 use Illuminate\Support\ServiceProvider;
 use App\Http\Resources\User as ResourcesUser;
 use App\Http\Resources\Panel as ResourcesPanel;
-use App\Models\Accountancy;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use App\Services\AccountancyService;
 
 /**
  * @author Xanders
@@ -18,75 +16,6 @@ use Illuminate\Support\Facades\App;
  */
 class AppServiceProvider extends ServiceProvider
 {
-    public function getBalanceSummary($groupBy = 'month')
-    {
-        // Actifs
-        $assetAccountancies = Accountancy::with(['cart.panels'])
-            ->whereNotNull('cart_id')
-            ->get()
-            ->map(function ($accountancy) use ($groupBy) {
-                $date = Carbon::parse($accountancy->created_at);
-                $period = match ($groupBy) {
-                    'week' => $date->format('o-\WW'),
-                    'year' => $date->format('Y'),
-                    default => $date->format('Y-m')
-                };
-
-                $total = $accountancy->cart->panels->sum(function ($panel) {
-                    $unitPrice = $panel->unit_price ?? 0;
-                    $quantity = $panel->pivot->quantity ?? 1;
-                    $isValid = $panel->pivot->is_valid ?? 1;
-
-                    return $isValid ? $unitPrice * $quantity : 0;
-                });
-
-                return [
-                    'period' => $period,
-                    'total_assets' => $total,
-                    'total_liabilities' => 0,
-                    'balance' => $total,
-                ];
-            });
-
-        // Passifs
-        $liabilityAccountancies = Accountancy::with('expense')
-            ->whereNotNull('expense_id')
-            ->get()
-            ->map(function ($accountancy) use ($groupBy) {
-                $date = Carbon::parse($accountancy->created_at);
-                $period = match ($groupBy) {
-                    'week' => $date->format('o-\WW'),
-                    'year' => $date->format('Y'),
-                    default => $date->format('Y-m')
-                };
-
-                $total = $accountancy->expense->amount ?? 0;
-
-                return [
-                    'period' => $period,
-                    'total_assets' => 0,
-                    'total_liabilities' => $total,
-                    'balance' => -$total,
-                ];
-            });
-
-        // Fusionner et grouper
-        $merged = $assetAccountancies->merge($liabilityAccountancies);
-
-        $summary = $merged->groupBy('period')->map(function ($items, $period) {
-            $assets = $items->sum('total_assets');
-            $liabilities = $items->sum('total_liabilities');
-            return [
-                'period' => $period,
-                'total_assets' => $assets,
-                'total_liabilities' => $liabilities,
-                'balance' => $assets - $liabilities,
-            ];
-        })->sortBy('period')->values();
-
-        return $summary;
-    }
-
     /**
      * Register any application services.
      */
@@ -101,13 +30,34 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $users = User::all();
-        $panels = Panel::all();
-        $request = App::make(Request::class);
+    $panels = Panel::all();
 
-        view()->composer('*', function ($view) use ($users, $panels, $request) {
-            $view->with('users', ResourcesUser::collection($users));
-            $view->with('panels', ResourcesPanel::collection($panels));
-            $view->with('balance_summary', $this->getBalanceSummary($request->group_by));
-        });
+    view()->composer('*', function ($view) {
+        $request = request(); // plus propre
+        $accountancyService = App::make(AccountancyService::class);
+
+        $groupBy = $request->get('group_by', 'month');
+        $start = $request->get('start_date');
+        $end = $request->get('end_date');
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+
+        $balanceSummary = $accountancyService->getBalanceSummary($groupBy, $start, $end, $perPage, $page);
+        $weeklySummary = $accountancyService->getBalanceSummary('week');
+
+        // Préparer pour ApexCharts
+        $chartLabels = $weeklySummary->pluck('period');
+        $chartAssets = $weeklySummary->pluck('total_assets');
+        $chartLiabilities = $weeklySummary->pluck('total_liabilities');
+        $chartPanels = $weeklySummary->pluck('total_panels');
+
+        $view->with('users', ResourcesUser::collection(User::all()));
+        $view->with('panels', ResourcesPanel::collection(Panel::all()));
+        $view->with('balance_summary', $balanceSummary);
+        $view->with('chartLabels', $chartLabels);
+        $view->with('chartAssets', $chartAssets);
+        $view->with('chartLiabilities', $chartLiabilities);
+        $view->with('chartPanels', $chartPanels);
+    });
     }
 }
