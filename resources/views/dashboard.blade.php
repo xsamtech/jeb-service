@@ -17,9 +17,9 @@
 
             <!-- Widget Section-->
             <section class="pb-3">
-                <div class="container">
-                    <div class="row g-3">
-                        <div class="col-lg-4 col-sm-6 mx-auto">
+                <div class="container px-lg-5">
+                    <div class="row g-3 px-lg-3">
+                        <div class="col-lg-6 col-sm-5 mx-auto">
                             <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
                                 <i class="bi bi-person-gear display-1 text-white"></i>
                                 <div class="ms-4">
@@ -30,7 +30,7 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-4 col-sm-6 mx-auto">
+                        <div class="col-lg-6 col-sm-7 mx-auto">
                             <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
                                 <i class="bi bi-piggy-bank display-1 text-white"></i>
                                 <div class="ms-4">
@@ -41,7 +41,7 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-4 col-sm-6 mx-auto">
+                        <div class="col-lg-6 col-sm-5 mx-auto">
                             <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
                                 <i class="bi bi-card-heading display-1 text-white"></i>
                                 <div class="ms-4">
@@ -51,14 +51,25 @@
                                 <a href="{{ route('dashboard.panels') }}" class="stretched-link"></a>
                             </div>
                         </div>
+
+                        <div class="col-lg-6 col-sm-7 mx-auto">
+                            <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
+                                <i class="bi bi-coin display-1 text-white"></i>
+                                <div class="ms-4">
+                                    <h3 class="text-white fw-light mt-2">Dépenses du mois</h3>
+                                    <h5 class="text-white">{{ ($currentSummary ? number_format($monthly_expenses) : $monthly_expenses) . ' $' }}</h5>
+                                </div>
+                                <a href="{{ route('dashboard.expenses') }}" class="stretched-link"></a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Table Section-->
             <section class="pb-3">
-                <div class="container">
-                    <div class="row g-3">
+                <div class="container px-lg-5">
+                    <div class="row g-3 px-lg-3">
                         <div class="col-lg-6">
                             <div class="card card-body border">
                                 <h4 class="card-title text-center fw-bold mb-3">Comptes du mois</h4>

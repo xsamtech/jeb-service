@@ -226,6 +226,29 @@ class DashboardController extends Controller
     }
 
     /**
+     * GET: Delete expense
+     *
+     * @param  int $id
+     * @throws \Illuminate\Http\RedirectResponse
+     */
+    public function removeExpense($id)
+    {
+        $expense = Expense::find($id);
+
+        if (!$expense) {
+            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Dépense non trouvée.');
+        }
+
+        $accountancy = Accountancy::where('expense_id', $expense->id)->first();
+
+        // Wihdraw panel & accountancy order
+        $accountancy->delete();
+        $expense->delete();
+
+        return redirect('/expenses')->with('success_message', 'Dépense supprimée.');
+    }
+
+    /**
      * GET: Delete customer
      *
      * @param  int $id
@@ -505,6 +528,46 @@ class DashboardController extends Controller
     }
 
     /**
+     * POST: Add a expense
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @throws \Illuminate\Http\RedirectResponse
+     */
+    public function addExpense(Request $request)
+    {
+        $request->validate([
+            'designation' => ['required', 'string', 'max:255'],
+            'amount' => ['nullable', 'numeric', 'between:0,9999999.99'],
+            'outflow_date' => ['nullable', 'string']
+        ]);
+
+        $outflow = null;
+
+        if ($request->filled('outflow_date')) {
+            $parts = explode(' ', $request->outflow_date); // ['30/05/2025', '14:30']
+
+            if (count($parts) === 2) {
+                [$day, $month, $year] = explode('/', $parts[0]);
+                $time = $parts[1];
+                $outflow = "$year-$month-$day $time:00"; // DATETIME format
+            }
+        }
+
+        $expense = Expense::create([
+            'designation' => $request->designation,
+            'amount' => $request->amount,
+            'outflow_date' => $outflow,
+            'created_by' => Auth::id(),
+        ]);
+
+        Accountancy::create([
+            'expense_id' => $expense->id
+        ]);
+
+        return back()->with('success_message', 'Dépense ajoutée.');
+    }
+
+    /**
      * POST: Add a user
      *
      * @param  \Illuminate\Http\Request  $request
@@ -771,6 +834,7 @@ class DashboardController extends Controller
 
         return back()->with('success_message', 'Panneau mis à jour.');
     }
+
     /**
      * POST: Increment/Decrement quantity in the panel/cart
      *
@@ -884,6 +948,50 @@ class DashboardController extends Controller
         return response()->json(['error' => 'Entité inconnue.'], 400);
     }
 
+    /**
+     * POST: Update some user
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @throws \Illuminate\Http\RedirectResponse
+     */
+    public function updateExpense(Request $request, $id)
+    {
+        $expense = Expense::find($id);
+
+        if (!$expense) {
+            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Dépense non trouvée.');
+        }
+
+        // Preparing dynamic rules
+        $rules = [];
+
+        if ($request->has('designation')) {
+            $rules['designation'] = ['required', 'string', 'max:255'];
+        }
+
+        if ($request->has('amount')) {
+            $rules['amount'] = ['nullable', 'numeric', 'between:0,9999999.99'];
+        }
+
+        // Validation of present fields only
+        $validated = $request->validate($rules);
+
+        if ($request->filled('outflow_date')) {
+            $parts = explode(' ', $request->outflow_date); // ['30/05/2025', '14:30']
+
+            if (count($parts) === 2) {
+                [$day, $month, $year] = explode('/', $parts[0]);
+                $time = $parts[1];
+                $validated['outflow_date'] = "$year-$month-$day $time:00"; // DATETIME format
+            }
+        }
+
+        // Update expense with valid fields
+        $expense->update($validated);
+
+        return back()->with('success_message', 'Dépense mise à jour.');
+    }
 
     /**
      * POST: Update some user

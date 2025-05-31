@@ -31,4 +31,14 @@ class Expense extends Model
     {
         return $this->hasMany(Accountancy::class);
     }
+
+    /**
+     * Expenses of the precise period
+     * 
+     * @return float
+     */
+    public static function totalMonthlyExpenses($month, $year): float
+    {
+        return self::whereMonth('outflow_date', $month)->whereYear('outflow_date', $year)->sum('amount');
+    }
 }

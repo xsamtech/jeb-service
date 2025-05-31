@@ -128,7 +128,8 @@
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder align-top">
                             <li class="nav-item"><a class="nav-link" href="{{ route('dashboard.home') }}">Tableau de bord</a></li>
                             <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.panels') }}">Panneaux</a></li>
-                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.users') }}">Commandes</a></li>
+                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">Commandes</a></li>
+                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.expenses') }}">Dépenses</a></li>
                             <li class="nav-item d-lg-none d-inline-block">
                                 <form action="{{ route('logout') }}" method="POST">
 @csrf
