@@ -10,11 +10,11 @@
                         <div class="flex-row text-center">
     @if (Route::is('dashboard.users.entity'))
         @if ($entity == 'roles')
-                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end">Nouveau rôle</button>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#roleModal">Nouveau rôle</button>
         @endif
 
         @if ($entity == 'orders')
-                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end">Nouvelle commande</button>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#orderModal">Nouvelle commande</button>
         @endif
                             <a href="{{ route('dashboard.users') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                 <i class="bi bi-chevron-double-left me-2"></i>Retour
@@ -23,7 +23,7 @@
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'roles']) }}" class="btn btn-sm btn-primary pb-sm-1">Rôles</a>
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-secondary pb-sm-1 text-white">Commandes</a>
                             <br class="d-sm-none d-block">
-                            <button class="btn btn-sm btn-outline-dark mt-lg-0 mt-1 pb-sm-1">Ajouter un administrateur</button>
+                            <button class="btn btn-sm btn-outline-dark mt-lg-0 mt-1 pb-sm-1" data-bs-toggle="modal" data-bs-target="#userModal">Ajouter un administrateur</button>
     @endif
                         </div>
                     </div>

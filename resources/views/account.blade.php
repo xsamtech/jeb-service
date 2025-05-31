@@ -9,7 +9,7 @@
                             <div class="card border mb-3 rounded-4">
                                 <div class="card-body text-center">
                                     <div class="bg-image mb-3 position-relative">
-                                        <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" class="user-image img-fluid img-thumbnail rounded-4">
+                                        <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" class="user-image img-fluid img-thumbnail rounded-4">
     @if (Route::is('dashboard.account.settings'))
                                         <form method="POST">
                                             <input type="hidden" name="user_id" id="user_id" value="{{ Auth::user()->id }}">

@@ -70,13 +70,19 @@ class DashboardController extends Controller
      */
     public function users()
     {
+        // roles
+        $roles = Role::all();
+        // role "Administrateur"
+        $admin_role = Role::where('role_name', 'Administrateur')->first();
         // users
         $users_collection = User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5);
         $users_data = ResourcesUser::collection($users_collection)->resolve();
 
         return view('users', [
+            'roles' => $roles,
             'users' => $users_data,
-            'users_req' => $users_collection
+            'users_req' => $users_collection,
+            'admin' => $admin_role
         ]);
     }
 
@@ -591,7 +597,7 @@ class DashboardController extends Controller
      * POST: Add a user
      *
      * @param  \Illuminate\Http\Request  $request
-     * @throws \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Http\Response
      */
     public function addUser(Request $request)
     {
@@ -644,13 +650,13 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $request->image_64);
             $image = str_replace(' ', '+', $image);
             // Create image URL
-            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_path = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             // Upload image
-            Storage::url(Storage::disk('public')->put($image_url, base64_decode($image)));
+            Storage::disk('public')->put($image_path, base64_decode($image));
 
             $user->update([
-                'avatar_url' => $image_url,
+                'avatar_url' => Storage::url($image_path),
                 'updated_at' => now()
             ]);
         }
@@ -666,7 +672,7 @@ class DashboardController extends Controller
             'updated_at' => now()
         ]);
 
-        return back()->with('success_message', 'Utilisateur ajouté.');
+        return response()->json(['status' => 'success', 'message' => 'Utilisateur ajouté avec succès.']);
     }
 
     /**

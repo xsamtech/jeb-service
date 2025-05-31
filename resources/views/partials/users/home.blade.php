@@ -1,8 +1,8 @@
 
-                    <div class="row">
+                    <div id="dataList" class="row">
                         <div class="col-md-12">
                             <div class="card card-body border">
-                                <div class="table-responsive mb-3">
+                                <div class="table-responsive">
                                     <table class="table table-striped table-earning">
                                         <thead>
                                             <tr>
@@ -49,7 +49,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 d-flex justify-content-center">
+                        <div class="col-12 mt-3 d-flex justify-content-center">
                             {{ $users_req->links() }}
                         </div>
                     </div>

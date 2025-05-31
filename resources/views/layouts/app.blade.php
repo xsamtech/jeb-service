@@ -55,33 +55,7 @@
 
     <body class="d-flex flex-column h-100">
         <!-- MODALS-->
-        <!-- ### Crop user image ### -->
-        <div class="modal fade" id="cropModalUser" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header py-0">
-                        <button type="button" class="btn-close mt-1" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                    </div>
-                    <div class="modal-body pb-3">
-                        <h5 class="text-center text-muted">{{ __('miscellaneous.crop_before_save') }}</h5>
-
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12 mb-sm-0 mb-4">
-                                    <div class="bg-image">
-                                        <img src="" id="retrieved_image" class="img-fluid">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer pb-0 d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">@lang('miscellaneous.cancel')</button>
-                        <button type="button" id="crop_avatar" class="btn btn-primary px-4 rounded-pill"data-bs-dismiss="modal">{{ __('miscellaneous.register') }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+@include('layouts.modals')
         <!-- MODALS-->
 
         <main class="flex-shrink-0">
@@ -200,5 +174,112 @@
         <script src="{{ asset('assets/js/scripts.js') }}"></script>
         <!-- Custom JS-->
         <script src="{{ asset('assets/js/scripts.custom.js') }}"></script>
+        <script type="text/javascript">
+            $(function () {
+                /*
+                 * All about USER
+                 */
+                // Focus to specific input for each concerned modal
+                $('#userModal').on('shown.bs.modal', function () {
+                    $('#firstname').focus();
+                });
+                // Send user registration
+                $('#addUserForm').on('submit', function (e) {
+                    e.preventDefault();
+
+                    // Nettoyer erreurs et alertes précédentes
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.invalid-feedback').remove();
+                    $('.ajax-alert-success, .ajax-alert-error').remove();
+
+                    // Affiche le loader
+                    $('#ajax-loader').removeClass('d-none');
+
+                    const formData = new FormData(this);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: $(this).attr('action'),
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            $('#ajax-loader').addClass('d-none');
+
+                            // Fermer le modal
+                            $('#userModal').modal('hide');
+
+                            // Alerte de succès
+                            const alertSuccess = `
+                            <div class="ajax-alert-success position-relative">
+                                <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                                    <div class="col-lg-4 col-sm-6 mx-auto">
+                                        <div class="alert alert-success alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                                            <i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i> Utilisateur ajouté avec succès.
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+
+                            $('#ajax-alert-container').append(alertSuccess);
+
+                            // Disparition automatique après 5 secondes
+                            setTimeout(() => {
+                                $('.ajax-alert-success .alert').alert('close');
+                            }, 5000);
+
+                            // Recharge juste le tableau
+                            $('#dataList').load(location.href + ' #dataList > *');
+                            // Reset du formulaire
+                            $('#addUserForm')[0].reset();
+
+                            // Réinitialise l’image de profil
+                            $('#image_64').val('');
+                            $('.other-user-image').attr('src', '{{ asset('assets/img/user.png') }}');
+
+                            // Supprimer les classes d'erreur (juste au cas où)
+                            $('#addUserForm .is-invalid').removeClass('is-invalid');
+                            $('#addUserForm .invalid-feedback').remove();
+                        },
+                        error: function (xhr) {
+                            $('#ajax-loader').addClass('d-none');
+
+                            if (xhr.status === 422) {
+                                const errors = xhr.responseJSON.errors;
+
+                                for (const [field, messages] of Object.entries(errors)) {
+                                    const input = $(`[name="${field}"]`);
+
+                                    input.addClass('is-invalid');
+                                    input.after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+                                }
+
+                            } else {
+                                // Alerte d'erreur serveur (500 ou autres)
+                                const alertError = `
+                                <div class="ajax-alert-error position-relative">
+                                    <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                                        <div class="col-lg-4 col-sm-6 mx-auto">
+                                            <div class="alert alert-danger alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                                                <i class="bi bi-exclamation-triangle-fill me-2 fs-4" style="vertical-align: -3px;"></i>
+                                                Une erreur est survenue. Veuillez réessayer plus tard.
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                                $('body').append(alertError);
+
+                                setTimeout(() => {
+                                    $('.ajax-alert-error .alert').alert('close');
+                                }, 7000);
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
     </body>
 </html>
