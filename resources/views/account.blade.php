@@ -2,7 +2,6 @@
 
 @section('app-content')
 
-            <!-- Widget Section-->
             <section class="pb-3">
                 <div class="container-lg container-fluid px-sm-5">
                     <div class="row g-lg-4 g-3">

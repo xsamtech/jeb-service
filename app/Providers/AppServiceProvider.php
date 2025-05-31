@@ -12,6 +12,8 @@ use App\Models\Role;
 use Illuminate\Support\Facades\App;
 use App\Services\AccountancyService;
 use Carbon\Carbon;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @author Xanders
@@ -32,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrap();
+
         view()->composer('*', function ($view) {
             $request = request();
             $accountancyService = App::make(AccountancyService::class);
@@ -50,9 +54,8 @@ class AppServiceProvider extends ServiceProvider
             $chartLiabilities = $weeklySummary->pluck('total_liabilities');
             $chartPanels = $weeklySummary->pluck('total_panels');
 
-            $view->with('users', ResourcesUser::collection(User::all()));
-            $view->with('roles', ResourcesUser::collection(Role::all()));
-            $view->with('panels', ResourcesPanel::collection(Panel::all()));
+            $view->with('all_users', ResourcesUser::collection(User::all()));
+            $view->with('all_panels', ResourcesPanel::collection(Panel::all()));
             $view->with('monthly_expenses', Expense::totalMonthlyExpenses(Carbon::now()->month, Carbon::now()->year));
             $view->with('balance_summary', $balanceSummary);
             $view->with('chartLabels', $chartLabels);

@@ -23,8 +23,8 @@
                             <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
                                 <i class="bi bi-person-gear display-1 text-white"></i>
                                 <div class="ms-4">
-                                    <h3 class="text-white fw-light mt-2">Utilisateur{{ count($users) > 1 ? 's' : '' }}</h3>
-                                    <h5 class="text-white">{{ count($users) }}</h5>
+                                    <h3 class="text-white fw-light mt-2">Utilisateur{{ count($all_users) > 1 ? 's' : '' }}</h3>
+                                    <h5 class="text-white">{{ count($all_users) }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.users') }}" class="stretched-link"></a>
                             </div>
@@ -45,8 +45,8 @@
                             <div class="card card-body bg-gradient-primary-to-secondary flex-row align-items-center">
                                 <i class="bi bi-card-heading display-1 text-white"></i>
                                 <div class="ms-4">
-                                    <h3 class="text-white fw-light mt-2">Panneau{{ count($panels) > 1 ? 'x' : '' }}</h3>
-                                    <h5 class="text-white">{{ count($panels) }}</h5>
+                                    <h3 class="text-white fw-light mt-2">Panneau{{ count($all_panels) > 1 ? 'x' : '' }}</h3>
+                                    <h5 class="text-white">{{ count($all_panels) }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.panels') }}" class="stretched-link"></a>
                             </div>

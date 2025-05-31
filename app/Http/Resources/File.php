@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -16,20 +17,16 @@ class File extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray($request)
+    public function toArray(Request $request)
     {
         return [
             'id' => $this->id,
             'file_name' => $this->file_name,
-            'file_url' => $this->file_url != null ? getWebURL() . '/public' . $this->file_url : getWebURL() . '/assets/img/cover.png',
-            'media_length' => $this->media_length,
-            'type' => Type::make($this->type),
+            'file_url' => $this->file_url,
+            'file_type' => $this->file_type,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'type_id' => $this->type_id,
-            'work_id' => $this->work_id,
-            'program_id' => $this->program_id,
-            'message_id' => $this->message_id
+            'panel_id' => $this->panel_id
         ];
     }
 }

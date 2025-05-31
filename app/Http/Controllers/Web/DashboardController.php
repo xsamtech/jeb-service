@@ -70,7 +70,14 @@ class DashboardController extends Controller
      */
     public function users()
     {
-        return view('users');
+        // users
+        $users_collection = User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5);
+        $users_data = ResourcesUser::collection($users_collection)->resolve();
+
+        return view('users', [
+            'users' => $users_data,
+            'users_req' => $users_collection
+        ]);
     }
 
     /**
@@ -85,7 +92,12 @@ class DashboardController extends Controller
             return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
         }
 
-        return view('users');
+        $entity_title = ($entity == 'roles' ? 'Gérer les rôle' : 'Commandes des clients');
+
+        return view('users', [
+            'entity' => $entity,
+            'entity_title' => $entity_title
+        ]);
     }
 
     /**
@@ -159,7 +171,11 @@ class DashboardController extends Controller
                 return redirect(RouteServiceProvider::HOME)->with('error_message', 'Rôle non trouvé.');
             }
 
-            return view('users', ['selected_role' => new ResourcesRole($role)]);
+            return view('users', [
+                'selected_role' => new ResourcesRole($role),
+                'entity' => $entity,
+                'entity_title' => $role->role_name
+            ]);
         }
 
         if ($entity == 'orders') {
@@ -169,7 +185,11 @@ class DashboardController extends Controller
                 return redirect(RouteServiceProvider::HOME)->with('error_message', 'Commandes non trouvées.');
             }
 
-            return view('users', ['selected_cart' => new ResourcesCart($cart)]);
+            return view('users', [
+                'selected_cart' => new ResourcesCart($cart),
+                'entity' => $entity,
+                'entity_title' => 'Commande de ' . $cart->user->firstname
+            ]);
         }
     }
 
@@ -438,7 +458,7 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $validated['image_64']);
             $image = str_replace(' ', '+', $image);
 
-            $image_url = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             Storage::disk('public')->put($image_url, base64_decode($image));
             $validated['avatar_url'] = $image_url;
@@ -624,7 +644,7 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $request->image_64);
             $image = str_replace(' ', '+', $image);
             // Create image URL
-            $image_url = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             // Upload image
             Storage::url(Storage::disk('public')->put($image_url, base64_decode($image)));
@@ -1082,7 +1102,7 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $validated['image_64']);
             $image = str_replace(' ', '+', $image);
 
-            $image_url = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             Storage::disk('public')->put($image_url, base64_decode($image));
             $validated['avatar_url'] = $image_url;

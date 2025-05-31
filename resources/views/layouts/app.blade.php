@@ -32,6 +32,7 @@
         <!-- Core theme CSS (includes Bootstrap)-->
         <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}" />
         <style>
+            * { font-family: "Plus Jakarta Sans", sans-serif }
             textarea { resize: none; }
             th, td, .form-label { font-size: 14px }
             .user-account { text-decoration: none; color: #000; }
@@ -45,7 +46,7 @@
 
         <title>
 @if (!empty($page_title))
-            JEB Service / {{ $page_title }}
+            {{ $page_title }}
 @else
             {{ env('APP_NAME') }}
 @endif
@@ -116,20 +117,36 @@
 
             <!-- Navigation-->
             <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
-                <div class="container-fluid container-sm px-sm-5 position-relative">
+                <div class="container-fluid container-sm px-lg-5 position-relative">
                     <a class="navbar-brand" href="{{ route('dashboard.home') }}">
                         <img src="{{ asset('assets/img/brand.png') }}" alt="Logo" width="150">
                     </a>
                     <a href="{{ route('dashboard.account') }}" class="position-absolute d-lg-none d-inline-block me-2 rounded-circle user-account user-image" style="top: 2rem; right: 3rem;">
-                        <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle img-thumbnail">
+                        <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle img-thumbnail">
                     </a>
                     <button class="navbar-toggler px-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarLinksContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navbarLinksContent">
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder align-top">
-                            <li class="nav-item"><a class="nav-link" href="{{ route('dashboard.home') }}">Tableau de bord</a></li>
-                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.panels') }}">Panneaux</a></li>
-                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">Commandes</a></li>
-                            <li class="nav-item"><a class="nav-link" role="button" href="{{ route('dashboard.expenses') }}">Dépenses</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link{{ Route::is('dashboard.home') ? ' active' : '' }}" href="{{ route('dashboard.home') }}">
+                                    Tableau de bord
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link{{ Route::is('dashboard.panels') ? ' active' : '' }}" role="button" href="{{ route('dashboard.panels') }}">
+                                    Panneaux
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link{{ Route::is('dashboard.users.entity') ? ' active' : '' }}" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">
+                                    Commandes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link{{ Route::is('dashboard.expenses') ? ' active' : '' }}" role="button" href="{{ route('dashboard.expenses') }}">
+                                    Dépenses
+                                </a>
+                            </li>
                             <li class="nav-item d-lg-none d-inline-block">
                                 <form action="{{ route('logout') }}" method="POST">
 @csrf
@@ -138,13 +155,13 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="dropdown">
+                    <div class="dropdown position-relative">
                         <a role="button" class="d-lg-inline-block d-none flex-row ms-5 my-3 rounded-pill user-account user-image" data-bs-toggle="dropdown" aria-expanded="false">
                             <strong class="d-inline-block text-gradient">{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}</strong>
-                            <img src="{{ !empty(Auth::user()->avatar_url) ? getWebURL() . '/storage/' . Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle img-thumbnail">
+                            <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle img-thumbnail">
                         </a>
 
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu position-absolute" style="right: 0; top: 3.1rem;">
                             <li><a class="dropdown-item" href="{{ route('dashboard.account') }}"><i class="bi bi-person me-2"></i>Mon compte</a></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="post">

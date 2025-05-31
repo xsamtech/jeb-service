@@ -95,7 +95,7 @@ class RegisteredUserController extends Controller
             $image = str_replace($replace, '', $request->image_64);
             $image = str_replace(' ', '+', $image);
             // Create image URL
-            $image_url = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             // Upload image
             Storage::url(Storage::disk('public')->put($image_url, base64_decode($image)));

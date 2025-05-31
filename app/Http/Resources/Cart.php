@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -16,15 +17,12 @@ class Cart extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray($request)
+    public function toArray(Request $request)
     {
         return [
             'id' => $this->id,
             'payment_code' => $this->payment_code,
-            'status' => Status::make($this->status),
-            'payment' => Payment::make($this->payment),
-            'works' => Work::collection($this->works),
-            'subscriptions' => Subscription::collection($this->subscriptions),
+            'is_paid' => $this->is_paid,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'user_id' => $this->user_id
