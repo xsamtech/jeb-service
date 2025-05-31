@@ -40,31 +40,6 @@ function isNumeric(str) {
 }
 
 /**
- * Get cookie by name
- * 
- * @param string cname
- */
-function getCookie(cname) {
-    let name = cname + '=';
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-
-    return '';
-}
-
-/**
  * Toggle Password Visibility
  * 
  * @param string current
@@ -84,62 +59,34 @@ function passwordVisible(current, element) {
 }
 
 /**
- * Switch between two elements visibility
+ * Show alert on Ajax
  * 
  * @param string current
- * @param string element1
- * @param string element2
- * @param string message1
- * @param string message2
+ * @param string element
  */
-function switchDisplay(current, form_id, element1, element2, message1, message2) {
-    var _form = document.getElementById(form_id);
-    var el1 = document.getElementById(element1);
-    var el2 = document.getElementById(element2);
+function showAjaxAlert(type, message) {
+    const icon = type === 'success'
+        ? '<i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i>'
+        : '<i class="bi bi-exclamation-triangle me-2 fs-4" style="vertical-align: -3px;"></i>';
 
-    _form.reset();
-    el1.classList.toggle('d-none');
-    el2.classList.toggle('d-none');
+    const alertHtml = `
+        <div class="position-relative">
+            <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                <div class="col-lg-4 col-sm-6 mx-auto">
+                    <div class="alert alert-${type} alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                        ${icon} ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
 
-    if (el1.classList.contains('d-none')) {
-        current.innerHTML = message1;
-    }
+    $('#ajax-alert-container').html(alertHtml);
 
-    if (el2.classList.contains('d-none')) {
-        current.innerHTML = message2;
-    }
-}
-
-/**
- * Token writter
- * 
- * @param string id
- */
-function tokenWritter(id) {
-    var _val = document.getElementById(id).value;
-    var _splitId = id.split('_');
-    var key = event.keyCode || event.charCode;
-
-    if (key === 8 || key === 46 || key === 37) {
-        if (_splitId[2] !== '1') {
-            var previousElement = document.getElementById('check_digit_' + (parseInt(_splitId[2]) - 1));
-
-            previousElement.focus();
-        }
-
-    } else {
-        var nextElement = document.getElementById('check_digit_' + (parseInt(_splitId[2]) + 1));
-
-        if (key === 39) {
-            nextElement.focus();
-        }
-
-        if (_splitId[2] !== '7') {
-            if (_val !== undefined && Number.isInteger(parseInt(_val))) {
-                nextElement.focus();
-            }
-        }
-    }
+    // Auto-dismiss après 5 secondes
+    setTimeout(() => {
+        $('.alert').alert('close');
+    }, 5000);
 }
 
 $(function () {
@@ -294,4 +241,65 @@ $(function () {
             };
         });
     });
+
+    /* Increment/Decrement panel quantity */
+    $('.qty-btn').click(function () {
+        const button = $(this);
+        const operation = button.data('type');
+        const entity = button.data('entity');
+        const panelId = button.data('panel-id');
+        const cartId = button.data('cart-id') || null;
+        const stockQty = parseInt($('#stock-qty-' + panelId).text(), 10);
+        const orderedQty = parseInt($('#ordered-qty-' + panelId).text() || '0', 10);
+
+        // Validation front-end
+        if (operation === 'inc' && stockQty <= 0) {
+            showAjaxAlert('danger', 'Stock insuffisant.');
+            return;
+        }
+        if (operation === 'dec' && orderedQty <= 0) {
+            showAjaxAlert('danger', 'Impossible de réduire davantage.');
+            return;
+        }
+
+        button.prop('disabled', true);
+
+        $.ajax({
+            url: `/panel-quantity/${entity}/${panelId}`,
+            method: 'POST',
+            data: {
+                amount: 1,
+                operation: operation,
+                cart_id: cartId,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                // Mise à jour quantités
+                if (entity === 'ordered_panel') {
+                    if (response.new_ordered_quantity === 0) {
+                        $('#ordered-panel-row-' + panelId).fadeOut(300, function () {
+                            $(this).remove();
+                        });
+                    } else {
+                        $('#ordered-qty-' + panelId).text(response.new_ordered_quantity);
+                    }
+                }
+
+                if (response.remaining_stock !== undefined) {
+                    $('#stock-qty-' + panelId).text(response.remaining_stock);
+                } else if (response.quantity !== undefined) {
+                    $('#stock-qty-' + panelId).text(response.quantity);
+                }
+
+                showAjaxAlert('success', response.message);
+            },
+            error: function (xhr) {
+                showAjaxAlert('danger', xhr.responseJSON?.error || 'Erreur');
+            },
+            complete: function () {
+                button.prop('disabled', false);
+            }
+        });
+    });
+
 });

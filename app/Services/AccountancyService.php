@@ -7,6 +7,12 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
+/**
+ * Statistics according to a specific period
+ * 
+ * @author Xanders
+ * @see https://team.xsamtech.com/xanderssamoth
+ */
 class AccountancyService
 {
     public function getBalanceSummary($groupBy = 'month', $startDate = null, $endDate = null, $perPage = 10, $page = null)

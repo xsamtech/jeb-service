@@ -99,6 +99,20 @@
             </div>
             <!-- Alert End -->
 @endif
+@if (\Session::has('error_message'))
+            <!-- Alert Start -->
+            <div class="position-relative">
+                <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                    <div class="col-lg-4 col-sm-6 mx-auto">
+                        <div class="alert alert-danger alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2 fs-4" style="vertical-align: -3px;"></i> {!! \Session::get('error_message') !!}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Alert End -->
+@endif
 
             <!-- Navigation-->
             <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">

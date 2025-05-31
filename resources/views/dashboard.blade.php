@@ -37,7 +37,7 @@
                                     <h3 class="text-white fw-light mt-2">Caisse</h3>
                                     <h5 class="text-white">{{ ($currentSummary ? number_format($currentSummary['balance'] * (1 - 0.1 - 0.16), 2) : '0') . ' $' }}</h5>
                                 </div>
-                                <a href="{{ route('dashboard.users') }}" class="stretched-link"></a>
+                                <a href="{{ route('dashboard.statistics') }}" class="stretched-link"></a>
                             </div>
                         </div>
 
