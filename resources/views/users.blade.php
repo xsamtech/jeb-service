@@ -9,18 +9,21 @@
                         <h1 class="fw-bolder py-lg-0 py-3 mb-0"><span class="text-gradient d-inline">{{ !empty($entity_title) ? $entity_title : 'Gérer les utilisateurs' }}</span></h1>
                         <div class="flex-row text-center">
     @if (Route::is('dashboard.users.entity'))
-                            <a href="{{ route('dashboard.users') }}" class="btn btn-primary float-end">Retour</a>
         @if ($entity == 'roles')
-                            <a class="btn btn-secondary me-sm-2 float-end text-white">Nouveau rôle</a>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end">Nouveau rôle</button>
         @endif
 
         @if ($entity == 'orders')
-                            <a class="btn btn-secondary me-sm-2 float-end text-white">Nouvelle commande</a>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end">Nouvelle commande</button>
         @endif
+                            <a href="{{ route('dashboard.users') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
+                                <i class="bi bi-chevron-double-left me-2"></i>Retour
+                            </a>
     @else
-                            <button class="btn btn-sm btn-outline-secondary pb-sm-1">Ajouter un administrateur</button><br class="d-sm-none d-block">
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'roles']) }}" class="btn btn-sm btn-primary pb-sm-1">Rôles</a>
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-secondary pb-sm-1 text-white">Commandes</a>
+                            <br class="d-sm-none d-block">
+                            <button class="btn btn-sm btn-outline-dark mt-lg-0 mt-1 pb-sm-1">Ajouter un administrateur</button>
     @endif
                         </div>
                     </div>
