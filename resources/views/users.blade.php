@@ -10,11 +10,11 @@
                         <div class="flex-row text-center">
     @if (Route::is('dashboard.users.entity'))
         @if ($entity == 'roles')
-                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#roleModal">Nouveau rôle</button>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#userEntityModal">Nouveau rôle</button>
         @endif
 
         @if ($entity == 'orders')
-                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#orderModal">Nouvelle commande</button>
+                            <button class="btn btn-sm btn-outline-dark me-sm-2 pb-sm-1 float-end" data-bs-toggle="modal" data-bs-target="#userEntityModal">Nouvelle commande</button>
         @endif
                             <a href="{{ route('dashboard.users') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                 <i class="bi bi-chevron-double-left me-2"></i>Retour

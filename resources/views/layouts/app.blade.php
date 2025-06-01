@@ -65,7 +65,7 @@
             <div class="position-relative">
                 <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
                     <div class="col-lg-4 col-sm-6 mx-auto">
-                        <div class="alert alert-success alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                        <div class="alert alert-success alert-dismissible fade show rounded-0" role="alert">
                             <i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i> {!! \Session::get('success_message') !!}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                         </div>
@@ -79,7 +79,7 @@
             <div class="position-relative">
                 <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
                     <div class="col-lg-4 col-sm-6 mx-auto">
-                        <div class="alert alert-danger alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
+                        <div class="alert alert-danger alert-dismissible fade show rounded-0" role="alert">
                             <i class="bi bi-exclamation-triangle me-2 fs-4" style="vertical-align: -3px;"></i> {!! \Session::get('error_message') !!}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                         </div>
@@ -112,7 +112,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link{{ Route::is('dashboard.users.entity') ? ' active' : '' }}" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">
+                                <a class="nav-link{{ Route::is('dashboard.users.entity') && $entity == 'orders' ? ' active' : '' }}" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">
                                     Commandes
                                 </a>
                             </li>
@@ -175,6 +175,39 @@
         <!-- Custom JS-->
         <script src="{{ asset('assets/js/scripts.custom.js') }}"></script>
         <script type="text/javascript">
+            /**
+             * Check string is numeric
+             * 
+             * @param boolean success
+             * @param string message
+             */
+            const showAlert = (success, message) => {
+                const color = success === true ? 'success' : 'danger';
+                const icon = success === true ? 'bi bi-info-circle' : 'bi bi-exclamation-triangle';
+
+                // Delete old alerts
+                $('#ajax-alert-container .alert').alert('close');
+
+                const alert = `<div class="position-relative">
+                                    <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
+                                        <div class="col-lg-4 col-sm-6 mx-auto">
+                                            <div class="alert alert-${color} alert-dismissible fade show rounded-0" role="alert">
+                                                <i class="${icon} me-2 fs-4" style="vertical-align: -3px;"></i> ${message}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+
+                // Adding alert to do DOM
+                $('#ajax-alert-container').append(alert);
+
+                // Automatic closing after 6 seconds
+                setTimeout(() => {
+                    $('#ajax-alert-container .alert').alert('close');
+                }, 6000);
+            };
+
             $(function () {
                 /*
                  * All about USER
@@ -187,12 +220,11 @@
                 $('#addUserForm').on('submit', function (e) {
                     e.preventDefault();
 
-                    // Nettoyer erreurs et alertes précédentes
+                    // Clean up previous errors and alerts
                     $('.is-invalid').removeClass('is-invalid');
                     $('.invalid-feedback').remove();
-                    $('.ajax-alert-success, .ajax-alert-error').remove();
 
-                    // Affiche le loader
+                    // Show the loader
                     $('#ajax-loader').removeClass('d-none');
 
                     const formData = new FormData(this);
@@ -204,41 +236,22 @@
                         contentType: false,
                         processData: false,
                         success: function (response) {
+                            // Hide the loader
                             $('#ajax-loader').addClass('d-none');
-
-                            // Fermer le modal
+                            // Close the modal
                             $('#userModal').modal('hide');
 
-                            // Alerte de succès
-                            const alertSuccess = `
-                            <div class="ajax-alert-success position-relative">
-                                <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
-                                    <div class="col-lg-4 col-sm-6 mx-auto">
-                                        <div class="alert alert-success alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
-                                            <i class="bi bi-info-circle me-2 fs-4" style="vertical-align: -3px;"></i> Utilisateur ajouté avec succès.
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>`;
+                            // Success alert
+                            showAlert(true, 'Utilisateur ajouté avec succès.');
 
-                            $('#ajax-alert-container').append(alertSuccess);
-
-                            // Disparition automatique après 5 secondes
-                            setTimeout(() => {
-                                $('.ajax-alert-success .alert').alert('close');
-                            }, 5000);
-
-                            // Recharge juste le tableau
+                            // Just reload the table
                             $('#dataList').load(location.href + ' #dataList > *');
-                            // Reset du formulaire
+                            // Reset the form
                             $('#addUserForm')[0].reset();
-
-                            // Réinitialise l’image de profil
+                            // Reset profile picture
                             $('#image_64').val('');
-                            $('.other-user-image').attr('src', '{{ asset('assets/img/user.png') }}');
-
-                            // Supprimer les classes d'erreur (juste au cas où)
+                            $('.other-user-image').attr('src', `${currentHost}/assets/img/user.png`);
+                            // Remove error classes (just in case)
                             $('#addUserForm .is-invalid').removeClass('is-invalid');
                             $('#addUserForm .invalid-feedback').remove();
                         },
@@ -256,25 +269,76 @@
                                 }
 
                             } else {
-                                // Alerte d'erreur serveur (500 ou autres)
-                                const alertError = `
-                                <div class="ajax-alert-error position-relative">
-                                    <div class="row position-fixed w-100" style="opacity: 0.9; z-index: 999;">
-                                        <div class="col-lg-4 col-sm-6 mx-auto">
-                                            <div class="alert alert-danger alert-dismissible fade show rounded-0 cnpr-line-height-1_1" role="alert">
-                                                <i class="bi bi-exclamation-triangle-fill me-2 fs-4" style="vertical-align: -3px;"></i>
-                                                Une erreur est survenue. Veuillez réessayer plus tard.
-                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
+                                // Close the modal
+                                $('#userModal').modal('hide');
+                                // Error (500) alert
+                                showAlert(false, 'Une erreur est survenue. Veuillez réessayer ultérieurement.');
+                            }
+                        }
+                    });
+                });
 
-                                $('body').append(alertError);
+                /*
+                 * All about ROLE or ORDER
+                 */
+                // Focus to specific input for each concerned modal
+                $('#userEntityModal').on('shown.bs.modal', function () {
+                    $('#customersDataList, #role_name').focus();
+                });
+                // Send user registration
+                $('#addRoleForm').on('submit', function (e) {
+                    e.preventDefault();
 
-                                setTimeout(() => {
-                                    $('.ajax-alert-error .alert').alert('close');
-                                }, 7000);
+                    // Clean up previous errors and alerts
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.invalid-feedback').remove();
+
+                    // Show the loader
+                    $('#ajax-loader').removeClass('d-none');
+
+                    const formData = new FormData(this);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: $(this).attr('action'),
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            // Hide the loader
+                            $('#ajax-loader').addClass('d-none');
+                            // Close the modal
+                            $('#userEntityModal').modal('hide');
+
+                            // Success alert
+                            showAlert(true, 'Rôle ajouté avec succès.');
+
+                            // Just reload the table
+                            $('#dataList').load(location.href + ' #dataList > *');
+                            // Reset the form
+                            $('#addUserForm')[0].reset();
+                            // Remove error classes (just in case)
+                            $('#addUserForm .is-invalid').removeClass('is-invalid');
+                            $('#addUserForm .invalid-feedback').remove();
+                        },
+                        error: function (xhr) {
+                            $('#ajax-loader').addClass('d-none');
+
+                            if (xhr.status === 422) {
+                                const errors = xhr.responseJSON.errors;
+
+                                for (const [field, messages] of Object.entries(errors)) {
+                                    const input = $(`[name="${field}"]`);
+
+                                    input.addClass('is-invalid');
+                                    input.after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+                                }
+
+                            } else {
+                                // Close the modal
+                                $('#userEntityModal').modal('hide');
+                                // Error (500) alert
+                                showAlert(false, 'Une erreur est survenue. Veuillez réessayer ultérieurement.');
                             }
                         }
                     });

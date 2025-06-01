@@ -2,14 +2,39 @@
                     <div id="dataList" class="row">
                         <div class="col-md-12">
                             <div class="card card-body border">
+                                <!-- Find by status -->
+                                <form method="GET" class="form-search mx-auto mb-3">
+                                    <div class="row g-1">
+                                        <div class="col-auto">
+                                            <select name="status" id="status" class="form-select form-select-sm">
+                                                <option class="small" disabled{{ !request()->has('status') ? ' selected' : '' }}>Choisir un état</option>
+                                                <option value="1"{{ request()->get('status') == '1' ? ' selected' : '' }}>Activé</option>
+                                                <option value="0"{{ request()->get('status') == '0' ? ' selected' : '' }}>Désactivé</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-auto">
+                                            <input type="submit" class="btn btn-sm btn-dark py-1" value="Trier">
+                                        </div>
+@if (request()->has('status'))
+                                        <div class="col-auto">
+                                            <a href="{{ route('dashboard.users') }}" class="btn btn-sm btn-link py-1">Voir tout le monde</a>
+                                        </div>
+@endif
+                                    </div>
+                                </form>
+
+                                <!-- Data list content -->
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-earning">
+                                    <table class="table table-striped border-top">
                                         <thead>
                                             <tr>
                                                 <th></th>
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
                                                 <th>Rôle</th>
+@if (!request()->has('status'))
+                                                <th>État</th>
+@endif
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -30,6 +55,15 @@
     @endforeach
                                                     </select>
                                                 </td>
+    @if (!request()->has('status'))
+                                                <td class="align-middle">
+                                                    <h6>
+                                                        <div class="badge text-bg-{{ $user['is_active'] == 1 ? 'success' : 'danger' }} fw-normal">
+                                                            {{ $user['is_active'] == 1 ? 'Activé' : 'Désactivé' }}
+                                                        </div>
+                                                    </h6>
+                                                </td>
+    @endif
                                                 <td class="align-middle">
                                                     <a class="text-decoration-none" href="{{ route('dashboard.user.datas', ['id' => $user['id']]) }}">
                                                         <i class="bi bi-pencil me-2"></i>Modifier

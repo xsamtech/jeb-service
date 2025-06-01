@@ -95,13 +95,13 @@ class RegisteredUserController extends Controller
             $image = str_replace($replace, '', $request->image_64);
             $image = str_replace(' ', '+', $image);
             // Create image URL
-            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_path = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
             // Upload image
-            Storage::url(Storage::disk('public')->put($image_url, base64_decode($image)));
+            Storage::disk('public')->put($image_path, base64_decode($image));
 
             $user->update([
-                'avatar_url' => $image_url,
+                'avatar_url' => Storage::url($image_path),
                 'updated_at' => now()
             ]);
         }

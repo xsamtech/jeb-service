@@ -75,7 +75,7 @@ class DashboardController extends Controller
         // role "Administrateur"
         $admin_role = Role::where('role_name', 'Administrateur')->first();
         // users
-        $users_collection = User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5);
+        $users_collection = request()->has('status') ? User::where([['id', '<>', Auth::user()->id], ['is_active', '=', request()->get('status')]])->orderByDesc('created_at')->paginate(5) : User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5);
         $users_data = ResourcesUser::collection($users_collection)->resolve();
 
         return view('users', [
@@ -98,12 +98,44 @@ class DashboardController extends Controller
             return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
         }
 
-        $entity_title = ($entity == 'roles' ? 'Gérer les rôle' : 'Commandes des clients');
+        // roles
+        $roles = Role::all();
 
-        return view('users', [
-            'entity' => $entity,
-            'entity_title' => $entity_title
-        ]);
+        if ($entity == 'orders') {
+            // role "Client"
+            $customer_role = Role::where('role_name', 'Client')->first();
+
+            if (!$customer_role) {
+                $customer_role = Role::create([
+                    'role_name' => 'Client',
+                    'role_description' => 'Personne ou entreprise louant des panneaux'
+                ]);
+            }
+
+            // users with role "Client"
+            $customers = User::whereHas('roles', function ($query) use ($customer_role) { $query->where('roles.id', $customer_role->id); })->orderBy('firstname')->get();
+            // page title
+            $entity_title = 'Commandes des clients';
+
+            return view('users', [
+                'roles' => $roles,
+                'customer' => $customer_role,
+                'customers' => $customers,
+                'entity' => $entity,
+                'entity_title' => $entity_title
+            ]);
+        }
+
+        if ($entity == 'roles') {
+            // page title
+            $entity_title = 'Gérer les rôles';
+
+            return view('users', [
+                'roles' => $roles,
+                'entity' => $entity,
+                'entity_title' => $entity_title
+            ]);
+        }
     }
 
     /**
@@ -464,10 +496,11 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $validated['image_64']);
             $image = str_replace(' ', '+', $image);
 
-            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_path = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
-            Storage::disk('public')->put($image_url, base64_decode($image));
-            $validated['avatar_url'] = $image_url;
+            Storage::disk('public')->put($image_path, base64_decode($image));
+
+            $validated['avatar_url'] = Storage::url($image_path);
 
             unset($validated['image_64']);
         }
@@ -550,7 +583,7 @@ class DashboardController extends Controller
             }
         }
 
-        return back()->with('success_message', 'Panneau ajouté.');
+        return response()->json(['status' => 'success', 'message' => 'Panneau ajouté avec succès.']);
     }
 
     /**
@@ -590,7 +623,7 @@ class DashboardController extends Controller
             'expense_id' => $expense->id
         ]);
 
-        return back()->with('success_message', 'Dépense ajoutée.');
+        return response()->json(['status' => 'success', 'message' => 'Dépense ajoutée avec succès.']);
     }
 
     /**
@@ -708,10 +741,69 @@ class DashboardController extends Controller
             DB::beginTransaction();
 
             try {
-                $customer = User::find($request->customer_id);
+                // Step 1: Search existing customer (by ID or full name)
+                $customer = null;
 
+                if ($request->filled('customer_id')) {
+                    $customer = User::find($request->customer_id);
+                }
+
+                // Step 2: otherwise, search by first name & email if the datalist has filled it (optional but relevant)
+                if (!$customer && $request->filled('customersDataList')) {
+                    [$firstname, $email] = explode(' ', $request->customersDataList, 2);
+                    $customer = User::where('firstname', $firstname)->where('email', $email)->first();
+                }
+
+                // Step 3: If no client is found, we create it
                 if (!$customer) {
-                    return back()->with('error_message', 'Utilisateur client non trouvé.');
+                    $random_int_token = (string) random_int(1000000, 9999999);
+                    $random_string_password = (string) Str::random();
+
+                    // Validate fields
+                    $request->validate([
+                        'firstname' => ['required', 'string', 'max:255'],
+                        'email' => ['required', 'string', 'email', 'max:255', 'unique:users']
+                    ], [
+                        'firstname.required' => 'Le prénom est requis.',
+                        'email.required' => 'L\'email est requis.',
+                        'email.email' => 'Le format de l\'email est invalide.',
+                        'email.unique' => 'Cet email est déjà utilisé.'
+                    ]);
+
+                    $customer = User::create([
+                        'firstname' => $request->firstname,
+                        'lastname' => $request->lastname,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'password' => Hash::make($random_string_password),
+                    ]);
+
+                    PasswordReset::create([
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'token' => $random_int_token,
+                        'former_password' => $random_string_password
+                    ]);
+
+                    $customer->roles()->attach([$request->role_id]);
+
+                    if (isset($request->image_64)) {
+                        // $extension = explode('/', explode(':', substr($request->image_64, 0, strpos($request->image_64, ';')))[1])[1];
+                        $replace = substr($request->image_64, 0, strpos($request->image_64, ',') + 1);
+                        // Find substring from replace here eg: data:image/png;base64,
+                        $image = str_replace($replace, '', $request->image_64);
+                        $image = str_replace(' ', '+', $image);
+                        // Create image URL
+                        $image_path = 'images/users/' . $customer->id . '/avatar/' . Str::random(50) . '.png';
+
+                        // Upload image
+                        Storage::disk('public')->put($image_path, base64_decode($image));
+
+                        $customer->update([
+                            'avatar_url' => Storage::url($image_path),
+                            'updated_at' => now()
+                        ]);
+                    }
                 }
 
                 // Cart creation
@@ -763,7 +855,7 @@ class DashboardController extends Controller
             }
         }
 
-        return back()->with('success_message', 'Utilisateur ajouté.');
+        return response()->json(['status' => 'success', 'message' => 'Données ajoutées avec succès.']);
     }
 
     /**
@@ -1108,10 +1200,11 @@ class DashboardController extends Controller
             $image = str_replace($replace, '', $validated['image_64']);
             $image = str_replace(' ', '+', $image);
 
-            $image_url = '/storage/images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
+            $image_path = 'images/users/' . $user->id . '/avatar/' . Str::random(50) . '.png';
 
-            Storage::disk('public')->put($image_url, base64_decode($image));
-            $validated['avatar_url'] = $image_url;
+            Storage::disk('public')->put($image_path, base64_decode($image));
+
+            $validated['avatar_url'] = Storage::url($image_path);
 
             unset($validated['image_64']);
         }
