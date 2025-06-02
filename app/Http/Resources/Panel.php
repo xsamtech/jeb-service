@@ -21,9 +21,9 @@ class Panel extends JsonResource
     {
         return [
             'id' => $this->id,
-            'dimensions' => $this->dimensions,
+            'dimensions' => $this->dimensions . ' m',
             'format' => $this->format,
-            'unit_price' => $this->unit_price,
+            'unit_price' => formatDecimalNumber($this->unit_price) . ' $',
             'location' => $this->location,
             'quantity' => $this->quantity,
             'is_available' => $this->is_available,

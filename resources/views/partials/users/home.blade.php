@@ -75,7 +75,7 @@
                                             </tr>
 @empty
                                             <tr>
-                                                <td colspan="5" class="lead text-center">La liste est encore vide</td>
+                                                <td colspan="{{ request()->has('status') ? 5 : 6 }}" class="lead text-center">La liste est encore vide</td>
                                             </tr>
 @endforelse
                                         </tbody>

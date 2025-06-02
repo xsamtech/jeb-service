@@ -64,7 +64,7 @@
                                 <!-- First name -->
                                 <div class="col-sm-6">
                                     <label for="firstname" class="form-label fw-bold">Prénom</label>
-                                    <input type="text" name="firstname" class="form-control" id="firstname" autofocus>
+                                    <input type="text" name="firstname" class="form-control" id="firstname">
                                 </div>
 
                                 <!-- Last name -->
@@ -151,30 +151,35 @@
                         </div>
                         <form id="{{ $entity == 'orders' ? 'addOrderForm' : 'addRoleForm' }}" action="{{ route('dashboard.users.entity', ['entity' => $entity]) }}" method="POST">
         @csrf
-                            <input type="hidden" name="customer_id" id="customer_id">
+                            <input type="hidden" id="customer_email_hidden" name="customer_email">
+
                             <div class="row g-2">
     @if ($entity == 'orders')
                                 <!-- User data -->
                                 <div class="col-lg-5">
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label for="customersDataList" class="form-label fw-bold visually-hidden">Recherche client existant</label>
-                                            <input class="form-control" list="datalistCustomerOptions" id="customersDataList" placeholder="Recherche client existant">
-                                            <datalist id="datalistCustomerOptions">
-        @forelse ($customers as $customer)
-                                                    <option class="fs-6 p-2" value="{{ $customer->firstname . ' ' . $customer->lastname }}">
-        @empty
-        @endforelse
-                                            </datalist>
-                                        </div>
-                                    </div>
-
                                     <div class="card card-body">
-                                        <p class="card-text fw-bold">Identité du client</p>
+                                        <div class="d-flex justify-content-between position-relative" style="z-index: 999;">
+                                            <p class="card-text fw-bold">Identité du client</p>
+                                            <button type="button" class="btn btn-outline-dark" title="Rechercher un client existant" data-bs-toggle="modal" data-bs-target="#searchUserModal"><i class="bi bi-search"></i></button>
+                                        </div>
+                                        <!-- Profile -->
+                                        <div class="row g-3">
+                                            <div class="col-lg-6 col-sm-8 mx-auto">
+                                                <div id="profileImageWrapper" class="mb-3 position-relative">
+                                                    <img src="{{ asset('assets/img/user.png') }}" alt="Avatar" class="other-user-image img-fluid img-thumbnail rounded-4">
+                                                    <label role="button" for="image_profile" class="btn btn-secondary px-2 py-1 rounded-circle position-absolute end-0 bottom-0">
+                                                        <i class="bi bi-pencil-fill text-white"></i>
+                                                        <input type="file" name="image_profile" id="image_profile" class="d-none">
+                                                    </label>
+                                                    <input type="hidden" name="image_64" id="image_64">
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- First name -->
                                         <div class="mb-2">
                                             <label for="firstname" class="form-label fw-bold visually-hidden">Prénom</label>
-                                            <input type="text" name="firstname" class="form-control" id="firstname" placeholder="Prénom" autofocus>
+                                            <input type="text" name="firstname" class="form-control" id="firstname" placeholder="Prénom">
                                         </div>
 
                                         <!-- Last name -->
@@ -197,15 +202,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Order data -->
+                                <!-- Orders data -->
                                 <div class="col-lg-7">
-
                                 </div>
     @else
                                 <!-- Role name -->
                                 <div class="col-12">
                                     <label for="role_name" class="form-label fw-bold">Nom du rôle</label>
-                                    <input type="text" name="role_name" class="form-control" id="role_name" autofocus>
+                                    <input type="text" name="role_name" class="form-control" id="role_name">
                                 </div>
 
                                 <!-- Description -->
@@ -225,6 +229,7 @@
                 </div>
             </div>
         </div>
+
         <!-- ### Crop other user image ### -->
         <div class="modal fade" id="cropModal_profile" tabindex="-1" aria-hidden="true" data-bs-backdrop="true">
             <div class="modal-dialog" role="document">
@@ -248,6 +253,143 @@
                     <div class="modal-footer d-flex justify-content-between">
                         <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">Annuler</button>
                         <button type="button" id="crop_profile" class="btn btn-primary px-4 rounded-pill" data-bs-dismiss="modal">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ### Search user ### -->
+        <div class="modal fade" id="searchUserModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="d-block modal-header bg-light text-center">
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#userModal">Rechercher un client</h4>
+                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-target="#userEntityModal" data-bs-toggle="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <!-- Search input -->
+                                <div class="col-lg-9 col-sm-11 mx-auto mb-sm-0 mb-4">
+                                    <input type="search" id="userSearchInput" class="form-control" placeholder="Rechercher par nom">
+                                </div>
+
+                                <!-- Search result -->
+                                <div class="col-12 mt-3 mb-2">
+                                    <div class="list-group">
+                                        <p class="mb-0 text-center"><i class="bi bi-search fs-1"></i></p>
+                                        <p class="lead mb-0 text-center">La liste s'affiche ici.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-target="#userEntityModal" data-bs-toggle="modal">Annuler</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+@endif
+
+@if (Route::is('dashboard.panels'))
+        <!-- ### Add new admin ### -->
+        <div class="modal fade" id="panelModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="d-block modal-header bg-light text-center">
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#panelModal">Ajouter un panneau</h4>
+                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ajax-loader" class="position-absolute d-none" style="top: 10px; right: 10px;">
+                            <img src="{{ asset('assets/img/ajax-loading.gif') }}" alt="Chargement..." width="32" height="32">
+                        </div>
+                        <form id="addPanelForm" action="{{ route('dashboard.panels') }}" method="POST">
+    @csrf
+                            <div class="row g-3">
+                                <!-- Dimensions -->
+                                <div class="col-sm-6">
+                                    <label for="dimensions" class="form-label fw-bold">Dimensions</label>
+                                    <input type="text" name="dimensions" class="form-control" id="dimensions">
+                                </div>
+
+                                <!-- Format -->
+                                <div class="col-sm-6">
+                                    <label for="format" class="form-label fw-bold">Format</label>
+                                    <input type="text" name="format" class="form-control" id="format">
+                                </div>
+
+                                <!-- Unit price -->
+                                <div class="col-sm-6">
+                                    <label for="unit_price" class="form-label fw-bold">Prix unitaire</label>
+                                    <input type="number" step="0.01" name="unit_price" class="form-control" id="unit_price">
+                                </div>
+
+                                <!-- Location -->
+                                <div class="col-sm-6">
+                                    <label for="location" class="form-label fw-bold">Site / Emplacement</label>
+                                    <textarea class="form-control" name="location" id="location"></textarea>
+                                </div>
+
+                                <!-- Quantity -->
+                                <div class="col-sm-6">
+                                    <label for="quantity" class="form-label fw-bold">Quantité actuelle en stock</label>
+                                    <input type="number" step="1" name="quantity" class="form-control" id="quantity">
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">@lang('miscellaneous.cancel')</button>
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">{{ __('miscellaneous.register') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+@endif
+
+@if (Route::is('dashboard.expenses'))
+        <!-- ### Add new admin ### -->
+        <div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="d-block modal-header bg-light text-center">
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#expenseModal">Ajouter une dépense</h4>
+                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ajax-loader" class="position-absolute d-none" style="top: 10px; right: 10px;">
+                            <img src="{{ asset('assets/img/ajax-loading.gif') }}" alt="Chargement..." width="32" height="32">
+                        </div>
+                        <form id="addExpenseForm" action="{{ route('dashboard.expenses') }}" method="POST">
+    @csrf
+                            <div class="row g-3">
+                                <!-- Expense reason (designation) -->
+                                <div class="col-sm-6">
+                                    <label for="designation" class="form-label fw-bold">Motif de dépense</label>
+                                    <input type="text" name="designation" class="form-control" id="designation">
+                                </div>
+
+                                <!-- Amount -->
+                                <div class="col-sm-6">
+                                    <label for="amount" class="form-label fw-bold">Montant</label>
+                                    <input type="number" step="0.01" name="amount" class="form-control" id="amount">
+                                </div>
+
+                                <!-- Outflow date -->
+                                <div class="col-sm-6">
+                                    <label for="outflow_date" class="form-label fw-bold">Date/Heure de sortie</label>
+                                    <input type="datetime" name="outflow_date" class="form-control" id="outflow_date">
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">@lang('miscellaneous.cancel')</button>
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">{{ __('miscellaneous.register') }}</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

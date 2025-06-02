@@ -32,7 +32,7 @@
 
             <!-- Content Section-->
             <section class="pb-3">
-                <div class="container px-lg-5">
+                <div class="container-fluid container-lg px-lg-5">
     @if (Route::is('dashboard.users.entity'))
         @include('partials.users.' . $entity)
     @else

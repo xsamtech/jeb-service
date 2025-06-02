@@ -50,7 +50,14 @@ class DashboardController extends Controller
      */
     public function panels()
     {
-        return view('panels');
+        // panels
+        $panels_collection = request()->has('is_available') ? Panel::where('is_available', '=', request()->get('is_available'))->orderByDesc('created_at')->paginate(5) : Panel::orderByDesc('created_at')->paginate(5);
+        $panels_data = ResourcesPanel::collection($panels_collection)->resolve();
+
+        return view('panels', [
+            'panels' => $panels_data,
+            'panels_req' => $panels_collection
+        ]);
     }
 
     /**
@@ -60,6 +67,14 @@ class DashboardController extends Controller
      */
     public function expenses()
     {
+        // expenses
+        $expenses_collection = Expense::orderByDesc('created_at')->paginate(5);
+        $expenses_data = ResourcesExpense::collection($expenses_collection)->resolve();
+
+        return view('expenses', [
+            'expenses' => $expenses_data,
+            'expenses_req' => $expenses_collection
+        ]);
         return view('expenses');
     }
 
@@ -94,33 +109,29 @@ class DashboardController extends Controller
      */
     public function usersEntity($entity)
     {
-        if (!in_array($entity, ['roles', 'orders'])) {
+        if (!in_array($entity, ['roles', 'orders', 'search'])) {
             return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
         }
 
         // roles
         $roles = Role::all();
+        // role "Client"
+        $customer_role = Role::where('role_name', 'Client')->first();
+
+        if (!$customer_role) {
+            $customer_role = Role::create([
+                'role_name' => 'Client',
+                'role_description' => 'Personne ou entreprise louant des panneaux'
+            ]);
+        }
 
         if ($entity == 'orders') {
-            // role "Client"
-            $customer_role = Role::where('role_name', 'Client')->first();
-
-            if (!$customer_role) {
-                $customer_role = Role::create([
-                    'role_name' => 'Client',
-                    'role_description' => 'Personne ou entreprise louant des panneaux'
-                ]);
-            }
-
-            // users with role "Client"
-            $customers = User::whereHas('roles', function ($query) use ($customer_role) { $query->where('roles.id', $customer_role->id); })->orderBy('firstname')->get();
             // page title
             $entity_title = 'Commandes des clients';
 
             return view('users', [
                 'roles' => $roles,
                 'customer' => $customer_role,
-                'customers' => $customers,
                 'entity' => $entity,
                 'entity_title' => $entity_title
             ]);
@@ -134,6 +145,58 @@ class DashboardController extends Controller
                 'roles' => $roles,
                 'entity' => $entity,
                 'entity_title' => $entity_title
+            ]);
+        }
+
+        if ($entity == 'search') {
+            // Search users with role "Client"
+            $search = request()->get('q');
+
+            if (!$search) {
+                return response()->json([
+                    'status' => 'empty',
+                    'data' => [],
+                ]);
+            }
+
+            // ============= Une recherche plus chirurgicale ============
+            // $customers = User::whereHas('roles', function ($query) use ($customer_role) {
+            //                         $query->where('roles.id', $customer_role->id);
+            //                     })->when($search, function ($query, $search) {
+            //                         $search = trim($search);
+            //                         $keywords = preg_split('/\s+/', $search); // split by space
+
+            //                         $query->where(function ($q) use ($keywords) {
+
+            //                             foreach ($keywords as $keyword) {
+            //                                 $q->where(function ($sub) use ($keyword) {
+            //                                     $sub->where('firstname', 'LIKE', $keyword . '%')
+            //                                     ->orWhere('lastname', 'LIKE', $keyword . '%')
+            //                                     ->orWhereRaw("CONCAT(firstname, ' ', lastname) LIKE ?", [$keyword . '%']);
+            //                                 });
+            //                             }
+            //                         });
+            //                     })->orderBy('firstname')->limit(15)->get();
+
+            $customers = User::whereHas('roles', function ($query) use ($customer_role) {
+                                    $query->where('roles.id', $customer_role->id);
+                                })->when($search, function ($query, $search) {
+                                    $query->where(function ($q) use ($search) {
+                                        $q->where('firstname', 'LIKE', '%' . $search . '%')->orWhere('lastname', 'LIKE', '%' . $search . '%');
+                                    });
+                                })->orderBy('firstname')->get();
+
+            if ($customers->isEmpty()) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'Aucun client trouvé.'
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success', 
+                'message' => 'Clients trouvés.',
+                'data' => ResourcesUser::collection($customers)->resolve()
             ]);
         }
     }
@@ -544,44 +607,51 @@ class DashboardController extends Controller
     public function addPanel(Request $request)
     {
         $request->validate([
-            'dimensions' => ['nullable', 'string', 'max:255'],
-            'format' => ['nullable', 'string'],
-            'unit_price' => ['nullable', 'numeric', 'between:0,9999999.99'],
-            'location' => ['nullable', 'string'],
-            'quantity' => ['nullable', 'integer', 'min:0'],
-            'is_available' => ['required', 'boolean'],
-            'images_urls.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,bmp,gif', 'max:2048'],
-            'file_name' => ['nullable', 'string'],
+            'dimensions' => ['required', 'string', 'max:255'],
+            'format' => ['required', 'string'],
+            'unit_price' => ['required', 'numeric', 'between:0,9999999.99'],
+            'location' => ['required', 'string'],
+            'quantity' => ['required', 'integer', 'min:0'],
+            // 'is_available' => ['required', 'boolean'],
+            // 'images_urls.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,bmp,gif', 'max:2048'],
+            // 'file_name' => ['nullable', 'string'],
+        ], [
+            'dimensions.required' => 'Veuillez mettre les dimensions.',
+            'dimensions.unique' => 'Cette dimension existe déjà.',
+            'format.required' => 'Le format est requis.',
+            'unit_price.required' => 'Le prix est requis.',
+            'location.required' => 'Veuillez donner son emplacement.',
+            'quantity.required' => 'La quantité est requis.',
         ]);
 
-        $panel = Panel::create([
+        Panel::create([
             'dimensions' => $request->dimensions,
             'format' => $request->format,
             'unit_price' => $request->unit_price,
             'location' => $request->location,
             'quantity' => $request->quantity,
-            'is_available' => $request->is_available,
+            // 'is_available' => $request->is_available,
             'created_by' => Auth::id(),
         ]);
 
         // If image files exist
-        if ($request->hasFile('images_urls')) {
-            foreach ($request->file('images_urls') as $singleFile) {
-                $extension = $singleFile->getClientOriginalExtension();
-                $uniqueName = Str::random(50) . '.' . $extension;
-                $relativePath = 'images/messages/' . $panel->id . '/' . $uniqueName;
+        // if ($request->hasFile('images_urls')) {
+        //     foreach ($request->file('images_urls') as $singleFile) {
+        //         $extension = $singleFile->getClientOriginalExtension();
+        //         $uniqueName = Str::random(50) . '.' . $extension;
+        //         $relativePath = 'images/messages/' . $panel->id . '/' . $uniqueName;
 
-                // Storage in the public disk
-                $singleFile->storeAs('images/messages/' . $panel->id, $uniqueName, 'public');
+        //         // Storage in the public disk
+        //         $singleFile->storeAs('images/messages/' . $panel->id, $uniqueName, 'public');
 
-                File::create([
-                    'file_name' => trim($request->file_name ?? '') ?: $singleFile->getClientOriginalName(),
-                    'file_url' => getWebURL() . '/storage/' . $relativePath,
-                    'file_type' => 'photo',
-                    'panel_id' => $panel->id,
-                ]);
-            }
-        }
+        //         File::create([
+        //             'file_name' => trim($request->file_name ?? '') ?: $singleFile->getClientOriginalName(),
+        //             'file_url' => getWebURL() . '/storage/' . $relativePath,
+        //             'file_type' => 'photo',
+        //             'panel_id' => $panel->id,
+        //         ]);
+        //     }
+        // }
 
         return response()->json(['status' => 'success', 'message' => 'Panneau ajouté avec succès.']);
     }
@@ -738,37 +808,27 @@ class DashboardController extends Controller
         }
 
         if ($entity == 'orders') {
+            // Validate fields
+            $request->validate([
+                'firstname' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users']
+            ], [
+                'firstname.required' => 'Le prénom est requis.',
+                'email.required' => 'L\'email est requis.',
+                'email.email' => 'Le format de l\'email est invalide.',
+                'email.unique' => 'Cet email est déjà utilisé.'
+            ]);
+
             DB::beginTransaction();
 
             try {
-                // Step 1: Search existing customer (by ID or full name)
-                $customer = null;
+                // Search existing customer (by email)
+                $customer = User::where('email', $request->customer_email)->first();
 
-                if ($request->filled('customer_id')) {
-                    $customer = User::find($request->customer_id);
-                }
-
-                // Step 2: otherwise, search by first name & email if the datalist has filled it (optional but relevant)
-                if (!$customer && $request->filled('customersDataList')) {
-                    [$firstname, $email] = explode(' ', $request->customersDataList, 2);
-                    $customer = User::where('firstname', $firstname)->where('email', $email)->first();
-                }
-
-                // Step 3: If no client is found, we create it
+                // If no client is found, we create it
                 if (!$customer) {
                     $random_int_token = (string) random_int(1000000, 9999999);
                     $random_string_password = (string) Str::random();
-
-                    // Validate fields
-                    $request->validate([
-                        'firstname' => ['required', 'string', 'max:255'],
-                        'email' => ['required', 'string', 'email', 'max:255', 'unique:users']
-                    ], [
-                        'firstname.required' => 'Le prénom est requis.',
-                        'email.required' => 'L\'email est requis.',
-                        'email.email' => 'Le format de l\'email est invalide.',
-                        'email.unique' => 'Cet email est déjà utilisé.'
-                    ]);
 
                     $customer = User::create([
                         'firstname' => $request->firstname,
@@ -827,7 +887,7 @@ class DashboardController extends Controller
 
                     // Check if the requested quantity is available
                     if ($panel->quantity < $quantity) {
-                        return back()->with('error_message', 'Quantité insuffisante pour le panneau de dimension « ' . $panel->dimensions . ' » et de format « ' . $panel->format . ' »<br>');
+                        return response()->json(['status' => 'error', 'message' => 'Quantité insuffisante pour le panneau de dimension « ' . $panel->dimensions . ' » et de format « ' . $panel->format . ' »']);
                     }
 
                     // Attach to cart with quantity
@@ -851,7 +911,7 @@ class DashboardController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
 
-                return back()->with('error_message', $e . '<br>Erreur lors de la création du panier.');
+                return response()->json(['status' => 'error', 'message' => 'Erreur lors de la création du panier.']);
             }
         }
 

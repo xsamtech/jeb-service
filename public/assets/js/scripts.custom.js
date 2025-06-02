@@ -107,6 +107,12 @@ $(function () {
         }
     });
 
+    /* jQuery DateTime picker */
+    jQuery('#outflow_date').datetimepicker({
+        format: 'd/m/Y'
+    });
+    jQuery.datetimepicker.setLocale('fr');
+
     // AVATAR with ajax
     $('#avatar').on('change', function (e) {
         var files = e.target.files;
