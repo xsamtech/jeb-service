@@ -49,10 +49,10 @@ class AppServiceProvider extends ServiceProvider
             $balanceSummary = $accountancyService->getBalanceSummary($groupBy, $start, $end, $perPage, $page);
             $weeklySummary = $accountancyService->getBalanceSummary('week');
             // Prepare for ApexCharts
-            $chartLabels = $weeklySummary->pluck('period');
-            $chartAssets = $weeklySummary->pluck('total_assets');
-            $chartLiabilities = $weeklySummary->pluck('total_liabilities');
-            $chartPanels = $weeklySummary->pluck('total_panels');
+            $chartLabels = collect($weeklySummary->items())->pluck('period');
+            $chartAssets = collect($weeklySummary->items())->pluck('total_assets');
+            $chartLiabilities = collect($weeklySummary->items())->pluck('total_liabilities');
+            $chartPanels = collect($weeklySummary->items())->pluck('total_panels');
 
             $view->with('all_users', ResourcesUser::collection(User::all()));
             $view->with('all_panels', ResourcesPanel::collection(Panel::all()));

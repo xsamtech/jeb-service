@@ -34,11 +34,15 @@ class AccountancyService
                 };
 
                 $total = $accountancy->cart->panels->sum(function ($panel) {
-                    return ($panel->pivot->is_valid ?? 1) ? ($panel->pivot->quantity ?? 1) * ($panel->unit_price ?? 0) : 0;
+                    return ($panel->pivot->is_valid ?? 1)
+                        ? ($panel->pivot->quantity ?? 1) * ($panel->unit_price ?? 0)
+                        : 0;
                 });
 
                 $total_panels = $accountancy->cart->panels->sum(function ($panel) {
-                    return ($panel->pivot->is_valid ?? 1) ? $panel->pivot->quantity ?? 1 : 0;
+                    return ($panel->pivot->is_valid ?? 1)
+                        ? $panel->pivot->quantity ?? 1
+                        : 0;
                 });
 
                 return [
@@ -69,6 +73,7 @@ class AccountancyService
                     'period' => $period,
                     'total_assets' => 0,
                     'total_liabilities' => $total,
+                    'total_panels' => 0,
                     'balance' => -$total,
                 ];
             });
@@ -76,16 +81,23 @@ class AccountancyService
         // Fusion et groupement
         $merged = $assetAccountancies->merge($liabilityAccountancies);
 
-        $grouped = $merged->groupBy('period')->map(function (Collection $items, $period) {
-            $assets = $items->sum('total_assets');
-            $liabilities = $items->sum('total_liabilities');
-            return [
-                'period' => $period,
-                'total_assets' => $assets,
-                'total_liabilities' => $liabilities,
-                'balance' => $assets - $liabilities,
-            ];
-        })->sortBy('period')->values();
+        $grouped = $merged
+            ->groupBy('period')
+            ->map(function (Collection $items, $period) {
+                $assets = $items->sum('total_assets');
+                $liabilities = $items->sum('total_liabilities');
+                $panels = $items->sum('total_panels');
+
+                return [
+                    'period' => $period,
+                    'total_assets' => $assets,
+                    'total_liabilities' => $liabilities,
+                    'total_panels' => $panels,
+                    'balance' => $assets - $liabilities,
+                ];
+            })
+            ->sortBy('period')
+            ->values();
 
         // Pagination manuelle
         $page = $page ?: LengthAwarePaginator::resolveCurrentPage();

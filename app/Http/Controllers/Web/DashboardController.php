@@ -116,7 +116,7 @@ class DashboardController extends Controller
         // roles
         $roles = Role::all();
         // role "Client"
-        $customer_role = Role::where('role_name', 'Client')->first();
+        $customer_role = Role::where('role_name', 'Administrateur')->first();
 
         if (!$customer_role) {
             $customer_role = Role::create([

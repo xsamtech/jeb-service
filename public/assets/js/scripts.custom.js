@@ -109,7 +109,7 @@ $(function () {
 
     /* jQuery DateTime picker */
     jQuery('#outflow_date').datetimepicker({
-        format: 'd/m/Y'
+        format: 'd/m/Y H:i'
     });
     jQuery.datetimepicker.setLocale('fr');
 
