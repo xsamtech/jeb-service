@@ -1285,6 +1285,10 @@ class DashboardController extends Controller
                 }
             }
 
+            foreach ($cart->customer_orders as $order) {
+                $order->panel->update(['is_available' => 1]);
+            }
+
             if (!empty($updates)) {
                 $cart->update($updates);
 
