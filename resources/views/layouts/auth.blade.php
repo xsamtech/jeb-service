@@ -119,6 +119,7 @@
         <script src="{{ asset('assets/addons/jquery/js/jquery-ui.min.js') }}"></script>
         <script src="{{ asset('assets/addons/autosize/js/autosize.min.js') }}"></script>
         <script src="{{ asset('assets/addons/sweetalert2/dist/sweetalert2.min.js') }}"></script>
+        <script src="{{ asset('assets/addons/jquery/datetimepicker/js/jquery.datetimepicker.full.min.js') }}"></script>
         <script src="{{ asset('assets/addons/cropper/js/cropper.min.js') }}"></script>
         <!-- Bootstrap core JS-->
         {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> --}}

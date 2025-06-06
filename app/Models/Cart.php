@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -26,21 +25,12 @@ class Cart extends Model
     protected $guarded = [];
 
     /**
-     * MANY-TO-MANY
-     * Several panels for several carts
+     * MANY-TO-ONE
+     * Several customer_orders for a cart
      */
-    public function panels(): BelongsToMany
+    public function customer_orders(): HasMany
     {
-        return $this->belongsToMany(Panel::class)->withTimestamps()->withPivot(['quantity', 'is_valid']);
-    }
-
-    /**
-     * ONE-TO-MANY
-     * One user for several carts
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(CustomerOrder::class);
     }
 
     /**
@@ -53,21 +43,14 @@ class Cart extends Model
     }
 
     /**
-     * Total price of panels
+     * Total price of ordered panels
      *
      * @return float
      */
-    public function totalPanelsPrices(): float
+    public function totalAmount(): Attribute
     {
-        $total = 0;
-
-        foreach ($this->panels as $panel) {
-            $quantity = $panel->pivot->quantity ?? 1;
-            $price = $panel->unit_price * $quantity;
-
-            $total += $price;
-        }
-
-        return round($total, 2);
+        return Attribute::make(
+            get: fn () => $this->customerOrders->sum('price_at_that_time')
+        );
     }
 }

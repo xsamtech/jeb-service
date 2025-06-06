@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -25,12 +24,12 @@ class Panel extends Model
     protected $guarded = [];
 
     /**
-     * MANY-TO-MANY
-     * Several carts for several panels
+     * MANY-TO-ONE
+     * Several customer_orders for a panel
      */
-    public function carts(): BelongsToMany
+    public function customer_orders(): HasMany
     {
-        return $this->belongsToMany(Cart::class)->withTimestamps()->withPivot(['quantity', 'is_valid']);
+        return $this->hasMany(CustomerOrder::class);
     }
 
     /**

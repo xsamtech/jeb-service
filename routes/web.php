@@ -28,6 +28,8 @@ Route::get('/symlink', function () { return view('symlink'); })->name('generate_
 | ADMIN Web Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/test', [DashboardController::class, 'test'])->name('dashboard.test');
+
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.home');
     Route::get('/panels', [DashboardController::class, 'panels'])->name('dashboard.panels');

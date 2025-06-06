@@ -10,6 +10,7 @@ use App\Http\Resources\Role as ResourcesRole;
 use App\Http\Resources\User as ResourcesUser;
 use App\Models\Accountancy;
 use App\Models\Cart;
+use App\Models\CustomerOrder;
 use App\Models\Expense;
 use App\Models\File;
 use App\Models\Panel;
@@ -22,6 +23,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -44,6 +46,24 @@ class DashboardController extends Controller
     }
 
     /**
+     * GET: Home page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function test()
+    {
+        $customer_role = Role::where('role_name', 'Client')->first();
+        $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
+                                                $query->where('roles.id', $customer_role->id);
+                                            })->whereHas('unpaidCart')
+                                            ->with(['unpaidCart.customer_orders.panel', 'roles'])
+                                            ->paginate(5)->appends(request()->query());
+        $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
+
+        return response()->json(['message' => 'Clients ayant panier impayé', 'data' => $customers_data]);
+    }
+
+    /**
      * GET: Panels list page
      *
      * @return \Illuminate\View\View
@@ -51,7 +71,7 @@ class DashboardController extends Controller
     public function panels()
     {
         // panels
-        $panels_collection = request()->has('is_available') ? Panel::where('is_available', '=', request()->get('is_available'))->orderByDesc('created_at')->paginate(5) : Panel::orderByDesc('created_at')->paginate(5);
+        $panels_collection = request()->has('is_available') ? Panel::where('is_available', '=', request()->get('is_available'))->orderByDesc('created_at')->paginate(5)->appends(request()->query()) : Panel::orderByDesc('created_at')->paginate(5)->appends(request()->query());
         $panels_data = ResourcesPanel::collection($panels_collection)->resolve();
 
         return view('panels', [
@@ -68,7 +88,7 @@ class DashboardController extends Controller
     public function expenses()
     {
         // expenses
-        $expenses_collection = Expense::orderByDesc('created_at')->paginate(5);
+        $expenses_collection = Expense::orderByDesc('created_at')->paginate(5)->appends(request()->query());
         $expenses_data = ResourcesExpense::collection($expenses_collection)->resolve();
 
         return view('expenses', [
@@ -90,7 +110,7 @@ class DashboardController extends Controller
         // role "Administrateur"
         $admin_role = Role::where('role_name', 'Administrateur')->first();
         // users
-        $users_collection = request()->has('status') ? User::where([['id', '<>', Auth::user()->id], ['is_active', '=', request()->get('status')]])->orderByDesc('created_at')->paginate(5) : User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5);
+        $users_collection = request()->has('status') ? User::where([['id', '<>', Auth::user()->id], ['is_active', '=', request()->get('status')]])->orderByDesc('created_at')->paginate(5)->appends(request()->query()) : User::where('id', '<>', Auth::user()->id)->orderByDesc('created_at')->paginate(5)->appends(request()->query());
         $users_data = ResourcesUser::collection($users_collection)->resolve();
 
         return view('users', [
@@ -116,7 +136,7 @@ class DashboardController extends Controller
         // roles
         $roles = Role::all();
         // role "Client"
-        $customer_role = Role::where('role_name', 'Administrateur')->first();
+        $customer_role = Role::where('role_name', 'Client')->first();
 
         if (!$customer_role) {
             $customer_role = Role::create([
@@ -126,12 +146,29 @@ class DashboardController extends Controller
         }
 
         if ($entity == 'orders') {
+            // panels
+            $available_panels_collection = Panel::where('is_available', '=', 1)->orderByDesc('created_at')->get();
+            $available_panels_data = ResourcesPanel::collection($available_panels_collection)->resolve();
+            $count_customers = User::whereHas('roles', function ($query) use ($customer_role) {
+                                    $query->where('roles.id', $customer_role->id);
+                                })->count();
+            $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
+                                                    $query->where('roles.id', $customer_role->id);
+                                                })->whereHas('unpaidCart')
+                                                ->with(['unpaidCart.customer_orders.panel', 'roles'])
+                                                ->paginate(5)->appends(request()->query());
+            $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
+
             // page title
             $entity_title = 'Commandes des clients';
 
             return view('users', [
                 'roles' => $roles,
                 'customer' => $customer_role,
+                'count_customers' => $count_customers,
+                'users' => $customers_data,
+                'users_req' => $unpaid_customers_collection,
+                'available_panels' => $available_panels_data,
                 'entity' => $entity,
                 'entity_title' => $entity_title
             ]);
@@ -415,31 +452,22 @@ class DashboardController extends Controller
         }
 
         if ($entity == 'orders') {
-            // Check if cart exists, is unpaid, and contains the requested panel
-            $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])
-                            ->whereHas('panels', function ($query) use ($id) {
-                                $query->where('panels.id', $id);
-                            })->first();
+            // Check if cart exists, is unpaid
+            $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->first();
 
             if (!$cart) {
                 return back()->with('error_message', 'Commande de panneau non trouvée.');
             }
 
             // Get the ordered panel with the pivot relationship
-            $ordered_panel = $cart->panels()->where('panels.id', $id)->first();
+            $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['panel_id', $id]])->first();
 
-            if (!$ordered_panel || !$ordered_panel->pivot) {
+            if (!$customer_order) {
                 return back()->with('error_message', 'Panneau non trouvé dans la commande.');
             }
 
-            $quantity = (int) $ordered_panel->pivot->quantity;
-
-            if ($quantity <= 0) {
-                return back()->with('error_message', 'Quantité invalide détectée.');
-            }
-
             // Retrieve the panel in stock
-            $in_stock_panel = Panel::find($id);
+            $in_stock_panel = Panel::find($customer_order->panel_id);
 
             if (!$in_stock_panel) {
                 return back()->with('error_message', 'Panneau introuvable dans le stock.');
@@ -447,11 +475,10 @@ class DashboardController extends Controller
 
             // Updates the panel stock
             $in_stock_panel->update([
-                'quantity' => $in_stock_panel->quantity + $quantity
+                'is_available' => 1
             ]);
 
-            // Remove the panel from cart
-            $cart->panels()->detach($id);
+            $customer_order->delete();
 
             return redirect('/users/' . $entity . '/' . $cart->id)->with('success_message', 'Panneau retiré de la commande.');
         }
@@ -609,27 +636,24 @@ class DashboardController extends Controller
         $request->validate([
             'dimensions' => ['required', 'string', 'max:255'],
             'format' => ['required', 'string'],
-            'unit_price' => ['required', 'numeric', 'between:0,9999999.99'],
+            'price' => ['required', 'numeric', 'between:0,9999999.99'],
             'location' => ['required', 'string'],
-            'quantity' => ['required', 'integer', 'min:0'],
             // 'is_available' => ['required', 'boolean'],
             // 'images_urls.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,bmp,gif', 'max:2048'],
             // 'file_name' => ['nullable', 'string'],
         ], [
             'dimensions.required' => 'Veuillez mettre les dimensions.',
             'dimensions.unique' => 'Cette dimension existe déjà.',
-            'format.required' => 'Le format est requis.',
-            'unit_price.required' => 'Le prix est requis.',
+            'format.required' => 'Le format est obligatoire.',
+            'unit_price.required' => 'Le prix est obligatoire.',
             'location.required' => 'Veuillez donner son emplacement.',
-            'quantity.required' => 'La quantité est requis.',
         ]);
 
         Panel::create([
             'dimensions' => $request->dimensions,
             'format' => $request->format,
-            'unit_price' => $request->unit_price,
+            'price' => $request->price,
             'location' => $request->location,
-            'quantity' => $request->quantity,
             // 'is_available' => $request->is_available,
             'created_by' => Auth::id(),
         ]);
@@ -709,16 +733,17 @@ class DashboardController extends Controller
         // Validate fields
         $request->validate([
             'firstname' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users'],
+            'phone' => ['required', 'string', 'phone', 'max:45', 'unique:users'],
             'username' => ['string', 'username', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
-            'firstname.required' => 'Le prénom est requis.',
-            'email.required' => 'L\'email est requis.',
+            'firstname.required' => 'Le prénom est obligatoire.',
             'email.email' => 'Le format de l\'email est invalide.',
             'email.unique' => 'Cet email est déjà utilisé.',
+            'phone.required' => 'Le n° de téléphone est obligatoire.',
             'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
-            'password.required' => 'Le mot de passe est requis.',
+            'password.required' => 'Le mot de passe est obligatoire.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
@@ -796,7 +821,7 @@ class DashboardController extends Controller
             $request->validate([
                 'role_name' => ['required', 'string', 'max:255'],
             ], [
-                'role_name.required' => 'Le nom du rôle est requis.'
+                'role_name.required' => 'Le nom du rôle est obligatoire.'
             ]);
 
             // Register role
@@ -808,55 +833,71 @@ class DashboardController extends Controller
         }
 
         if ($entity == 'orders') {
-            // Validate fields
-            $request->validate([
+            // Vérification si un utilisateur existant est sélectionné
+            $isExistingCustomer = $request->filled('customer_email');
+
+            // Validation de base
+            $rules = [
                 'firstname' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users']
-            ], [
-                'firstname.required' => 'Le prénom est requis.',
-                'email.required' => 'L\'email est requis.',
-                'email.email' => 'Le format de l\'email est invalide.',
-                'email.unique' => 'Cet email est déjà utilisé.'
+                'phone'     => ['required', 'string', 'max:45', 'unique:users'],
+                'email'     => ['nullable', 'string', 'email', 'max:255'],
+            ];
+
+            if (!$isExistingCustomer) {
+                $rules['email'][] = 'unique:users';
+            }
+
+            $request->validate($rules, [
+                'firstname.required' => 'Le prénom est obligatoire.',
+                'email.email'        => 'Le format de l\'email est invalide.',
+                'email.unique'       => 'Cet email est déjà utilisé.',
+                'phone.required'     => 'Le n° de téléphone est obligatoire.',
             ]);
 
             DB::beginTransaction();
 
             try {
-                // Search existing customer (by email)
-                $customer = User::where('email', $request->customer_email)->first();
+                // Rechercher le client existant
+                $customer = null;
 
-                // If no client is found, we create it
+                if ($isExistingCustomer) {
+                    $customer = User::where('email', $request->customer_email)->first();
+                }
+
+                // Si le client n'existe pas, on le crée
                 if (!$customer) {
                     $random_int_token = (string) random_int(1000000, 9999999);
                     $random_string_password = (string) Str::random();
 
                     $customer = User::create([
                         'firstname' => $request->firstname,
-                        'lastname' => $request->lastname,
-                        'email' => $request->email,
-                        'phone' => $request->phone,
-                        'password' => Hash::make($random_string_password),
+                        'lastname'  => $request->lastname,
+                        'email'     => $request->email,
+                        'phone'     => $request->phone,
+                        'password'  => Hash::make($random_string_password),
                     ]);
 
                     PasswordReset::create([
-                        'email' => $request->email,
-                        'phone' => $request->phone,
-                        'token' => $random_int_token,
+                        'email'           => $request->email,
+                        'phone'           => $request->phone,
+                        'token'           => $random_int_token,
                         'former_password' => $random_string_password
                     ]);
 
-                    $customer->roles()->attach([$request->role_id]);
+                    // Rôle client
+                    $customer_role = Role::firstOrCreate(
+                        ['role_name' => 'Client'],
+                        ['role_description' => 'Personne ou entreprise louant des panneaux']
+                    );
 
-                    if (isset($request->image_64)) {
-                        // $extension = explode('/', explode(':', substr($request->image_64, 0, strpos($request->image_64, ';')))[1])[1];
+                    $customer->roles()->attach($customer_role->id);
+
+                    // Traitement de l'image
+                    if ($request->filled('image_64')) {
                         $replace = substr($request->image_64, 0, strpos($request->image_64, ',') + 1);
-                        // Find substring from replace here eg: data:image/png;base64,
-                        $image = str_replace($replace, '', $request->image_64);
-                        $image = str_replace(' ', '+', $image);
-                        // Create image URL
+                        $image = str_replace([$replace, ' '], ['', '+'], $request->image_64);
                         $image_path = 'images/users/' . $customer->id . '/avatar/' . Str::random(50) . '.png';
 
-                        // Upload image
                         Storage::disk('public')->put($image_path, base64_decode($image));
 
                         $customer->update([
@@ -866,51 +907,47 @@ class DashboardController extends Controller
                     }
                 }
 
-                // Cart creation
+                // Création du panier
                 $cart = Cart::create([
-                    'user_id' => $customer->id,
                     'payment_code' => Str::random(10),
-                    'is_paid' => 0,
+                    'is_paid'      => 0,
                 ]);
 
-                // Retrieving panel IDs and quantities
-                $panels_ids = $request->panels_ids;
-                $quantities = $request->quantities;
+                if (!$request->filled('panels_ids') || !is_array($request->panels_ids)) {
+                    DB::rollBack();
 
-                foreach ($panels_ids as $index => $panel_id) {
-                    $quantity = $quantities[$index];
+                    return response()->json(['status' => 'error', 'message' => 'Veuillez choisir au moins un panneau.'], 422);
+                }
+
+                foreach ($request->panels_ids as $panel_id) {
                     $panel = Panel::find($panel_id);
 
                     if (!$panel || !$panel->is_available) {
-                        continue;
+                        DB::rollBack();
+
+                        return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
                     }
 
-                    // Check if the requested quantity is available
-                    if ($panel->quantity < $quantity) {
-                        return response()->json(['status' => 'error', 'message' => 'Quantité insuffisante pour le panneau de dimension « ' . $panel->dimensions . ' » et de format « ' . $panel->format . ' »']);
-                    }
+                    CustomerOrder::create([
+                        'panel_id'           => $panel->id,
+                        'user_id'            => $customer->id,
+                        'cart_id'            => $cart->id,
+                        'price_at_that_time' => $panel->price,
+                    ]);
 
-                    // Attach to cart with quantity
-                    $cart->panels()->attach($panel_id, ['quantity' => $quantity, 'is_valid' => 1]);
-
-                    // Decrement panel stock
-                    $panel->quantity -= $quantity;
-
-                    // If the quantity reaches zero, make the panel unavailable
-                    if ($panel->quantity <= 0) {
-                        $panel->is_available = 0;
-                    }
-
-                    $panel->save(); // Save changes
+                    $panel->update(['is_available' => 0]);
                 }
 
-                // Accountancy data added
                 Accountancy::create(['cart_id' => $cart->id]);
                 DB::commit();
+
+                return response()->json(['status' => 'success', 'message' => 'Commande ajoutée avec succès.']);
 
             } catch (\Exception $e) {
                 DB::rollBack();
 
+                // Log optionnel
+                Log::error('Erreur panier : ' . $e->getMessage());
                 return response()->json(['status' => 'error', 'message' => 'Erreur lors de la création du panier.']);
             }
         }
@@ -944,16 +981,12 @@ class DashboardController extends Controller
             $rules['format'] = ['nullable', 'string', 'max:65535'];
         }
 
-        if ($request->has('unit_price')) {
-            $rules['unit_price'] = ['nullable', 'numeric', 'between:0,9999999.99'];
+        if ($request->has('price')) {
+            $rules['price'] = ['nullable', 'numeric', 'between:0,9999999.99'];
         }
 
         if ($request->has('location')) {
             $rules['location'] = ['nullable', 'string', 'max:65535'];
-        }
-
-        if ($request->has('quantity')) {
-            $rules['quantity'] = ['nullable', 'integer', 'min:0'];
         }
 
         if ($request->has('is_available')) {
@@ -1011,119 +1044,6 @@ class DashboardController extends Controller
         }
 
         return back()->with('success_message', 'Panneau mis à jour.');
-    }
-
-    /**
-     * POST: Increment/Decrement quantity in the panel/cart
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $entity
-     * @param  int  $id
-     * @throws \Illuminate\Http\RedirectResponse
-     */
-    public function updatePanelQuantity(Request $request, $entity, $id)
-    {
-        $request->validate([
-            'amount' => ['nullable', 'integer', 'min:1'],
-            'operation' => ['required', 'in:inc,dec'],
-            'cart_id' => ['required_if:entity,ordered_panel', 'integer']
-        ]);
-
-        $amount = $request->input('amount', 1);
-        $operation = $request->input('operation');
-
-        /** In-stock panel management **/
-        if ($entity === 'stock_panel') {
-            $panel = Panel::find($id);
-
-            if (!$panel) {
-                return response()->json(['error' => 'Panneau non trouvé.'], 404);
-            }
-
-            if ($operation === 'inc') {
-                $panel->increment('quantity', $amount);
-
-            } elseif ($operation === 'dec') {
-                if ($panel->quantity < $amount) {
-                    return response()->json(['error' => 'Quantité en stock insuffisante.'], 400);
-                }
-
-                $panel->decrement('quantity', $amount);
-            }
-
-            return response()->json([
-                'message' => "Stock mis à jour.",
-                'quantity' => $panel->quantity
-            ]);
-        }
-
-        /** Managing an order (cart_panel) **/
-        if ($entity === 'ordered_panel') {
-            $cart = Cart::with(['panels' => function ($query) use ($id) {
-                                $query->where('panels.id', $id);
-                            }])->find($request->cart_id);
-
-            if (!$cart) {
-                return response()->json(['error' => 'Panier non trouvé.'], 404);
-            }
-
-            $panel = $cart->panels->first();
-
-            if (!$panel) {
-                return response()->json(['error' => 'Panneau non présent dans la commande.'], 404);
-            }
-
-            $pivot = $panel->pivot;
-            $orderedQty = $pivot->quantity;
-            $stockQty = $panel->quantity;
-
-            if ($operation === 'inc') {
-                if ($stockQty < $amount) {
-                    return response()->json([
-                        'error' => "Stock insuffisant. Il reste $stockQty unité(s).",
-                    ], 400);
-                }
-
-                $cart->panels()->updateExistingPivot($panel->id, [
-                    'quantity' => $orderedQty + $amount,
-                    'updated_at' => now(),
-                ]);
-                $panel->decrement('quantity', $amount);
-
-                return response()->json([
-                    'message' => "Quantité commandée augmentée.",
-                    'new_ordered_quantity' => $orderedQty + $amount,
-                    'remaining_stock' => $panel->fresh()->quantity,
-                ]);
-            }
-
-            if ($operation === 'dec') {
-                if ($orderedQty <= $amount) {
-                    $panel->increment('quantity', $orderedQty);
-                    $cart->panels()->detach($panel->id);
-
-                    return response()->json([
-                        'message' => "Commande annulée.",
-                        'new_ordered_quantity' => 0,
-                        'remaining_stock' => $panel->fresh()->quantity,
-                    ]);
-                }
-
-                $cart->panels()->updateExistingPivot($panel->id, [
-                    'quantity' => $orderedQty - $amount,
-                    'updated_at' => now(),
-                ]);
-                $panel->increment('quantity', $amount);
-
-                return response()->json([
-                    'message' => "Quantité commandée réduite.",
-                    'new_ordered_quantity' => $orderedQty - $amount,
-                    'remaining_stock' => $panel->fresh()->quantity,
-                ]);
-            }
-        }
-
-        return response()->json(['error' => 'Entité inconnue.'], 400);
     }
 
     /**
@@ -1310,7 +1230,7 @@ class DashboardController extends Controller
      */
     public function updateUserEntity(Request $request, $entity, $id)
     {
-        if (!in_array($entity, ['roles', 'orders', 'cart'])) {
+        if (!in_array($entity, ['roles', 'cart'])) {
             return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
         }
 
@@ -1343,64 +1263,6 @@ class DashboardController extends Controller
             return back()->with('success_message', 'Vos informations ont bien été mises à jour.');
         }
 
-        if ($entity == 'orders') {
-            $cart = Cart::with('panels')->find($id);
-
-            if (!$cart) {
-                return back()->with('error_message', 'Panier non trouvé.');
-            }
-
-            $panels_ids = $request->panels_ids;
-            $quantities = $request->quantities;
-
-            DB::beginTransaction();
-
-            try {
-                foreach ($panels_ids as $index => $panel_id) {
-                    $newQuantity = (int) $quantities[$index];
-                    $panel = Panel::find($panel_id);
-
-                    if (!$panel || !$panel->is_available) {
-                        continue;
-                    }
-
-                    $pivot = $cart->panels->firstWhere('id', $panel_id);
-                    $oldQuantity = $pivot ? (int) $pivot->pivot->quantity : 0;
-                    $delta = $newQuantity - $oldQuantity;
-
-                    // If we request more than the available stock
-                    if ($delta > 0 && $panel->quantity < $delta) {
-                        return back()->with('error_message', "Stock insuffisant pour le panneau {$panel->dimensions}. Disponible : {$panel->quantity}, demandé en plus : {$delta}");
-                    }
-
-                    // Stock adjustment
-                    $panel->quantity -= $delta;
-
-                    // Availability update
-                    if ($panel->quantity <= 0) {
-                        $panel->is_available = 0;
-                        $panel->quantity = 0;
-                    }
-
-                    $panel->save();
-
-                    // Update or add in the pivot
-                    $cart->panels()->syncWithoutDetaching([
-                        $panel_id => ['quantity' => $newQuantity, 'is_valid' => 1],
-                    ]);
-                }
-
-                DB::commit();
-
-                return back()->with('success_message', 'Panneaux mis à jour dans le panier.');
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-
-                return back()->with('error_message', 'Erreur lors de la mise à jour : ' . $e->getMessage());
-            }
-        }
-
         if ($entity == 'cart') {
             $cart = Cart::find($id);
 
@@ -1421,11 +1283,6 @@ class DashboardController extends Controller
                 } else {
                     $updates['payment_code'] = null;
                 }
-            }
-
-            if ($request->filled('user_id')) {
-                $updates['user_id'] = $request->user_id;
-                $message = 'Mise à jour terminée.';
             }
 
             if (!empty($updates)) {

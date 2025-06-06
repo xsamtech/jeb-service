@@ -32,7 +32,6 @@
                                                 <th>Dimension</th>
                                                 <th>Format</th>
                                                 <th>Prix unitaire</th>
-                                                <th>Quantité en stock</th>
 @if (!request()->has('is_available'))
                                                 <th>Est disponible</th>
 @endif
@@ -46,8 +45,7 @@
                                                 <td class="align-middle" style="max-width: 12rem; background-color: #bdf">{{ $panel['location'] }}</td>
                                                 <td class="align-middle text-center">{{ $panel['dimensions'] }}</td>
                                                 <td class="align-middle text-center">{{ $panel['format'] }}</td>
-                                                <td class="align-middle text-center">{{ $panel['unit_price'] }}</td>
-                                                <td class="align-middle text-center">{{ $panel['quantity'] }}</td>
+                                                <td class="align-middle text-center">{{ $panel['price'] }}</td>
     @if (!request()->has('is_available'))
                                                 <td class="align-middle text-center">
                                                     <h6>

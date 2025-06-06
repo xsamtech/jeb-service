@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @author Xanders
  * @see https://team.xsamtech.com/xanderssamoth
  */
-class Cart extends JsonResource
+class CustomerOrder extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,16 +17,16 @@ class Cart extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray(Request $request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'payment_code' => $this->payment_code,
-            'is_paid' => $this->is_paid,
-            'total_amount' => formatDecimalNumber($this->customer_orders->sum('price_at_that_time')) . '$',
-            'orders' => CustomerOrder::collection($this->customer_orders),
+            'price_at_that_time' => $this->price_at_that_time,
+            'panel' => Panel::make($this->panel),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s')
+            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'user_id' => $this->user_id,
+            'cart_id' => $this->cart_id
         ];
     }
 }

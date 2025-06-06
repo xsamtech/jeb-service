@@ -37,8 +37,13 @@
             textarea { resize: none; }
             th, td, .form-label { font-size: 14px }
             .user-account { text-decoration: none; color: #000; }
-            .navbar-toggler { position: absolute; right: 1rem; z-index: 9999; }
+            .navbar-toggler { position: absolute; right: 1rem; z-index: 9997; }
+            .modal { z-index: 9998; }
+            .alert { z-index: 9999; }
             .navbar-toggler:focus { box-shadow: none!important; }
+            .btn-check + label i { display: none; /* Caché par défaut */ }
+            .btn-check:checked + label i { display: inline; /* Visible quand coché */ }
+            #availablePanels.is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220,53,69,.25); }
             @media (min-width: 992px) {
                 #navbarLinksContent { position: relative; top: -1rem; }
                 .user-account { position: relative; top: -0.8rem; }
@@ -438,7 +443,7 @@
                     document.getElementById('firstname').value = target.dataset.firstname;
                     document.getElementById('lastname').value = target.dataset.lastname;
                     document.getElementById('email').value = target.dataset.email;
-                    document.getElementById('customer_email_hidden').value = target.dataset.email;
+                    document.getElementById('customer_phone_hidden').value = target.dataset.phone;
                     document.getElementById('phone').value = target.dataset.phone;
                     // Changer l'image de profil
                     document.querySelector('.other-user-image').src = target.dataset.avatar;
@@ -491,23 +496,56 @@
                             // Just reload the table
                             $('#dataList').load(location.href + ' #dataList > *');
                             // Reset the form
-                            $('#addUserForm')[0].reset();
+                            $('#addOrderForm')[0].reset();
                             // Remove error classes (just in case)
-                            $('#addUserForm .is-invalid').removeClass('is-invalid');
-                            $('#addUserForm .invalid-feedback').remove();
+                            $('#addOrderForm .is-invalid').removeClass('is-invalid');
+                            $('#addOrderForm .invalid-feedback').remove();
                         },
                         error: function (xhr) {
                             $('#ajax-loader').addClass('d-none');
 
                             if (xhr.status === 422) {
-                                const errors = xhr.responseJSON.errors;
+                                const response = xhr.responseJSON;
 
-                                for (const [field, messages] of Object.entries(errors)) {
-                                    const input = $(`[name="${field}"]`);
+                                if (response && response.errors) {
+                                    const errors = response.errors;
 
-                                    input.addClass('is-invalid');
-                                    input.after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+                                    for (const [field, messages] of Object.entries(errors)) {
+                                        if (field === 'panels_ids') {
+                                            $('#availablePanels').removeClass('is-invalid');
+                                            $('#availablePanels').next('.invalid-feedback').remove();
+
+                                            $('#availablePanels').addClass('is-invalid');
+                                            $('#availablePanels').after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+
+                                        } else {
+                                            const input = $(`[name="${field}"]`);
+
+                                            if (input.length > 0) {
+                                                input.addClass('is-invalid');
+                                                input.after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+                                            }
+                                        }
+                                    }
+
+                                } else {
+                                    // Pas de champs spécifiques ? Afficher le message général
+                                    if (response.message) {
+                                        // Supprime d'abord un ancien message, s'il existe
+                                        $('#availablePanels').removeClass('is-invalid');
+                                        $('#availablePanels').next('.invalid-feedback').remove();
+
+                                        // Ajoute la classe d'erreur visuelle
+                                        $('#availablePanels').addClass('is-invalid');
+
+                                        // Affiche le message juste après la div
+                                        $('#availablePanels').after(`<div class="invalid-feedback d-block">${response.message}</div>`);
+
+                                    } else {
+                                        showAlert(false, 'Une erreur de validation est survenue.');
+                                    }
                                 }
+
 
                             } else {
                                 // Close the modal

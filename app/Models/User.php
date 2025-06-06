@@ -65,66 +65,33 @@ class User extends Authenticatable
 
     /**
      * MANY-TO-ONE
-     * Several carts for a user
+     * Several customer_orders for a user
      */
-    public function carts(): HasMany
+    public function customer_orders(): HasMany
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasMany(CustomerOrder::class);
     }
 
     /**
-     * All unpaid panels
+     * Unpaid orders
      */
-    public function unpaidPanels()
+    public function unpaidOrders()
     {
-        $unpaid_cart = $this->carts()->where('is_paid', 0)->latest()->first();
-
-        if (!$unpaid_cart) {
-            return collect();
-        }
-
-        return $unpaid_cart->panels()->orderByPivot('created_at', 'desc')->get();
+        return $this->hasMany(CustomerOrder::class)->whereHas('cart', fn($q) => $q->where('is_paid', 0));
     }
 
     /**
-     * All paid panels
+     * Unpaid cart
      */
-    public function paidPanels()
+    public function unpaidCart()
     {
-        $paid_cart = $this->carts()->where('is_paid', 1)->latest()->first();
-
-        if (!$paid_cart) {
-            return collect();
-        }
-
-        return $paid_cart->panels()->orderByPivot('created_at', 'desc')->get();
-    }
-
-    /**
-     * Total unpaid panels price
-     */
-    public function totalUnpaidPanels()
-    {
-        $unpaid_cart = $this->carts()->where('is_paid', 0)->latest()->first();
-
-        if (!$unpaid_cart) {
-            return 0;
-        }
-
-        return $unpaid_cart->totalPanelsPrices();
-    }
-
-    /**
-     * Total paid panels price
-     */
-    public function totalPaidPanels()
-    {
-        $paid_cart = $this->carts()->where('is_paid', 1)->latest()->first();
-
-        if (!$paid_cart) {
-            return 0;
-        }
-
-        return $paid_cart->totalPanelsPrices();
+        return $this->hasOneThrough(
+            Cart::class,
+            CustomerOrder::class,
+            'user_id',   // Foreign Key on "CustomerOrder"
+            'id',        // Foreign Key on "Cart"
+            'id',        // Locale key on "User"
+            'cart_id'    // Locale key on "CustomerOrder"
+        )->where('is_paid', 0);
     }
 }

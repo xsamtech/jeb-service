@@ -2,10 +2,6 @@
 
 @section('app-content')
 
-    @php
-        $currentMonth = \Carbon\Carbon::now()->format('Y-m');
-        $currentSummary = $balance_summary->firstWhere('period', $currentMonth);
-    @endphp
             <!-- Title Section-->
             <section class="pb-3">
                 <div class="container px-sm-5">
@@ -35,7 +31,7 @@
                                 <i class="bi bi-piggy-bank display-1 text-white"></i>
                                 <div class="ms-4">
                                     <h3 class="text-white fw-light mt-2">Caisse</h3>
-                                    <h5 class="text-white">{{ ($currentSummary ? number_format($currentSummary['balance'] * (1 - 0.1 - 0.16), 2) : '0') . ' $' }}</h5>
+                                    <h5 class="text-white">{{ number_format(data_get($balance_summary, 'leftover_money', 0), 2) . ' $' }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.statistics') }}" class="stretched-link"></a>
                             </div>
@@ -57,7 +53,7 @@
                                 <i class="bi bi-coin display-1 text-white"></i>
                                 <div class="ms-4">
                                     <h3 class="text-white fw-light mt-2">Dépenses du mois</h3>
-                                    <h5 class="text-white">{{ ($currentSummary ? number_format($monthly_expenses) : $monthly_expenses) . ' $' }}</h5>
+                                    <h5 class="text-white">{{ number_format(data_get($balance_summary, 'total_expenses', 0), 2) . ' $' }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.expenses') }}" class="stretched-link"></a>
                             </div>
@@ -78,33 +74,33 @@
                                     <table class="table table-striped">
                                         <tbody>
                                             <tr>
-                                                <th scope="row">Total des actifs</th>
+                                                <th scope="row">Total des gains</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($currentSummary['total_assets'], 2) }} $
+                                                    {{ number_format($balance_summary['total_earnings'], 2) }} $
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th scope="row">Total des passifs</th>
+                                                <th scope="row">Total des dépenses</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($currentSummary['total_liabilities'], 2) }} $
+                                                    {{ number_format($balance_summary['total_expenses'], 2) }} $
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">Dîme (10%)</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($currentSummary['balance'] * 0.1, 2) }} $
+                                                    {{ number_format($balance_summary['tithe'] * 0.1, 2) }} $
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">TVA (16%)</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($currentSummary['balance'] * 0.16, 2) }} $
+                                                    {{ number_format($balance_summary['vat'] * 0.16, 2) }} $
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">Reste à la caisse</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($currentSummary['balance'] * (1 - 0.1 - 0.16), 2) }} $
+                                                    {{ number_format($balance_summary['leftover_money'] * (1 - 0.1 - 0.16), 2) }} $
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -127,12 +123,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const chart = new ApexCharts(document.querySelector("#reportsChart"), {
         series: [
             {
-                name: 'Actifs',
-                data: @json($chartAssets),
+                name: 'Gains',
+                data: @json($chartEarnings),
             },
             {
-                name: 'Passifs',
-                data: @json($chartLiabilities),
+                name: 'Dépenses',
+                data: @json($chartExpenses),
             },
             {
                 name: 'Panneaux',

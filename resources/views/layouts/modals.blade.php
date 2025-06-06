@@ -151,16 +151,16 @@
                         </div>
                         <form id="{{ $entity == 'orders' ? 'addOrderForm' : 'addRoleForm' }}" action="{{ route('dashboard.users.entity', ['entity' => $entity]) }}" method="POST">
         @csrf
-                            <input type="hidden" id="customer_email_hidden" name="customer_email">
+                            <input type="hidden" id="customer_phone_hidden" name="customer_phone">
 
                             <div class="row g-2">
     @if ($entity == 'orders')
                                 <!-- User data -->
                                 <div class="col-lg-5">
                                     <div class="card card-body">
-                                        <div class="d-flex justify-content-between position-relative" style="z-index: 999;">
+                                        <div class="d-flex{{ $count_customers > 0 ? ' justify-content-between' : ' justify-content-center text-center' }} position-relative" style="z-index: 999;">
                                             <p class="card-text fw-bold">Identité du client</p>
-                                            <button type="button" class="btn btn-outline-dark" title="Rechercher un client existant" data-bs-toggle="modal" data-bs-target="#searchUserModal"><i class="bi bi-search"></i></button>
+                                            <button type="button" class="btn btn-outline-dark{{ $count_customers > 0 ? '' : ' d-none' }}" title="Rechercher un client existant" data-bs-toggle="modal" data-bs-target="#searchUserModal"><i class="bi bi-search"></i></button>
                                         </div>
                                         <!-- Profile -->
                                         <div class="row g-3">
@@ -191,7 +191,7 @@
                                         <!-- E-mail -->
                                         <div class="mb-2">
                                             <label for="email" class="form-label fw-bold visually-hidden">E-mail</label>
-                                            <input type="email" name="email" class="form-control" id="email" placeholder="E-mail">
+                                            <input type="text" name="email" class="form-control" id="email" placeholder="E-mail">
                                         </div>
 
                                         <!-- Phone -->
@@ -203,7 +203,29 @@
                                 </div>
 
                                 <!-- Orders data -->
-                                <div class="col-lg-7">
+                                <div class="col-lg-7 mt-sm-0 mt-3">
+                                    <small class="small mb-2 d-block text-center"><i class="bi bi-info-circle me-2"></i>Clic sur panneau pour sélectionner</small>
+                                    <div id="availablePanels" class="card card-body border mb-3" style="max-height: 390px; overflow: auto;">
+        @forelse ($available_panels as $panel)
+                                        <input type="checkbox" class="btn-check" id="panelCheckbox{{ $panel['id'] }}" name="panels_ids[]" value="{{ $panel['id'] }}" autocomplete="off">
+
+                                        <label class="btn btn-light mb-3 border text-start position-relative" for="panelCheckbox{{ $panel['id'] }}">
+                                            <div class="card card-body border-0 bg-transparent p-0">
+                                                <p class="card-text mb-1">{{ $panel['location'] }}</p>
+                                                <p class="mb-2">
+                                                    <span class="badge text-bg-dark fw-normal">{{ $panel['dimensions'] }}</span>
+                                                </p>
+                                                <small class="small mb-0"><u>Format</u> : {{ $panel['format'] }}</small><br>
+                                                <small class="small"><u>Prix</u> : {{ $panel['price'] }}</small>
+                                            </div>
+
+                                            <!-- This icon will only be displayed when the checkbox is checked -->
+                                            <i class="bi bi-check display-6 text-white position-absolute bottom-0 end-0"></i>
+                                        </label>
+        @empty
+                                        <h1 class="text-center fst-italic">Il n'y a pas de panneau disponible</h1>
+        @endforelse
+                                    </div>
                                 </div>
     @else
                                 <!-- Role name -->
@@ -320,22 +342,16 @@
                                     <input type="text" name="format" class="form-control" id="format">
                                 </div>
 
-                                <!-- Unit price -->
+                                <!-- Price -->
                                 <div class="col-sm-6">
-                                    <label for="unit_price" class="form-label fw-bold">Prix unitaire</label>
-                                    <input type="number" step="0.01" name="unit_price" class="form-control" id="unit_price">
+                                    <label for="price" class="form-label fw-bold">Prix</label>
+                                    <input type="number" step="0.01" name="price" class="form-control" id="price">
                                 </div>
 
                                 <!-- Location -->
                                 <div class="col-sm-6">
                                     <label for="location" class="form-label fw-bold">Site / Emplacement</label>
                                     <textarea class="form-control" name="location" id="location"></textarea>
-                                </div>
-
-                                <!-- Quantity -->
-                                <div class="col-sm-6">
-                                    <label for="quantity" class="form-label fw-bold">Quantité actuelle en stock</label>
-                                    <input type="number" step="1" name="quantity" class="form-control" id="quantity">
                                 </div>
                             </div>
 
