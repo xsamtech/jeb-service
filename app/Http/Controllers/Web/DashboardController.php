@@ -734,7 +734,6 @@ class DashboardController extends Controller
         $request->validate([
             'firstname' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['required', 'string', 'phone', 'max:45', 'unique:users'],
             'username' => ['string', 'username', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
