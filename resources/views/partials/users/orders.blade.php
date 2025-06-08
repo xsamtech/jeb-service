@@ -10,7 +10,7 @@
                                                 <th></th>
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
-                                                <th>Commandes</th>
+                                                <th>Locations</th>
                                                 <th></th>
                                             </tr>
                                         </thead>

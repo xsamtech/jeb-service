@@ -21,7 +21,7 @@
                             </a>
     @else
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'roles']) }}" class="btn btn-sm btn-primary pb-sm-1">Rôles</a>
-                            <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-secondary pb-sm-1 text-white">Commandes</a>
+                            <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-secondary pb-sm-1 text-white">Locations</a>
                             <br class="d-sm-none d-block">
                             <button class="btn btn-sm btn-outline-dark mt-lg-0 mt-1 pb-sm-1" data-bs-toggle="modal" data-bs-target="#userModal">Ajouter un administrateur</button>
     @endif

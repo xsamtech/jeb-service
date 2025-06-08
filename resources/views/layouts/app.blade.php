@@ -124,7 +124,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link{{ Route::is('dashboard.users.entity') && $entity == 'orders' ? ' active' : '' }}" role="button" href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}">
-                                    Commandes
+                                    Locations
                                 </a>
                             </li>
                             <li class="nav-item">

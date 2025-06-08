@@ -160,7 +160,7 @@ class DashboardController extends Controller
             $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
 
             // page title
-            $entity_title = 'Commandes des clients';
+            $entity_title = 'Locations des clients';
 
             return view('users', [
                 'roles' => $roles,
@@ -320,7 +320,7 @@ class DashboardController extends Controller
             $cart = Cart::find($id);
 
             if (!$cart) {
-                return redirect(RouteServiceProvider::HOME)->with('error_message', 'Commandes non trouvées.');
+                return redirect(RouteServiceProvider::HOME)->with('error_message', 'Locations non trouvées.');
             }
 
             return view('users', [
@@ -488,7 +488,7 @@ class DashboardController extends Controller
             $cart = Cart::find('id');
 
             if (!$cart) {
-                return back()->with('error_message', 'Commandes non trouvées.');
+                return back()->with('error_message', 'Locations non trouvées.');
             }
 
             $accountancy = Accountancy::where('cart_id', $cart->id)->first();
@@ -497,7 +497,7 @@ class DashboardController extends Controller
             $accountancy->delete();
             $cart->delete();
 
-            return redirect('/users/orders')->with('success_message', 'Commandes supprimée.');
+            return redirect('/users/orders')->with('success_message', 'Locations supprimée.');
         }
     }
 
@@ -1277,7 +1277,7 @@ class DashboardController extends Controller
 
                 if ($request->is_paid == 1) {
                     $updates['payment_code'] = (string) random_int(1000000, 9999999);
-                    $message = 'Commandes payées.';
+                    $message = 'Locations payées.';
 
                 } else {
                     $updates['payment_code'] = null;
