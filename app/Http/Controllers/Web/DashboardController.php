@@ -326,7 +326,7 @@ class DashboardController extends Controller
             return view('users', [
                 'selected_cart' => new ResourcesCart($cart),
                 'entity' => $entity,
-                'entity_title' => 'Commande de ' . $cart->user->firstname
+                'entity_title' => 'Location de ' . $cart->user->firstname
             ]);
         }
     }
@@ -456,14 +456,14 @@ class DashboardController extends Controller
             $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->first();
 
             if (!$cart) {
-                return back()->with('error_message', 'Commande de panneau non trouvée.');
+                return back()->with('error_message', 'Location de panneau non trouvée.');
             }
 
             // Get the ordered panel with the pivot relationship
             $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['panel_id', $id]])->first();
 
             if (!$customer_order) {
-                return back()->with('error_message', 'Panneau non trouvé dans la commande.');
+                return back()->with('error_message', 'Panneau non trouvé dans la location.');
             }
 
             // Retrieve the panel in stock
@@ -480,7 +480,7 @@ class DashboardController extends Controller
 
             $customer_order->delete();
 
-            return redirect('/users/' . $entity . '/' . $cart->id)->with('success_message', 'Panneau retiré de la commande.');
+            return redirect('/users/' . $entity . '/' . $cart->id)->with('success_message', 'Panneau retiré de la location.');
         }
 
         if ($entity == 'cart') {
@@ -940,7 +940,7 @@ class DashboardController extends Controller
                 Accountancy::create(['cart_id' => $cart->id]);
                 DB::commit();
 
-                return response()->json(['status' => 'success', 'message' => 'Commande ajoutée avec succès.']);
+                return response()->json(['status' => 'success', 'message' => 'Location ajoutée avec succès.']);
 
             } catch (\Exception $e) {
                 DB::rollBack();

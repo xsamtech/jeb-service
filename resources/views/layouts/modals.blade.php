@@ -142,7 +142,7 @@
             <div class="modal-dialog{{ $entity == 'orders' ? ' modal-lg' : '' }}" role="document">
                 <div class="modal-content">
                     <div class="d-block modal-header bg-light text-center">
-                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#userEntityModal">{{ $entity == 'orders' ? 'Ajouter une commande' : 'Ajouter un rôle' }}</h4>
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#userEntityModal">{{ $entity == 'orders' ? 'Ajouter une location' : 'Ajouter un rôle' }}</h4>
                         <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">

@@ -491,7 +491,7 @@
                             $('#userEntityModal').modal('hide');
 
                             // Success alert
-                            showAlert(true, 'Commande ajoutée avec succès.');
+                            showAlert(true, 'Location ajoutée avec succès.');
 
                             // Just reload the table
                             $('#dataList').load(location.href + ' #dataList > *');
