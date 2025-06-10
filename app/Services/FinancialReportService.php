@@ -84,9 +84,9 @@ class FinancialReportService
         $inTheBox = $cartInflow - $expenseOutflow;
 
         // 5. VAT, tithe, remainder calculations
-        $leftoverMoney = $inTheBox / (1 + 0.16 + 0.10);
-        $vat = $leftoverMoney * 0.16;
-        $tithe = $inTheBox * 0.10;
+        // $leftoverMoney = $inTheBox / (1 + 0.16 + 0.10);
+        // $vat = $leftoverMoney * 0.16;
+        // $tithe = $leftoverMoney * 0.10;
 
         return [
             'period' => ucfirst($periodType),
@@ -95,9 +95,9 @@ class FinancialReportService
             'total_earnings' => round($totalEarnings, 2),
             'total_expenses' => round($totalExpenses, 2),
             'in_the_box' => round($inTheBox, 2),
-            'vat' => round($vat, 2),
-            'tithe' => round($tithe, 2),
-            'leftover_money' => round($leftoverMoney, 2),
+            // 'vat' => round($vat, 2),
+            // 'tithe' => round($tithe, 2),
+            // 'leftover_money' => round($leftoverMoney, 2),
         ];
     }
 }

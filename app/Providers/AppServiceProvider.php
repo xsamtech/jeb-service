@@ -68,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
                 $panels[] = $dayPanels;
             }
 
-            // 📈 Résumé du mois (gains, dépenses, TVA, etc.)
+            // 📈 Résumé du mois
             $balance_summary = $reportService->getFinancialReport('monthly');
 
             // 🔁 Injection dans la vue

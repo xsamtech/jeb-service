@@ -88,7 +88,7 @@
                                             <tr>
                                                 <th scope="row">Reste à la caisse</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ $balance_summary['leftover_money'] * (1 - 0.1 - 0.16) }} $
+                                                    {{ $balance_summary['in_the_box'] }} $
                                                 </td>
                                             </tr>
                                         </tbody>
