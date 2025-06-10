@@ -88,13 +88,7 @@
                                             <tr>
                                                 <th scope="row">Dîme (10%)</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['tithe'] * 0.1, 2) }} $
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">TVA (16%)</th>
-                                                <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['vat'] * 0.16, 2) }} $
+                                                    {{ number_format($balance_summary['tithe'], 2) }} $
                                                 </td>
                                             </tr>
                                             <tr>
