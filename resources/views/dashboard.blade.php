@@ -76,25 +76,19 @@
                                             <tr>
                                                 <th scope="row">Total des gains</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['total_earnings'], 2) }} $
+                                                    {{ $balance_summary['total_earnings'] }} $
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">Total des dépenses</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['total_expenses'], 2) }} $
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">Dîme (10%)</th>
-                                                <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['tithe'], 2) }} $
+                                                    {{ $balance_summary['total_expenses'] }} $
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th scope="row">Reste à la caisse</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ number_format($balance_summary['leftover_money'] * (1 - 0.1 - 0.16), 2) }} $
+                                                    {{ $balance_summary['leftover_money'] * (1 - 0.1 - 0.16) }} $
                                                 </td>
                                             </tr>
                                         </tbody>
