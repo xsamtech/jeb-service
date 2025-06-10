@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             // 📈 Résumé du mois (gains, dépenses, TVA, etc.)
-            $balance_summary = $reportService->getFinancialReport('weekly');
+            $balance_summary = $reportService->getFinancialReport('monthly');
 
             // 🔁 Injection dans la vue
             $view->with('all_users', ResourcesUser::collection(User::all()));
