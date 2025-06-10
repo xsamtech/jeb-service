@@ -86,7 +86,7 @@ class FinancialReportService
         // 5. VAT, tithe, remainder calculations
         $leftoverMoney = $inTheBox / (1 + 0.16 + 0.10);
         $vat = $leftoverMoney * 0.16;
-        $tithe = $leftoverMoney * 0.10;
+        $tithe = $inTheBox * 0.10;
 
         return [
             'period' => ucfirst($periodType),
