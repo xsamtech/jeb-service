@@ -31,7 +31,7 @@
                                 <i class="bi bi-piggy-bank display-1 text-white"></i>
                                 <div class="ms-4">
                                     <h3 class="text-white fw-light mt-2">Caisse</h3>
-                                    <h5 class="text-white">{{ number_format(data_get($balance_summary, 'leftover_money', 0), 2) . ' $' }}</h5>
+                                    <h5 class="text-white">{{ data_get($balance_summary, 'total_earnings', 0) . ' $' }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.statistics') }}" class="stretched-link"></a>
                             </div>
@@ -53,7 +53,7 @@
                                 <i class="bi bi-coin display-1 text-white"></i>
                                 <div class="ms-4">
                                     <h3 class="text-white fw-light mt-2">Dépenses du mois</h3>
-                                    <h5 class="text-white">{{ number_format(data_get($balance_summary, 'total_expenses', 0), 2) . ' $' }}</h5>
+                                    <h5 class="text-white">{{ data_get($balance_summary, 'total_expenses', 0) . ' $' }}</h5>
                                 </div>
                                 <a href="{{ route('dashboard.expenses') }}" class="stretched-link"></a>
                             </div>
