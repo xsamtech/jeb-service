@@ -403,7 +403,8 @@
                                 <!-- Add order -->
                                 <div class="col-sm-6">
                                     <input type="hidden" id="order_id">
-                                    <button id="openOrderModal" class="btn btn-dark w-100">Ajouter une commande</button>
+                                    <label class="form-label fw-bold">Associer à une location</label>
+                                    <button id="openOrderModal" class="btn btn-sm btn-light border w-100">Voir la liste</button>
                                 </div>
 
                                 <div class="col-12">
