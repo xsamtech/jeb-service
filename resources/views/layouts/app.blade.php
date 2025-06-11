@@ -659,13 +659,10 @@
                         data.orders.forEach(order => {
                             const orderItem = document.createElement('div');
 
-                            orderItem.classList.add('order-item');
-                            orderItem.classList.add('btn');
-                            orderItem.classList.add('btn-light');
-                            orderItem.classList.add('mb-2');
+                            orderItem.classList.add('order-item', 'btn', 'btn-light', 'mb-2', 'w-100');
                             orderItem.setAttribute('role', 'button');
                             orderItem.dataset.id = order.id;
-                            orderItem.innerHTML = `Commande ID: ${order.id} - Emplacements: ${order.panel.location}`;
+                            orderItem.innerHTML = order.panel.location;
                             orderList.appendChild(orderItem);
 
                             // Ajouter un event listener pour chaque commande
@@ -682,9 +679,9 @@
                         for (let i = 1; i <= data.total_pages; i++) {
                             const pageButton = document.createElement('button');
 
-                            pageButton.classList.add('btn', 'btn-link');
+                            pageButton.classList.add('btn', 'btn-success');
 
-                            pageButton.textContent = i;
+                            pageButton.textContent = 'Charger plus';
 
                             pageButton.addEventListener('click', function() {
                                 loadOrders(i);
