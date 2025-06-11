@@ -640,8 +640,6 @@
                 // Ouverture du modal Order
                 document.getElementById('openOrdersModal').addEventListener('click', function() {
                     loadOrders(1); // Charger la première page des commandes
-                    document.getElementById('expenseModal').style.display = 'none';
-                    document.getElementById('ordersListModal').style.display = 'block';
                 });
 
                 // Gestion du clic sur une commande dans le modal Orders
@@ -655,11 +653,11 @@
 
                 // Fonction pour charger la liste des commandes
                 function loadOrders(page) {
-                    fetch(`/orders?page=${page}`)
+                    fetch(`${currentHost}/orders?page=${page}`)
                     .then(response => response.json())
                     .then(data => {
                         // Mettre à jour la liste des commandes
-                        const orderList = document.getElementById('orderList');
+                        const orderList = document.getElementById('ordersList');
 
                         orderList.innerHTML = ''; // Réinitialiser la liste
 
@@ -700,8 +698,8 @@
                         document.getElementById('order_id').value = order.id;
 
                         // Fermer le modal Order et ouvrir le modal Expense
-                        document.getElementById('ordersList').style.display = 'none';
-                        document.getElementById('expenseModal').style.display = 'block';
+                        document.getElementById('ordersListModal').hide();
+                        document.getElementById('expenseModal').show();
                     });
                 }
             });
