@@ -24,7 +24,6 @@
                                                 </td>
                                                 <td class="align-middle">{{ $user['firstname'] . ' ' . $user['lastname'] }}</td>
                                                 <td class="align-middle">{{ $user['phone'] }}</td>
-                                                <td class="align-middle"></td>
                                                 <td class="align-middle">
     @php
         $cart = $user['unpaid_cart']?->resolve();
@@ -44,15 +43,9 @@
                                                     </ul>
     @endif
                                                 </td>
-    @if (!request()->has('status'))
                                                 <td class="align-middle">
-                                                    <h6>
-                                                        <div class="badge text-bg-{{ $user['is_active'] == 1 ? 'success' : 'danger' }} fw-normal">
-                                                            {{ $user['is_active'] == 1 ? 'Activé' : 'Désactivé' }}
-                                                        </div>
-                                                    </h6>
+                                                    
                                                 </td>
-    @endif
                                                 <td class="align-middle">
                                                     <a class="text-decoration-none" href="{{ route('dashboard.user.datas', ['id' => $user['id']]) }}">
                                                         <i class="bi bi-pencil me-2"></i>Modifier
