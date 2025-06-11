@@ -24,6 +24,7 @@
                                                 </td>
                                                 <td class="align-middle">{{ $user['firstname'] . ' ' . $user['lastname'] }}</td>
                                                 <td class="align-middle">{{ $user['phone'] }}</td>
+                                                <td class="align-middle"></td>
                                                 <td class="align-middle">
     @php
         $cart = $user['unpaid_cart']?->resolve();
@@ -66,8 +67,6 @@
                                                             <i class="bi bi-cash me-2"></i>Payer
                                                         </button>
                                                     </form>
-                                                </td>
-                                                <td class="align-middle">
                                                 </td>
                                             </tr>
 @empty
