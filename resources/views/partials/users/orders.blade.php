@@ -8,8 +8,8 @@
                                         <thead>
                                             <tr>
                                                 <th></th>
-                                                <th class="text-center">Noms</th>
-                                                <th class="text-center">Téléphone</th>
+                                                <th>Noms</th>
+                                                <th>Téléphone</th>
                                                 <th class="text-center">Locations</th>
                                                 <th class="text-center">Dépenses sur la location</th>
                                                 <th></th>
@@ -93,7 +93,7 @@
                                             </tr>
 @empty
                                             <tr>
-                                                <td colspan="{{ request()->has('status') ? 5 : 6 }}" class="lead text-center">La liste est encore vide</td>
+                                                <td colspan="6" class="lead text-center">La liste est encore vide</td>
                                             </tr>
 @endforelse
                                         </tbody>
