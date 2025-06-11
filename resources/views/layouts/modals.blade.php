@@ -438,6 +438,7 @@
                         <div id="ordersList">
                             <!-- Liste des commandes paginées ici -->
                         </div>
+                        <div id="pagination"></div>
                     </div>
                 </div>
             </div>

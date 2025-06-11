@@ -637,21 +637,14 @@
 @if (Route::is('dashboard.expenses'))
         <script type="text/javascript">
             document.addEventListener('DOMContentLoaded', function() {
-                // Ouverture du modal Order
-                const ordersListModal = new bootstrap.Modal(document.getElementById('ordersListModal'), { keyboard: false });
+                // Initialisation des modals Bootstrap
+                const ordersListModal = new bootstrap.Modal('#ordersListModal', { keyboard: false });
+                const expenseModal = new bootstrap.Modal('#expenseModal', { keyboard: false });
 
-                ordersListModal.addEventListener('shown.bs.modal', event => {
+                // Ouverture du modal Orders et chargement de la première page des commandes
+                $('#ordersListModal').on('shown.bs.modal', () => {
                     loadOrders(1); // Charger la première page des commandes
-                })
-
-                // Gestion du clic sur une commande dans le modal Orders
-                ordersListModal.addEventListener('hidden.bs.modal', event => {
-                    if (event.target && event.target.classList.contains('order-item')) {
-                        const orderId = event.target.dataset.id;
-
-                        loadExpenseDetails(orderId);
-                    }
-                })
+                });
 
                 // Fonction pour charger la liste des commandes
                 function loadOrders(page) {
@@ -665,20 +658,30 @@
 
                         data.orders.forEach(order => {
                             const orderItem = document.createElement('div');
+
                             orderItem.classList.add('order-item');
                             orderItem.dataset.id = order.id;
-                            orderItem.innerHTML = `Commande ID: ${order.id} - ${order.panel.location}`;
+                            orderItem.innerHTML = `Commande ID: ${order.id} - Emplacements: ${order.panel.location}`;
                             orderList.appendChild(orderItem);
+
+                            // Ajouter un event listener pour chaque commande
+                            orderItem.addEventListener('click', () => {
+                                loadExpenseDetails(order.id);
+                            });
                         });
 
                         // Mettre à jour la pagination
                         const pagination = document.getElementById('pagination');
+
                         pagination.innerHTML = '';
 
                         for (let i = 1; i <= data.total_pages; i++) {
                             const pageButton = document.createElement('button');
 
+                            pageButton.classList.add('btn', 'btn-link');
+
                             pageButton.textContent = i;
+
                             pageButton.addEventListener('click', function() {
                                 loadOrders(i);
                             });
@@ -689,11 +692,6 @@
 
                 // Fonction pour charger les détails de la commande et afficher dans le modal Expense
                 function loadExpenseDetails(orderId) {
-                    const ordersListModal = new bootstrap.Modal(document.getElementById('ordersListModal'), { keyboard: false });
-                    const expenseModal = new bootstrap.Modal(document.getElementById('expenseModal'), { keyboard: false });
-
-                    document.getElementById('selectedOrder').classList.remove('d-none')
-
                     fetch(`${currentHost}/order/${orderId}`)
                     .then(response => response.json())
                     .then(order => {
@@ -701,6 +699,9 @@
                         document.getElementById('created_at').textContent = order.created_at;
                         document.getElementById('user_fullname').textContent = `${order.user.firstname} ${order.user.lastname}`;
                         document.getElementById('order_id').value = order.id;
+
+                        // Afficher les informations de la commande dans le formulaire
+                        document.getElementById('selectedOrder').classList.remove('d-none')
 
                         // Fermer le modal Order et ouvrir le modal Expense
                         ordersListModal.hide();
