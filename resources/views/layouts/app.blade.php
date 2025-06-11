@@ -636,6 +636,76 @@
 
 @if (Route::is('dashboard.expenses'))
         <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Ouverture du modal Order
+                document.getElementById('openOrdersModal').addEventListener('click', function() {
+                    loadOrders(1); // Charger la première page des commandes
+                    document.getElementById('expenseModal').style.display = 'none';
+                    document.getElementById('ordersListModal').style.display = 'block';
+                });
+
+                // Gestion du clic sur une commande dans le modal Orders
+                document.getElementById('ordersListModal').addEventListener('click', function(event) {
+                    if (event.target && event.target.classList.contains('order-item')) {
+                        const orderId = event.target.dataset.id;
+
+                        loadExpenseDetails(orderId);
+                    }
+                });
+
+                // Fonction pour charger la liste des commandes
+                function loadOrders(page) {
+                    fetch(`/orders?page=${page}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mettre à jour la liste des commandes
+                        const orderList = document.getElementById('orderList');
+
+                        orderList.innerHTML = ''; // Réinitialiser la liste
+
+                        data.orders.forEach(order => {
+                            const orderItem = document.createElement('div');
+                            orderItem.classList.add('order-item');
+                            orderItem.dataset.id = order.id;
+                            orderItem.innerHTML = `Commande ID: ${order.id} - ${order.panel.location}`;
+                            orderList.appendChild(orderItem);
+                        });
+
+                        // Mettre à jour la pagination
+                        const pagination = document.getElementById('pagination');
+                        pagination.innerHTML = '';
+
+                        for (let i = 1; i <= data.total_pages; i++) {
+                            const pageButton = document.createElement('button');
+
+                            pageButton.textContent = i;
+                            pageButton.addEventListener('click', function() {
+                                loadOrders(i);
+                            });
+                            pagination.appendChild(pageButton);
+                        }
+                    });
+                }
+
+                // Fonction pour charger les détails de la commande et afficher dans le modal Expense
+                function loadExpenseDetails(orderId) {
+                    document.getElementById('selectedOrder').classList.remove('d-none')
+
+                    fetch(`/order/${orderId}`)
+                    .then(response => response.json())
+                    .then(order => {
+                        document.getElementById('location').textContent = order.panel.location;
+                        document.getElementById('created_at').textContent = order.created_at;
+                        document.getElementById('user_fullname').textContent = `${order.user.firstname} ${order.user.lastname}`;
+                        document.getElementById('order_id').value = order.id;
+
+                        // Fermer le modal Order et ouvrir le modal Expense
+                        document.getElementById('ordersList').style.display = 'none';
+                        document.getElementById('expenseModal').style.display = 'block';
+                    });
+                }
+            });
+
             $(function () {
                 /*
                  * All about USER

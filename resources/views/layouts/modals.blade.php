@@ -404,11 +404,11 @@
                                 <div class="col-sm-6">
                                     <input type="hidden" id="order_id">
                                     <label class="form-label fw-bold">Associer à une location</label>
-                                    <button id="openOrderModal" class="btn btn-sm btn-light border w-100">Voir la liste</button>
+                                    <button id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</button>
                                 </div>
 
-                                <div class="col-12">
-                                    <div id="selectedOrder" class="card card-body">
+                                <div id="selectedOrder" class="col-12 d-none">
+                                    <div class="card card-body">
                                         <p class="card-text">Emplacements : <span id="location"></span></p>
                                         <p class="card-text">Date de commande : <span id="created_at"></span></p>
                                         <p class="card-text">Loué par : <span id="user_fullname"></span></p>
@@ -418,9 +418,26 @@
 
                             <div class="d-flex justify-content-between mt-3">
                                 <button type="button" class="btn btn-secondary px-4 rounded-pill text-white" data-bs-dismiss="modal">@lang('miscellaneous.cancel')</button>
-                                <button type="submit" class="btn btn-primary px-4 rounded-pill">{{ __('miscellaneous.register') }}</button>
+                                <button type="submit" id="openOrdersModal" class="btn btn-primary px-4 rounded-pill">{{ __('miscellaneous.register') }}</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ### Add new admin ### -->
+        <div class="modal fade" id="ordersListModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="d-block modal-header bg-light text-center">
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#expenseModal">Choisir la dépense</h4>
+                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="ordersList">
+                            <!-- Liste des commandes paginées ici -->
+                        </div>
                     </div>
                 </div>
             </div>

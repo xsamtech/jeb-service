@@ -29,6 +29,8 @@ Route::get('/symlink', function () { return view('symlink'); })->name('generate_
 |--------------------------------------------------------------------------
 */
 Route::get('/test', [DashboardController::class, 'test'])->name('dashboard.test');
+Route::get('/orders', [DashboardController::class, 'getOrders']);
+Route::get('/order/{id}', [DashboardController::class, 'getOrderDetails']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.home');

@@ -64,6 +64,33 @@ class DashboardController extends Controller
     }
 
     /**
+     * GET: Orders list (paginated)
+     *
+     * @return \Illuminate\View\View
+     */
+    public function getOrders(Request $request)
+    {
+        $orders = CustomerOrder::with('panel', 'user')->paginate(10)->appends(request()->query());
+
+        return response()->json([
+            'orders' => $orders->items(),
+            'total_pages' => $orders->lastPage(),
+        ]);
+    }
+
+    /**
+     * GET: Selected order
+     *
+     * @return \Illuminate\View\View
+     */
+    public function getOrderDetails($id)
+    {
+        $order = CustomerOrder::with('panel', 'user')->find($id);
+
+        return response()->json($order);
+    }
+
+    /**
      * GET: Panels list page
      *
      * @return \Illuminate\View\View
