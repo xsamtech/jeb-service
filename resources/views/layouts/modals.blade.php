@@ -404,7 +404,7 @@
                                 <div class="col-sm-6">
                                     <input type="hidden" id="order_id">
                                     <label class="form-label fw-bold">Associer à une location</label>
-                                    <button id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</button>
+                                    <a role="button" id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</a>
                                 </div>
 
                                 <div id="selectedOrder" class="col-12 d-none">
