@@ -431,8 +431,8 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="d-block modal-header bg-light text-center">
-                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#expenseModal">Choisir la dépense</h4>
-                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#ordersListModal">Choisir la dépense</h4>
+                        <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-toggle="modal" data-bs-target="#expenseModal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">
                         <div id="ordersList">

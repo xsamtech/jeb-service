@@ -691,7 +691,7 @@
                 function loadExpenseDetails(orderId) {
                     document.getElementById('selectedOrder').classList.remove('d-none')
 
-                    fetch(`/order/${orderId}`)
+                    fetch(`${currentHost}/order/${orderId}`)
                     .then(response => response.json())
                     .then(order => {
                         document.getElementById('location').textContent = order.panel.location;
