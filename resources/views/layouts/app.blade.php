@@ -660,6 +660,10 @@
                             const orderItem = document.createElement('div');
 
                             orderItem.classList.add('order-item');
+                            orderItem.classList.add('btn');
+                            orderItem.classList.add('btn-light');
+                            orderItem.classList.add('mb-2');
+                            orderItem.setAttribute('role', 'button');
                             orderItem.dataset.id = order.id;
                             orderItem.innerHTML = `Commande ID: ${order.id} - Emplacements: ${order.panel.location}`;
                             orderList.appendChild(orderItem);

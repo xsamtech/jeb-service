@@ -434,7 +434,7 @@
                         <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#ordersListModal">Choisir la location</h4>
                         <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-toggle="modal" data-bs-target="#expenseModal" aria-label="Fermer"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body" style="max-height: 300px">
                         <div id="ordersList">
                             <!-- Liste des commandes paginées ici -->
                         </div>
