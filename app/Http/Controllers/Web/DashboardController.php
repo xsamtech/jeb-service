@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Cart as ResourcesCart;
+use App\Http\Resources\CustomerOrder as ResourcesCustomerOrder;
 use App\Http\Resources\Expense as ResourcesExpense;
 use App\Http\Resources\Panel as ResourcesPanel;
 use App\Http\Resources\Role as ResourcesRole;
@@ -73,7 +74,7 @@ class DashboardController extends Controller
         $orders = CustomerOrder::with('panel', 'user')->paginate(10)->appends(request()->query());
 
         return response()->json([
-            'orders' => $orders->items(),
+            'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
             'total_pages' => $orders->lastPage(),
         ]);
     }
