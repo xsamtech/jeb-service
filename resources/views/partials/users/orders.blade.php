@@ -44,7 +44,35 @@
     @endif
                                                 </td>
                                                 <td class="align-middle">
-                                                    
+    @if (!empty($cart) && !empty($cart['orders']))
+                                                    <ul class="mb-0">
+        @foreach ($cart['orders'] as $order)
+                                                        <li>
+            @if (count($order['expenses']) > 1)
+                                                            <strong>{{ $order['panel']['location'] }}</strong>
+                                                            <ul>
+                @foreach ($order['expenses'] as $expense)
+                                                                <li>
+                                                                    <u>{{ $expense['designation'] }}</u><br>
+                                                                    {{ $expense['amount'] }} $
+                                                                </li>
+                @endforeach
+                                                            </ul>
+            @else
+                                                            <ul>
+                @foreach ($order['expenses'] as $expense)
+                                                                <li>
+                                                                    <u>{{ $expense['designation'] }}</u><br>
+                                                                    {{ $expense['amount'] }} $
+                                                                </li>
+                @endforeach
+                                                            </ul>
+            @endif
+                                                        </li>
+        @endforeach
+                                                    </ul>
+    @else
+    @endif
                                                 </td>
                                                 <td class="align-middle">
                                                     <a class="text-decoration-none" href="{{ route('dashboard.user.datas', ['id' => $user['id']]) }}">
