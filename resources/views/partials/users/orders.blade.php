@@ -11,6 +11,7 @@
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
                                                 <th>Locations</th>
+                                                <th>Dépenses sur la location</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -65,6 +66,8 @@
                                                             <i class="bi bi-cash me-2"></i>Payer
                                                         </button>
                                                     </form>
+                                                </td>
+                                                <td class="align-middle">
                                                 </td>
                                             </tr>
 @empty
