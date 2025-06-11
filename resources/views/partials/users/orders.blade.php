@@ -8,10 +8,10 @@
                                         <thead>
                                             <tr>
                                                 <th></th>
-                                                <th>Noms</th>
-                                                <th>Téléphone</th>
-                                                <th>Locations</th>
-                                                <th>Dépenses sur la location</th>
+                                                <th class="text-center">Noms</th>
+                                                <th class="text-center">Téléphone</th>
+                                                <th class="text-center">Locations</th>
+                                                <th class="text-center">Dépenses sur la location</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
