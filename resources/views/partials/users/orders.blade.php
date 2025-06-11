@@ -4,14 +4,14 @@
 {{-- <pre>{{ print_r($users[0]['unpaid_cart'], true) }}</pre> --}}
                                 <!-- Data list content -->
                                 <div class="table-responsive">
-                                    <table class="table table-striped border-top">
+                                    <table class="table table-striped table-bordered border-top">
                                         <thead>
                                             <tr>
                                                 <th></th>
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
-                                                <th class="text-center">Locations</th>
-                                                <th class="text-center">Dépenses sur la location</th>
+                                                <th>Locations</th>
+                                                <th>Dépenses sur la location</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
