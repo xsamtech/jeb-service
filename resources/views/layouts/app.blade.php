@@ -697,7 +697,7 @@
                     .then(response => response.json())
                     .then(order => {
                         document.getElementById('location').textContent = order.panel.location;
-                        document.getElementById('created_at').textContent = order.created_at;
+                        document.getElementById('created_at').textContent = order.created_at_explicit;
                         document.getElementById('user_fullname').textContent = `${order.user.firstname} ${order.user.lastname}`;
                         document.getElementById('order_id').value = order.id;
 
