@@ -72,7 +72,7 @@
         @endforeach
                                                     </ul>
     @else
-                                                    <i>Aucune dépense pour cette location</i>
+                                                    <span class="fst-italic text-secondary">Aucune pour cette location</span>
     @endif
                                                 </td>
                                                 <td class="align-middle">
