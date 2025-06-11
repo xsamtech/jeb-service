@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @author Xanders
  * @see https://team.xsamtech.com/xanderssamoth
@@ -9,7 +10,9 @@ use App\Http\Controllers\Web\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Symbolic link
-Route::get('/symlink', function () { return view('symlink'); })->name('generate_symlink');
+Route::get('/symlink', function () {
+    return view('symlink');
+})->name('generate_symlink');
 
 /*
 |--------------------------------------------------------------------------
@@ -29,10 +32,12 @@ Route::get('/symlink', function () { return view('symlink'); })->name('generate_
 |--------------------------------------------------------------------------
 */
 Route::get('/test', [DashboardController::class, 'test'])->name('dashboard.test');
-Route::get('/orders', [DashboardController::class, 'getOrders']);
-Route::get('/order/{id}', [DashboardController::class, 'getOrderDetails']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware('localization')->group(function () {
+    Route::get('/orders', [DashboardController::class, 'getOrders']);
+    Route::get('/order/{id}', [DashboardController::class, 'getOrderDetails']);
+});
+Route::middleware(['auth', 'localization'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.home');
     Route::get('/panels', [DashboardController::class, 'panels'])->name('dashboard.panels');
     Route::post('/panels', [DashboardController::class, 'addPanel']);
@@ -61,4 +66,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/account/settings', [DashboardController::class, 'updateAccount']);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
