@@ -44,7 +44,7 @@
     @endif
                                                 </td>
                                                 <td class="align-middle">
-    @if (!empty($cart) && !empty($cart['orders']))
+    @if (!empty($cart['orders']) && $cart['orders']->contains(function($order) { return $order['expenses']->isNotEmpty(); }))
                                                     <ul class="mb-0">
         @foreach ($cart['orders'] as $order)
                                                         <li>
@@ -72,6 +72,7 @@
         @endforeach
                                                     </ul>
     @else
+                                                    <i>Aucune dépense pour cette location</i>
     @endif
                                                 </td>
                                                 <td class="align-middle">

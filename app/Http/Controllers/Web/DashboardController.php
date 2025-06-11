@@ -711,6 +711,7 @@ class DashboardController extends Controller
             'amount' => $request->amount,
             'outflow_date' => $outflow,
             'created_by' => Auth::id(),
+            'customer_order_id' => $request->customer_order_id,
         ]);
 
         Accountancy::create([
@@ -927,11 +928,23 @@ class DashboardController extends Controller
                         return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
                     }
 
-                    CustomerOrder::create([
+                    $customer_order = CustomerOrder::create([
                         'panel_id'           => $panel->id,
                         'user_id'            => $customer->id,
                         'cart_id'            => $cart->id,
                         'price_at_that_time' => $panel->price,
+                    ]);
+
+                    $expense = Expense::create([
+                        'designation'       => 'Dîme (10%)',
+                        'amount'            => $panel->price / 10,
+                        'outflow_date'      => now(),
+                        'created_by'        => Auth::id(),
+                        'customer_order_id' => $customer_order->id,
+                    ]);
+
+                    Accountancy::create([
+                        'expense_id' => $expense->id
                     ]);
 
                     $panel->update(['is_available' => 0]);
