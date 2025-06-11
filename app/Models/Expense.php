@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -22,6 +23,15 @@ class Expense extends Model
      * @var array<int, string>
      */
     protected $guarded = [];
+
+    /**
+     * ONE-TO-MANY
+     * One customer_order for several files
+     */
+    public function customer_order(): BelongsTo
+    {
+        return $this->belongsTo(CustomerOrder::class);
+    }
 
     /**
      * MANY-TO-ONE

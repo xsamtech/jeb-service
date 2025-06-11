@@ -87,13 +87,22 @@ class DashboardController extends Controller
      */
     public function expenses()
     {
+        // role "Client"
+        $customer_role = Role::where('role_name', 'Client')->first();
         // expenses
         $expenses_collection = Expense::orderByDesc('created_at')->paginate(5)->appends(request()->query());
         $expenses_data = ResourcesExpense::collection($expenses_collection)->resolve();
+        $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
+                                            $query->where('roles.id', $customer_role->id);
+                                        })->with(['unpaidCart.customer_orders.panel', 'roles'])
+                                        ->paginate(10)->appends(request()->query());
+
+        $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
 
         return view('expenses', [
             'expenses' => $expenses_data,
-            'expenses_req' => $expenses_collection
+            'expenses_req' => $expenses_collection,
+            'users' => $customers_data
         ]);
         return view('expenses');
     }
@@ -1082,6 +1091,10 @@ class DashboardController extends Controller
 
         if ($request->has('amount')) {
             $rules['amount'] = ['nullable', 'numeric', 'between:0,9999999.99'];
+        }
+
+        if ($request->has('customer_order_id')) {
+            $rules['customer_order_id'] = ['nullable', 'numeric'];
         }
 
         // Validation of present fields only

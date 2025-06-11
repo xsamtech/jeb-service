@@ -399,6 +399,14 @@
                                     <label for="outflow_date" class="form-label fw-bold">Date/Heure de sortie</label>
                                     <input type="datetime" name="outflow_date" class="form-control" id="outflow_date">
                                 </div>
+
+                                <div id="selectedOrder" class="card card-body">
+                                    <p class="card-text">Emplacements : <span id="location"></span></p>
+                                    <p class="card-text">Date de commande : <span id="created_at"></span></p>
+                                    <p class="card-text">Loué par : <span id="user_fullname"></span></p>
+                                    <input type="hidden" id="order_id">
+                                    <button id="openOrderModal">Voir les commandes</button>
+                                </div>
                             </div>
 
                             <div class="d-flex justify-content-between mt-3">
