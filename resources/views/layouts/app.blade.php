@@ -638,18 +638,20 @@
         <script type="text/javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 // Ouverture du modal Order
-                document.getElementById('openOrdersModal').addEventListener('click', function() {
+                const ordersListModal = new bootstrap.Modal(document.getElementById('ordersListModal'), { keyboard: false });
+
+                ordersListModal.addEventListener('shown.bs.modal', event => {
                     loadOrders(1); // Charger la première page des commandes
-                });
+                })
 
                 // Gestion du clic sur une commande dans le modal Orders
-                document.getElementById('ordersListModal').addEventListener('click', function(event) {
+                ordersListModal.addEventListener('hidden.bs.modal', event => {
                     if (event.target && event.target.classList.contains('order-item')) {
                         const orderId = event.target.dataset.id;
 
                         loadExpenseDetails(orderId);
                     }
-                });
+                })
 
                 // Fonction pour charger la liste des commandes
                 function loadOrders(page) {
@@ -687,6 +689,9 @@
 
                 // Fonction pour charger les détails de la commande et afficher dans le modal Expense
                 function loadExpenseDetails(orderId) {
+                    const ordersListModal = new bootstrap.Modal(document.getElementById('ordersListModal'), { keyboard: false });
+                    const expenseModal = new bootstrap.Modal(document.getElementById('expenseModal'), { keyboard: false });
+
                     document.getElementById('selectedOrder').classList.remove('d-none')
 
                     fetch(`${currentHost}/order/${orderId}`)
@@ -698,8 +703,8 @@
                         document.getElementById('order_id').value = order.id;
 
                         // Fermer le modal Order et ouvrir le modal Expense
-                        document.getElementById('ordersListModal').hide();
-                        document.getElementById('expenseModal').show();
+                        ordersListModal.hide();
+                        expenseModal.show();
                     });
                 }
             });
