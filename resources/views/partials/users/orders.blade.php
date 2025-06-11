@@ -72,7 +72,7 @@
         @endforeach
                                                     </ul>
     @else
-                                                    <span class="fst-italic text-secondary">Aucune pour cette location</span>
+                                                    <p class="m-0 text-center">-----</p>
     @endif
                                                 </td>
                                                 <td class="align-middle">
