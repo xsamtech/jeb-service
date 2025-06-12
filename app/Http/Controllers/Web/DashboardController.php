@@ -115,24 +115,14 @@ class DashboardController extends Controller
      */
     public function expenses()
     {
-        // role "Client"
-        $customer_role = Role::where('role_name', 'Client')->first();
         // expenses
         $expenses_collection = Expense::orderByDesc('created_at')->paginate(5)->appends(request()->query());
         $expenses_data = ResourcesExpense::collection($expenses_collection)->resolve();
-        $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
-                                            $query->where('roles.id', $customer_role->id);
-                                        })->with(['unpaidCart.customer_orders.panel', 'roles'])
-                                        ->paginate(10)->appends(request()->query());
-
-        $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
 
         return view('expenses', [
             'expenses' => $expenses_data,
             'expenses_req' => $expenses_collection,
-            'users' => $customers_data
         ]);
-        return view('expenses');
     }
 
     /**
@@ -871,7 +861,7 @@ class DashboardController extends Controller
 
         if ($entity == 'orders') {
             // Vérification si un utilisateur existant est sélectionné
-            $isExistingCustomer = $request->filled('customer_email');
+            $isExistingCustomer = $request->filled('customer_phone');
 
             // Validation de base
             $rules = [
@@ -881,15 +871,13 @@ class DashboardController extends Controller
             ];
 
             if (!$isExistingCustomer) {
-                $rules['email'][] = 'unique:users';
-            }
+                $rules['phone'][] = 'unique:users';
 
-            $request->validate($rules, [
-                'firstname.required' => 'Le prénom est obligatoire.',
-                'email.email'        => 'Le format de l\'email est invalide.',
-                'email.unique'       => 'Cet email est déjà utilisé.',
-                'phone.required'     => 'Le n° de téléphone est obligatoire.',
-            ]);
+                $request->validate($rules, [
+                    'firstname.required' => 'Le prénom est obligatoire.',
+                    'phone.required'     => 'Le n° de téléphone est obligatoire.',
+                ]);
+            }
 
             DB::beginTransaction();
 
@@ -1096,7 +1084,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * POST: Update some user
+     * POST: Update expense
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
