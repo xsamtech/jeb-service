@@ -39,8 +39,10 @@ class CheckExpiredPanels extends Command
     {
         // Sélectionne les commandes expirées
         $expiredOrders = CustomerOrder::where('end_date', '<', Carbon::now())
-                                        ->where('is_paid', 1)  // ou selon la logique que tu préfères
-                                        ->get();
+                                    // Join la table carts pour vérifier le statut de "is_paid"
+                                    ->join('carts', 'customer_orders.cart_id', '=', 'carts.id')
+                                    ->where('carts.is_paid', 1) // Utilisation de is_paid dans la table carts
+                                    ->get();
 
         // Pour chaque commande expirée, rendre le panneau disponible
         foreach ($expiredOrders as $order) {
