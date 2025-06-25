@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\CustomerOrder;
+use App\Models\Panel;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+
+/**
+ * @author Xanders
+ * @see https://team.xsamtech.com/xanderssamoth
+ */
+class CheckExpiredPanels extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'panels:check-expired';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Vérifie les panneaux expirés et les rend disponibles à nouveau';
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        // Sélectionne les commandes expirées
+        $expiredOrders = CustomerOrder::where('end_date', '<', Carbon::now())
+                                        ->where('is_paid', 1)  // ou selon la logique que tu préfères
+                                        ->get();
+
+        // Pour chaque commande expirée, rendre le panneau disponible
+        foreach ($expiredOrders as $order) {
+            $panel = Panel::find($order->panel_id);
+
+            if ($panel && $panel->is_available == 0) {
+                $panel->update(['is_available' => 1]);
+                $this->info("Le panneau ID {$panel->id} est maintenant disponible.");
+            }
+        }
+    }
+}

@@ -6,6 +6,7 @@
  */
 
 use App\Http\Controllers\Web\DashboardController;
+use App\Jobs\CheckExpiredPanelsJob;
 // use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,11 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
     Route::get('/account/settings', [DashboardController::class, 'account'])->name('dashboard.account.settings');
     Route::post('/account/settings', [DashboardController::class, 'updateAccount']);
+});
+Route::get('/check-panels', function () {
+    CheckExpiredPanelsJob::dispatch();
+
+    return "Panneaux vérifiés !";
 });
 
 require __DIR__ . '/auth.php';
