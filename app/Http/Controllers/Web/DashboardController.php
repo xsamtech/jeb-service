@@ -745,6 +745,27 @@ class DashboardController extends Controller
             'expense_id' => $expense->id
         ]);
 
+        // Update the "tithe"
+        if (isset($request->customer_order_id)) {
+            // Get de tithe
+            $tithe_expense = Expense::where([['designation', 'Dîme (10%)'], ['customer_order_id', $request->customer_order_id]])->first();
+            // Get the tithe accountancy
+            $tithe_accountancy = Accountancy::where('expense_id', $tithe_expense->id)->first();
+            // Get the customer order
+            $customer_order = CustomerOrder::find($tithe_expense->customer_order_id);
+            // Get the rest of money (Order price - Expense amount)
+            $rest_of_money = $customer_order->price_at_that_time - $expense->amount;
+
+            // Give the new value to the existing tithe
+            $tithe_expense->update([
+                'amount' => $rest_of_money / 10,
+            ]);
+            // Update tithe accountancy
+            $tithe_accountancy->update([
+                'expense_id' => $tithe_expense->id
+            ]);
+        }
+
         return response()->json(['status' => 'success', 'message' => 'Dépense ajoutée avec succès.']);
     }
 
