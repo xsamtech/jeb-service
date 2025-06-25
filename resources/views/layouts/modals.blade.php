@@ -222,8 +222,14 @@
                                             <!-- This icon will only be displayed when the checkbox is checked -->
                                             <i class="bi bi-check display-6 text-white position-absolute bottom-0 end-0"></i>
                                         </label>
+
+                                        <!-- End date -->
+                                        <div class="col-sm-6">
+                                            <label for="outflow_date" class="form-label fw-bold">Date/Heure de fin de location</label>
+                                            <input type="datetime" name="end_date[]" class="form-control" id="outflow_date">
+                                        </div>
         @empty
-                                        <h1 class="text-center fst-italic">Il n'y a pas de panneau disponible</h1>
+                                        <h2 class="text-center fst-italic">Il n'y a pas de panneau disponible</h2>
         @endforelse
                                     </div>
                                 </div>

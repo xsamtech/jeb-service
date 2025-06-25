@@ -82,13 +82,13 @@
                                                     <a href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}" class="text-decoration-none text-danger">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
-                                                    <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
+                                                    {{-- <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
     @csrf
                                                         <input type="hidden" name="is_paid" value="1">
                                                         <button class="btn btn-sm btn-link p-0 text-decoration-none">
                                                             <i class="bi bi-cash me-2"></i>Payer
                                                         </button>
-                                                    </form>
+                                                    </form> --}}
                                                 </td>
                                             </tr>
 @empty

@@ -965,7 +965,7 @@ class DashboardController extends Controller
                     return response()->json(['status' => 'error', 'message' => 'Veuillez choisir au moins un panneau.'], 422);
                 }
 
-                foreach ($request->panels_ids as $panel_id) {
+                foreach ($request->panels_ids as $key => $panel_id) {
                     $panel = Panel::find($panel_id);
 
                     if (!$panel || !$panel->is_available) {
@@ -979,6 +979,7 @@ class DashboardController extends Controller
                         'user_id'            => $customer->id,
                         'cart_id'            => $cart->id,
                         'price_at_that_time' => $panel->price,
+                        'end_date' => $request->end_date[$key],
                     ]);
 
                     $expense = Expense::create([
