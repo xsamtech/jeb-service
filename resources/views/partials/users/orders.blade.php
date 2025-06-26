@@ -10,14 +10,17 @@
                                                 <th></th>
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
-                                                <th>Locations</th>
-                                                <th>Dépenses sur la location</th>
+                                                <th>Panneaux loués</th>
+                                                <th>Totaux pour location</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
 
                                         <tbody>
 @forelse ($users as $user)
+    @php
+        $cart = $user['unpaid_cart']?->resolve();
+    @endphp
                                             <tr>
                                                 <td class="align-middle">
                                                     <img src="{{ $user['avatar_url'] }}" alt="{{ $user['firstname'] . ' ' . $user['lastname'] }}" width="50" class="ms-sm-2 rounded-circle">
@@ -25,55 +28,37 @@
                                                 <td class="align-middle">{{ $user['firstname'] . ' ' . $user['lastname'] }}</td>
                                                 <td class="align-middle">{{ $user['phone'] }}</td>
                                                 <td class="align-middle">
-    @php
-        $cart = $user['unpaid_cart']?->resolve();
-    @endphp
 
     @if (!empty($cart) && !empty($cart['orders']))
                                                     <ul class="mb-0">
-        @foreach ($cart['orders'] as $index => $order)
-            @if (count($cart['orders']) > 5 && $index >= 5)
-                @break
-            @endif
-                                                        <li>{{ $order['panel']['location'] ?? 'Panneau inconnu' }}</li>
-        @endforeach
-        @if (count($cart['orders']) > 5)
-                                                        <li>+{{ count($cart['orders']) - 5 }}</li>
-        @endif
-                                                    </ul>
-    @endif
-                                                </td>
-                                                <td class="align-middle">
-    @if (!empty($cart['orders']) && $cart['orders']->contains(function($order) { return $order['expenses']->isNotEmpty(); }))
-                                                    <ul class="mb-0">
         @foreach ($cart['orders'] as $order)
                                                         <li>
+                                                            {{ $order['panel']['location'] ?? 'Panneau inconnu' }}
+
             @if (count($order['expenses']) > 1)
-                                                            <strong>{{ $order['panel']['location'] }}</strong>
-                                                            <ul>
+                                                            <ul class="mb-3">
                 @foreach ($order['expenses'] as $expense)
                                                                 <li>
-                                                                    <u>{{ $expense['designation'] }}</u><br>
-                                                                    {{ $expense['amount'] }} $
+                                                                    <u>{{ $expense['designation'] }}</u> : <strong>{{ formatDecimalNumber($expense['amount']) }} $</strong>
                                                                 </li>
                 @endforeach
                                                             </ul>
             @else
-                                                            <ul>
-                @foreach ($order['expenses'] as $expense)
-                                                                <li>
-                                                                    <u>{{ $expense['designation'] }}</u><br>
-                                                                    {{ $expense['amount'] }} $
-                                                                </li>
-                @endforeach
-                                                            </ul>
+                                                            <p class="mb-3"><u>{{ $order['expenses'][0]['designation'] }}</u> : <strong>{{ formatDecimalNumber($order['expenses'][0]['amount']) }} $</strong></p>
             @endif
+
                                                         </li>
         @endforeach
                                                     </ul>
-    @else
-                                                    <p class="m-0 text-center">-----</p>
     @endif
+                                                </td>
+                                                <td class="align-middle">
+                                                    <p>
+                                                        <u>Reste à la caisse</u> : {{ $cart['remaining_amount'] }}
+                                                    </p>
+                                                    <p>
+                                                        <u>Total des dîmes</u> : {{ $cart['tithe_10_percent_expenses_total'] }}
+                                                    </p>
                                                 </td>
                                                 <td class="align-middle">
                                                     <a class="text-decoration-none" href="{{ route('dashboard.user.datas', ['id' => $user['id']]) }}">
@@ -82,13 +67,23 @@
                                                     <a href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}" class="text-decoration-none text-danger">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
-                                                    {{-- <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
-    @csrf
+    @if ($cart['is_paid'] == 0)
+                                                    <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
+        @csrf
                                                         <input type="hidden" name="is_paid" value="1">
-                                                        <button class="btn btn-sm btn-link p-0 text-decoration-none">
-                                                            <i class="bi bi-cash me-2"></i>Payer
+                                                        <button class="btn btn-sm btn-success mt-2 py-0 px-2 rounded-pill">
+                                                            Attester paiement
                                                         </button>
-                                                    </form> --}}
+                                                    </form>
+    @else
+                                                    <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
+        @csrf
+                                                        <input type="hidden" name="is_paid" value="0">
+                                                        <button class="btn btn-sm btn-danger mt-2 py-0 px-2 rounded-pill">
+                                                            Annuler paiement
+                                                        </button>
+                                                    </form>
+    @endif
                                                 </td>
                                             </tr>
 @empty

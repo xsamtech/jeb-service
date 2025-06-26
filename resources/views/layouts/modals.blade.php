@@ -205,11 +205,11 @@
                                 <!-- Orders data -->
                                 <div class="col-lg-7 mt-sm-0 mt-3">
                                     <small class="small mb-2 d-block text-center"><i class="bi bi-info-circle me-2"></i>Clic sur panneau pour sélectionner</small>
-                                    <div id="availablePanels" class="card card-body border mb-3" style="max-height: 390px; overflow: auto;">
+                                    <div id="availablePanels" class="card card-body border mb-3" style="overflow: auto; max-height: 390px;">
         @forelse ($available_panels as $panel)
                                         <input type="checkbox" class="btn-check" id="panelCheckbox{{ $panel['id'] }}" name="panels_ids[]" value="{{ $panel['id'] }}" autocomplete="off">
 
-                                        <label class="btn btn-light mb-3 border text-start position-relative" for="panelCheckbox{{ $panel['id'] }}">
+                                        <label class="btn btn-light border text-start mb-3 position-relative" for="panelCheckbox{{ $panel['id'] }}">
                                             <div class="card card-body border-0 bg-transparent p-0">
                                                 <p class="card-text mb-1">{{ $panel['location'] }}</p>
                                                 <p class="mb-2">
@@ -221,13 +221,13 @@
 
                                             <!-- This icon will only be displayed when the checkbox is checked -->
                                             <i class="bi bi-check display-6 text-white position-absolute bottom-0 end-0"></i>
-                                        </label>
 
-                                        <!-- End date -->
-                                        <div class="col-sm-6">
-                                            <label for="outflow_date" class="form-label fw-bold">Date/Heure de fin de location</label>
-                                            <input type="datetime" name="end_date[]" class="form-control" id="outflow_date">
-                                        </div>
+                                            <!-- End date -->
+                                            <div class="col-sm-6 mt-3">
+                                                <label for="end_date{{ $panel['id'] }}" class="form-label fw-bold visually-hidden">Date/Heure de fin de location</label>
+                                                <input type="datetime" name="end_date[]" class="form-control" style="min-width: 20rem;" id="end_date{{ $panel['id'] }}" placeholder="Date/Heure de fin de location">
+                                            </div>
+                                        </label>
         @empty
                                         <h2 class="text-center fst-italic">Il n'y a pas de panneau disponible</h2>
         @endforelse

@@ -23,7 +23,9 @@ class Cart extends JsonResource
             'id' => $this->id,
             'payment_code' => $this->payment_code,
             'is_paid' => $this->is_paid,
-            'total_amount' => formatDecimalNumber($this->customer_orders->sum('price_at_that_time')) . '$',
+            'total_amount' => formatDecimalNumber($this->customer_orders->sum('price_at_that_time')) . ' $',
+            'remaining_amount' => formatDecimalNumber($this->remainingAmount) . ' $',
+            'tithe_10_percent_expenses_total' => formatDecimalNumber($this->dime10PercentExpensesTotal) . ' $',
             'orders' => CustomerOrder::collection($this->customer_orders),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s')

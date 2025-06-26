@@ -53,4 +53,47 @@ class Cart extends Model
             get: fn () => $this->customerOrders->sum('price_at_that_time')
         );
     }
+
+
+    /**
+     * Money left in cart (TOTAL ORDERS - EXPENSES)
+     */
+    public function getRemainingAmountAttribute()
+    {
+        // Total orders for this cart
+        $totalOrders = $this->customer_orders()->sum('price_at_that_time');  // The total price of orders
+
+        // Total expenses associated with each order
+        $totalExpenses = $this->customer_orders()
+                                ->whereHas('expenses')
+                                ->with('expenses')  // Relationship with expenses
+                                ->get()
+                                ->flatMap(function ($order) {
+                                    // Calculating the total expenses for each order
+                                    return $order->expenses->pluck('amount');
+                                })->sum();
+
+        // The remaining money is the difference between the total orders and expenses
+        return $totalOrders - $totalExpenses;
+    }
+
+    /**
+     * Total expenses "Dîme (10%)"
+     */
+    public function getDime10PercentExpensesTotalAttribute()
+    {
+        return $this->customer_orders()
+                ->whereHas('expenses', function ($query) {
+                    $query->where('designation', 'Dîme (10%)');  // Filtrer uniquement les dépenses "Dîme (10%)"
+                })
+                ->with(['expenses' => function ($query) {
+                    $query->where('designation', 'Dîme (10%)');  // Charger uniquement les dépenses "Dîme (10%)"
+                }])
+                ->get()
+                ->flatMap(function ($order) {
+                    // Calculer la somme des montants des dépenses "Dîme (10%)" pour chaque commande
+                    return $order->expenses->pluck('amount');
+                })
+                ->sum();
+    }
 }

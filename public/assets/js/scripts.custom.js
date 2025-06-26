@@ -108,7 +108,7 @@ $(function () {
     });
 
     /* jQuery DateTime picker */
-    jQuery('#outflow_date').datetimepicker({
+    jQuery('#outflow_date, [id^="end_date"]').datetimepicker({
         format: 'd/m/Y H:i'
     });
     jQuery.datetimepicker.setLocale('fr');

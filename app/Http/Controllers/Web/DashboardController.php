@@ -974,12 +974,24 @@ class DashboardController extends Controller
                         return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
                     }
 
+                    $end_date = null;
+
+                    if ($request->filled('end_date')) {
+                        $parts = explode(' ', $request->end_date[$key]); // ['30/05/2025', '14:30']
+
+                        if (count($parts) === 2) {
+                            [$day, $month, $year] = explode('/', $parts[0]);
+                            $time = $parts[1];
+                            $end_date = "$year-$month-$day $time:00"; // DATETIME format
+                        }
+                    }
+
                     $customer_order = CustomerOrder::create([
                         'panel_id'           => $panel->id,
                         'user_id'            => $customer->id,
                         'cart_id'            => $cart->id,
                         'price_at_that_time' => $panel->price,
-                        'end_date' => $request->end_date[$key],
+                        'end_date' => $end_date,
                     ]);
 
                     $expense = Expense::create([
