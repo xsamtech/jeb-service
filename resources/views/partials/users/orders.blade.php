@@ -53,16 +53,20 @@
     @endif
                                                 </td>
                                                 <td class="align-middle">
-                                                    <p>
+                                                    <p class="mb-2">
                                                         <u>Total des prix</u><br/> <strong>{{ $cart['total_amount'] }}</strong>
                                                     </p>
-                                                    <p>
-                                                        <u>Dépenses dîmes</u><br/> <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong>
+                                                    <p class="mb-2">
+                                                        <u>Dépenses</u>
+                                                        <ul>
+                                                            <li>Pour dîmes : <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong></li>
+                                                            <li>Pour autres : <strong>{{ $cart['other_expenses_total'] }}</strong></li>
+                                                            <hr>
+                                                            <li>Total : <strong>{{ $cart['all_expenses_total'] }}</strong></li>
+                                                            <hr>
+                                                        </ul>
                                                     </p>
-                                                    <p>
-                                                        <u>Autres dépenses</u><br/> <strong>{{ $cart['other_expenses_total'] }}</strong>
-                                                    </p>
-                                                    <p>
+                                                    <p class="mb-2">
                                                         <u>Reste à la caisse</u><br/> <strong>{{ $cart['remaining_amount'] }}</strong>
                                                     </p>
                                                 </td>

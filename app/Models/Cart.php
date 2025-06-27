@@ -117,4 +117,12 @@ class Cart extends Model
                 })
                 ->sum();
     }
+
+    /**
+     * Total expenses
+     */
+    public function getAllExpensesTotalAttribute()
+    {
+        return $this->dime10PercentExpensesTotal + $this->otherExpensesTotal;
+    }
 }
