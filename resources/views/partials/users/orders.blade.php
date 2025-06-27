@@ -54,10 +54,16 @@
                                                 </td>
                                                 <td class="align-middle">
                                                     <p>
-                                                        <u>Reste à la caisse</u> : {{ $cart['remaining_amount'] }}
+                                                        <u>Total des prix</u><br/> <strong>{{ $cart['total_amount'] }}</strong>
                                                     </p>
                                                     <p>
-                                                        <u>Total des dîmes</u> : {{ $cart['tithe_10_percent_expenses_total'] }}
+                                                        <u>Dépenses dîmes</u><br/> <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong>
+                                                    </p>
+                                                    <p>
+                                                        <u>Autres dépenses</u><br/> <strong>{{ $cart['other_expenses_total'] }}</strong>
+                                                    </p>
+                                                    <p>
+                                                        <u>Reste à la caisse</u><br/> <strong>{{ $cart['remaining_amount'] }}</strong>
                                                     </p>
                                                 </td>
                                                 <td class="align-middle">

@@ -97,4 +97,24 @@ class Cart extends Model
                 })
                 ->sum();
     }
+
+    /**
+     * Total expenses other than "Dîme (10%)"
+     */
+    public function getOtherExpensesTotalAttribute()
+    {
+        return $this->customer_orders()
+                ->whereHas('expenses', function ($query) {
+                    $query->where('designation', '<>', 'Dîme (10%)');  // Filtrer les dépenses différentes de "Dîme (10%)"
+                })
+                ->with(['expenses' => function ($query) {
+                    $query->where('designation', '<>', 'Dîme (10%)');  // Charger les dépenses différentes de "Dîme (10%)"
+                }])
+                ->get()
+                ->flatMap(function ($order) {
+                    // Calculer la somme des montants des dépenses "Dîme (10%)" pour chaque commande
+                    return $order->expenses->pluck('amount');
+                })
+                ->sum();
+    }
 }
