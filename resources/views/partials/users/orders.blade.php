@@ -58,12 +58,12 @@
                                                     </p>
                                                     <p class="mb-2">
                                                         <u>Dépenses</u>
-                                                        <ul>
+                                                        <ul class="ps-0">
                                                             <li>Pour dîmes : <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong></li>
                                                             <li>Pour autres : <strong>{{ $cart['other_expenses_total'] }}</strong></li>
-                                                            <hr>
+                                                            <hr class="m-0">
                                                             <li>Total : <strong>{{ $cart['all_expenses_total'] }}</strong></li>
-                                                            <hr>
+                                                            <hr class="m-0">
                                                         </ul>
                                                     </p>
                                                     <p class="mb-2">
