@@ -59,8 +59,8 @@
                                                     <p class="m-0">
                                                         <u>Dépenses</u>
                                                         <ul class="ps-2 m-0">
-                                                            <li>Pour dîmes : <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong></li>
-                                                            <li>Pour autres : <strong>{{ $cart['other_expenses_total'] }}</strong></li>
+                                                            <li>Pour dîmes : {{ $cart['tithe_10_percent_expenses_total'] }}</li>
+                                                            <li>Pour autres : {{ $cart['other_expenses_total'] }}</li>
                                                         </ul>
                                                         <hr class="m-0">
                                                         <p class="m-0 text-center">Total : <strong>{{ $cart['all_expenses_total'] }}</strong></p>
