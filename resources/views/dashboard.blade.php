@@ -66,7 +66,7 @@
             <section class="pb-3">
                 <div class="container px-lg-5">
                     <div class="row g-3 px-lg-3">
-                        <div class="col-lg-6">
+                        {{-- <div class="col-lg-6">
                             <div class="card card-body border">
                                 <h4 class="card-title text-center fw-bold mb-3">Comptes du mois</h4>
                                 <div class="table-responsive">
@@ -98,8 +98,8 @@
     @endif                                
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-lg-6">
+                        </div> --}}
+                        <div class="col-lg-6 mx-auto">
                             <div class="card border">
                                 <div class="card-body">
                                     <h4 class="card-title text-center fw-bold mb-3">Rapports de la semaine</h4>

@@ -56,15 +56,15 @@
                                                     <p class="mb-2">
                                                         <u>Total des prix</u><br/> <strong>{{ $cart['total_amount'] }}</strong>
                                                     </p>
-                                                    <p class="mb-2">
+                                                    <p class="mb-1">
                                                         <u>Dépenses</u>
-                                                        <ul class="ps-2">
+                                                        <ul class="ps-2 m-0">
                                                             <li>Pour dîmes : <strong>{{ $cart['tithe_10_percent_expenses_total'] }}</strong></li>
                                                             <li>Pour autres : <strong>{{ $cart['other_expenses_total'] }}</strong></li>
-                                                            <hr class="m-0">
-                                                            <li>Total : <strong>{{ $cart['all_expenses_total'] }}</strong></li>
-                                                            <hr class="m-0">
                                                         </ul>
+                                                        <hr class="m-0">
+                                                        <p class="m-0 text-center">Total : <strong>{{ $cart['all_expenses_total'] }}</strong></p>
+                                                        <hr class="m-0">
                                                     </p>
                                                     <p class="mb-2">
                                                         <u>Reste à la caisse</u><br/> <strong>{{ $cart['remaining_amount'] }}</strong>
