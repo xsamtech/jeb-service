@@ -64,7 +64,6 @@
                                                         </ul>
                                                         <hr class="m-0">
                                                         <p class="m-0 text-center">Total : <strong>{{ $cart['all_expenses_total'] }}</strong></p>
-                                                        <hr class="m-0">
                                                     </p>
                                                     <p class="mb-2">
                                                         <u>Reste à la caisse</u><br/> <strong>{{ $cart['remaining_amount'] }}</strong>
