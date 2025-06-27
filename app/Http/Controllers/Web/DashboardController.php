@@ -71,7 +71,7 @@ class DashboardController extends Controller
      */
     public function getOrders(Request $request)
     {
-        $orders = CustomerOrder::with('panel', 'user')->paginate(10)->appends(request()->query());
+        $orders = CustomerOrder::with('panel', 'user')->paginate(10)->appends($request->query());
 
         return response()->json([
             'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
@@ -88,7 +88,7 @@ class DashboardController extends Controller
     {
         $order = CustomerOrder::with('panel', 'user')->find($id);
 
-        return response()->json($order);
+        return response()->json(new ResourcesCustomerOrder($order));
     }
 
     /**
@@ -717,7 +717,7 @@ class DashboardController extends Controller
     {
         $request->validate([
             'designation' => ['required', 'string', 'max:255'],
-            'amount' => ['nullable', 'numeric', 'between:0,9999999.99'],
+            'amount' => ['required', 'numeric', 'between:0,9999999.99'],
             'outflow_date' => ['nullable', 'string']
         ]);
 
@@ -745,25 +745,37 @@ class DashboardController extends Controller
             'expense_id' => $expense->id
         ]);
 
-        // Update the "tithe"
-        if (isset($request->customer_order_id)) {
-            // Get de tithe
-            $tithe_expense = Expense::where([['designation', 'Dîme (10%)'], ['customer_order_id', $request->customer_order_id]])->first();
-            // Get the tithe accountancy
-            $tithe_accountancy = Accountancy::where('expense_id', $tithe_expense->id)->first();
-            // Get the customer order
-            $customer_order = CustomerOrder::find($tithe_expense->customer_order_id);
-            // Get the rest of money (Order price - Expense amount)
-            $rest_of_money = $customer_order->price_at_that_time - $expense->amount;
+        // Récupère la commande associée (CustomerOrder)
+        $customerOrder = CustomerOrder::find($request->customer_order_id);
 
-            // Give the new value to the existing tithe
-            $tithe_expense->update([
-                'amount' => $rest_of_money / 10,
-            ]);
-            // Update tithe accountancy
-            $tithe_accountancy->update([
-                'expense_id' => $tithe_expense->id
-            ]);
+        if ($customerOrder) {
+            // Prix de la commande
+            $order_price = $customerOrder->price_at_that_time;
+
+            // Met à jour le reste d'argent après la nouvelle dépense
+            $rest_of_money = $order_price - $request->amount;
+
+            // Cherche la dîme existante
+            $tithe_expense = Expense::where([['designation', 'Dîme (10%)'], ['customer_order_id', $request->customer_order_id]])->first();
+
+            if ($tithe_expense) {
+                // Calcul de la nouvelle dîme
+                $new_tithe_amount = $rest_of_money / 10;
+
+                // Mettre à jour la dîme avec la nouvelle valeur
+                $tithe_expense->update([
+                    'amount' => $new_tithe_amount,
+                ]);
+
+                // Mettre à jour la comptabilité de la dîme
+                $tithe_accountancy = Accountancy::where('expense_id', $tithe_expense->id)->first();
+
+                if ($tithe_accountancy) {
+                    $tithe_accountancy->update([
+                        'expense_id' => $tithe_expense->id
+                    ]);
+                }
+            }
         }
 
         return response()->json(['status' => 'success', 'message' => 'Dépense ajoutée avec succès.']);
@@ -907,7 +919,7 @@ class DashboardController extends Controller
                 $customer = null;
 
                 if ($isExistingCustomer) {
-                    $customer = User::where('email', $request->customer_email)->first();
+                    $customer = User::where('phone', $request->customer_phone)->first();
                 }
 
                 // Si le client n'existe pas, on le crée

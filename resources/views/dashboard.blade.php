@@ -86,9 +86,9 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th scope="row">Reste à la caisse</th>
+                                                <th scope="row">Total des dîmes</th>
                                                 <td style="text-align: right; padding-right: 30px;">
-                                                    {{ $balance_summary['in_the_box'] }} $
+                                                    {{ $balance_summary['total_tithes'] }} $
                                                 </td>
                                             </tr>
                                         </tbody>

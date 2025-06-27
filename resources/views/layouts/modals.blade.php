@@ -396,7 +396,7 @@
 
                                 <!-- Amount -->
                                 <div class="col-sm-6">
-                                    <label for="amount" class="form-label fw-bold">Montant</label>
+                                    <label for="amount" class="form-label fw-bold">Montant (en $)</label>
                                     <input type="number" step="0.01" name="amount" class="form-control" id="amount">
                                 </div>
 
@@ -408,7 +408,7 @@
 
                                 <!-- Add order -->
                                 <div class="col-sm-6">
-                                    <input type="hidden" id="order_id">
+                                    <input type="hidden" name="customer_order_id" id="order_id">
                                     <label class="form-label fw-bold">Associer à une location</label>
                                     <a role="button" id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</a>
                                 </div>

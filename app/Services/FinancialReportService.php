@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Accountancy;
+use App\Models\Cart;
 use App\Models\CustomerOrder;
 use App\Models\Expense;
 use Carbon\Carbon;
@@ -50,11 +51,10 @@ class FinancialReportService
         }
 
         // 2. Total earnings: orders linked to paid baskets
-        $totalEarnings = CustomerOrder::whereHas('cart', function ($query) {
-            $query->where('is_paid', 1);
-        })
-            ->whereBetween('created_at', [$start, $end])
-            ->sum('price_at_that_time');
+        $carts = Cart::whereBetween('created_at', [$start, $end])->get();
+        $totalEarnings = $carts->sum(function ($cart) {
+            return $cart->remaining_amount; // Utilise la méthode getRemainingAmountAttribute()
+        });
 
         // 3. Total expenses
         $totalExpenses = Expense::whereBetween('outflow_date', [$start, $end])
@@ -83,10 +83,10 @@ class FinancialReportService
 
         $inTheBox = $cartInflow - $expenseOutflow;
 
-        // 5. VAT, tithe, remainder calculations
-        // $leftoverMoney = $inTheBox / (1 + 0.16 + 0.10);
-        // $vat = $leftoverMoney * 0.16;
-        // $tithe = $leftoverMoney * 0.10;
+        // 5. Total tithes
+        $totalTithes = $carts->sum(function ($cart) {
+            return $cart->dime10PercentExpensesTotal; // Utilise la méthode getRemainingAmountAttribute()
+        });
 
         return [
             'period' => ucfirst($periodType),
@@ -94,10 +94,8 @@ class FinancialReportService
             'end_date' => $end->toDateString(),
             'total_earnings' => formatDecimalNumber($totalEarnings),
             'total_expenses' => formatDecimalNumber($totalExpenses),
+            'total_tithes' => formatDecimalNumber($totalTithes),
             'in_the_box' => formatDecimalNumber($inTheBox),
-            // 'vat' => round($vat, 2),
-            // 'tithe' => round($tithe, 2),
-            // 'leftover_money' => round($leftoverMoney, 2),
         ];
     }
 }

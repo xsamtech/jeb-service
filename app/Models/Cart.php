@@ -64,17 +64,18 @@ class Cart extends Model
         $totalOrders = $this->customer_orders()->sum('price_at_that_time');  // The total price of orders
 
         // Total expenses associated with each order
-        $totalExpenses = $this->customer_orders()
+        $totalTitheExpenses = $this->customer_orders()
                                 ->whereHas('expenses')
                                 ->with('expenses')  // Relationship with expenses
                                 ->get()
                                 ->flatMap(function ($order) {
                                     // Calculating the total expenses for each order
                                     return $order->expenses->pluck('amount');
+                                    // return $order->expenses->where('designation', 'Dîme (10%)')->pluck('amount');
                                 })->sum();
 
         // The remaining money is the difference between the total orders and expenses
-        return $totalOrders - $totalExpenses;
+        return $totalOrders - $totalTitheExpenses;
     }
 
     /**
