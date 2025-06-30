@@ -1,4 +1,4 @@
-@extends('layouts.app', ['page_title' => Route::is('dashboard.panel.datas') ? 'Panneau ' . $panel->dimensions : 'Gérer les panneaux'])
+@extends('layouts.app', ['page_title' => Route::is('dashboard.panel.datas') ? 'Panneau ' . $selected_panel['dimensions'] : 'Gérer les panneaux'])
 
 @section('app-content')
 
@@ -6,7 +6,7 @@
             <section class="pb-3">
                 <div class="container px-lg-5 px-sm-4">
                     <div class="d-flex justify-content-lg-between justify-content-center flex-lg-row flex-column align-items-center align-items-end mt-4">
-                        <h1 class="fw-bolder py-lg-0 py-3 mb-0"><span class="text-gradient d-inline">{{ Route::is('dashboard.panel.datas') ? 'Panneau ' . $panel->dimensions : 'Gérer les panneaux' }}</span></h1>
+                        <h1 class="fw-bolder py-lg-0 py-3 mb-0"><span class="text-gradient d-inline">{{ Route::is('dashboard.panel.datas') ? 'Panneau ' . $selected_panel['dimensions'] : 'Gérer les panneaux' }}</span></h1>
                         <div class="flex-row text-center">
     @if (Route::is('dashboard.panel.datas'))
                             <a href="{{ route('dashboard.panels') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
