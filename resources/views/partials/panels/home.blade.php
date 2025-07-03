@@ -49,17 +49,17 @@
     @if (!request()->has('is_available'))
                                                 <td class="align-middle text-center">
                                                     <h6>
-                                                        <div class="badge text-bg-{{ $panel['is_available'] == 1 ? 'success' : 'danger' }} fw-normal">
+                                                        <div class="badge bg-light border text-{{ $panel['is_available'] == 1 ? 'success' : 'danger' }} text-uppercase">
                                                             {{ $panel['is_available'] == 1 ? 'Oui' : 'Non' }}
                                                         </div>
                                                     </h6>
                                                 </td>
     @endif
                                                 <td class="align-middle">
-                                                    <a class="text-decoration-none" href="{{ route('dashboard.panel.datas', ['id' => $panel['id']]) }}">
-                                                        <i class="bi bi-pencil me-2"></i>Modifier
-                                                    </a><br>
-                                                    <a href="{{ route('dashboard.panel.delete', ['id' => $panel['id']]) }}" class="text-decoration-none text-danger">
+                                                    <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.panel.datas', ['id' => $panel['id']]) }}">
+                                                        Détails<i class="bi bi-chevron-double-right ms-1"></i>
+                                                    </a>
+                                                    <a class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" href="{{ route('dashboard.panel.delete', ['id' => $panel['id']]) }}">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>

@@ -20,10 +20,16 @@
                                 <i class="bi bi-chevron-double-left me-2"></i>Retour
                             </a>
     @else
+        @if (Route::is('dashboard.user.entity.datas'))
+            @if ($entity == 'cart')
+                            <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-primary pb-sm-1 text-white"><i class="bi bi-chevron-double-left"></i> Retour</a>
+            @endif
+        @else
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'roles']) }}" class="btn btn-sm btn-primary pb-sm-1">Rôles</a>
                             <a href="{{ route('dashboard.users.entity', ['entity' => 'orders']) }}" class="btn btn-sm btn-secondary pb-sm-1 text-white">Locations</a>
                             <br class="d-sm-none d-block">
                             <button class="btn btn-sm btn-outline-dark mt-lg-0 mt-1 pb-sm-1" data-bs-toggle="modal" data-bs-target="#userModal">Ajouter un administrateur</button>
+        @endif
     @endif
                         </div>
                     </div>
@@ -33,7 +39,7 @@
             <!-- Content Section-->
             <section class="pb-3">
                 <div class="container-fluid container-lg px-lg-5">
-    @if (Route::is('dashboard.users.entity'))
+    @if (Route::is('dashboard.users.entity') || Route::is('dashboard.user.entity.datas'))
         @include('partials.users.' . $entity)
     @else
         @include('partials.users.home')

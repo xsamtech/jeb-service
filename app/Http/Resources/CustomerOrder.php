@@ -22,8 +22,9 @@ class CustomerOrder extends JsonResource
         return [
             'id' => $this->id,
             'price_at_that_time' => $this->price_at_that_time,
+            'end_date' => $this->end_date,
             'panel' => Panel::make($this->panel),
-            'user' => User::make($this->whenLoaded('user')),
+            'user' => User::make($this->user),
             'expenses' => Expense::collection($this->expenses),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),

@@ -21,10 +21,10 @@
                                                 <td class="align-middle text-center">{{ $expense['amount'] }}</td>
                                                 <td class="align-middle">{{ $expense['outflow_date'] }}</td>
                                                 <td class="align-middle">
-                                                    <a class="text-decoration-none" href="{{ route('dashboard.expense.datas', ['id' => $expense['id']]) }}">
-                                                        <i class="bi bi-pencil me-2"></i>Modifier
-                                                    </a><br>
-                                                    <a href="{{ route('dashboard.expense.delete', ['id' => $expense['id']]) }}" class="text-decoration-none text-danger">
+                                                    <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.expense.datas', ['id' => $expense['id']]) }}">
+                                                        Détails<i class="bi bi-chevron-double-right ms-1"></i>
+                                                    </a>
+                                                    <a class="btn btn-sm btn-danger ms-sm-2 py-0 rounded-pill" href="{{ route('dashboard.expense.delete', ['id' => $expense['id']]) }}">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>

@@ -19,10 +19,10 @@
                                                 <td class="align-middle">{{ $role->role_name }}</td>
                                                 <td class="align-middle">{{ $role->role_description }}</td>
                                                 <td class="align-middle">
-                                                    <a class="text-decoration-none" href="{{ route('dashboard.user.entity.datas', ['entity' => 'roles', 'id' => $role->id]) }}">
-                                                        <i class="bi bi-pencil me-2"></i>Modifier
-                                                    </a><br>
-                                                    <a href="{{ route('dashboard.user.entity.delete', ['entity' => 'roles', 'id' => $role->id]) }}" class="text-decoration-none text-danger">
+                                                    <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.user.entity.datas', ['entity' => 'roles', 'id' => $role->id]) }}">
+                                                        Détails<i class="bi bi-chevron-double-right ms-1"></i>
+                                                    </a>
+                                                    <a class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'roles', 'id' => $role->id]) }}">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>

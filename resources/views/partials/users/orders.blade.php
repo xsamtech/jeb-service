@@ -11,7 +11,7 @@
                                                 <th>Noms</th>
                                                 <th>Téléphone</th>
                                                 <th>Panneaux loués</th>
-                                                <th>Totaux pour location</th>
+                                                <th>Totaux locations</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -39,12 +39,12 @@
                                                             <ul class="mb-3">
                 @foreach ($order['expenses'] as $expense)
                                                                 <li>
-                                                                    <u>{{ $expense['designation'] }}</u> : <strong>{{ formatDecimalNumber($expense['amount']) }} $</strong>
+                                                                    <u>{{ $expense['designation'] }}</u> : <strong>{{ formatDecimalNumber($expense['amount']) }}$</strong>
                                                                 </li>
                 @endforeach
                                                             </ul>
             @else
-                                                            <p class="mb-3"><u>{{ $order['expenses'][0]['designation'] }}</u> : <strong>{{ formatDecimalNumber($order['expenses'][0]['amount']) }} $</strong></p>
+                                                            <p class="mb-3"><u>{{ $order['expenses'][0]['designation'] }}</u> : <strong>{{ formatDecimalNumber($order['expenses'][0]['amount']) }}$</strong></p>
             @endif
 
                                                         </li>
@@ -70,17 +70,17 @@
                                                     </p>
                                                 </td>
                                                 <td class="align-middle">
-                                                    <a class="text-decoration-none" href="{{ route('dashboard.user.datas', ['id' => $user['id']]) }}">
-                                                        <i class="bi bi-pencil me-2"></i>Modifier
-                                                    </a><br>
-                                                    <a href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}" class="text-decoration-none text-danger">
+                                                    <a class="btn btn-sm w-100 btn-info py-0 rounded-pill" href="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}">
+                                                        Détails<i class="bi bi-chevron-double-right ms-1"></i>
+                                                    </a>
+                                                    <a class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
     @if ($cart['is_paid'] == 0)
                                                     <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
         @csrf
                                                         <input type="hidden" name="is_paid" value="1">
-                                                        <button class="btn btn-sm btn-success mt-2 py-0 px-2 rounded-pill">
+                                                        <button class="btn btn-sm w-100 btn-success mt-1 py-0 rounded-pill">
                                                             Attester paiement
                                                         </button>
                                                     </form>
@@ -88,7 +88,7 @@
                                                     <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
         @csrf
                                                         <input type="hidden" name="is_paid" value="0">
-                                                        <button class="btn btn-sm btn-danger mt-2 py-0 px-2 rounded-pill">
+                                                        <button class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill">
                                                             Annuler paiement
                                                         </button>
                                                     </form>

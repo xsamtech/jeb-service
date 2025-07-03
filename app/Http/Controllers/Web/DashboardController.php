@@ -19,6 +19,7 @@ use App\Models\PasswordReset;
 use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -325,7 +326,7 @@ class DashboardController extends Controller
      */
     public function userEntityDatas($entity, $id)
     {
-        if (!in_array($entity, ['roles', 'orders'])) {
+        if (!in_array($entity, ['roles', 'cart'])) {
             return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
         }
 
@@ -343,17 +344,19 @@ class DashboardController extends Controller
             ]);
         }
 
-        if ($entity == 'orders') {
+        if ($entity == 'cart') {
             $cart = Cart::find($id);
 
             if (!$cart) {
                 return redirect(RouteServiceProvider::HOME)->with('error_message', 'Locations non trouvées.');
             }
 
+            $customer_orders = $cart->customer_orders;
+
             return view('users', [
-                'selected_cart' => new ResourcesCart($cart),
+                'selected_cart' => (new ResourcesCart($cart))->toArray(request()),
                 'entity' => $entity,
-                'entity_title' => 'Location de ' . $cart->user->firstname
+                'entity_title' => 'Location de ' . $customer_orders[0]->user->firstname
             ]);
         }
     }
@@ -599,7 +602,7 @@ class DashboardController extends Controller
 
         // Date formatting
         if (isset($validated['birthdate'])) {
-            $validated['birthdate'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['birthdate'])->format('Y-m-d');
+            $validated['birthdate'] = Carbon::createFromFormat('d/m/Y', $validated['birthdate'])->format('Y-m-d');
         }
 
         // Password hash if present
@@ -1006,9 +1009,17 @@ class DashboardController extends Controller
                         'end_date' => $end_date,
                     ]);
 
+                    // Get number of days via "end_date"
+                    $date1 = new Carbon($customer_order->created_at);
+                    $date2 = new Carbon($customer_order->end_date);
+                    $duration = $date1->diff($date2);
+                    // Calculate total price
+                    $count_duration = ($duration->d == 0 ? 1 : $duration->d);
+                    $total_price = $customer_order->price_at_that_time * $count_duration;
+
                     $expense = Expense::create([
                         'designation'       => 'Dîme (10%)',
-                        'amount'            => $panel->price / 10,
+                        'amount'            => $total_price / 10,
                         'outflow_date'      => now(),
                         'created_by'        => Auth::id(),
                         'customer_order_id' => $customer_order->id,
@@ -1253,7 +1264,7 @@ class DashboardController extends Controller
 
         // Date formatting
         if (isset($validated['birthdate'])) {
-            $validated['birthdate'] = \Carbon\Carbon::createFromFormat('d/m/Y', $validated['birthdate'])->format('Y-m-d');
+            $validated['birthdate'] = Carbon::createFromFormat('d/m/Y', $validated['birthdate'])->format('Y-m-d');
         }
 
         // Password hash if present

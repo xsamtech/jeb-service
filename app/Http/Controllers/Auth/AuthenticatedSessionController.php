@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\CustomerOrder;
+use App\Models\Panel;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -57,6 +61,22 @@ class AuthenticatedSessionController extends Controller
             throw ValidationException::withMessages([
                 'login' => __('Identifiants incorrects.'),
             ]);
+        }
+
+        $expiredOrders = CustomerOrder::where('end_date', '<', Carbon::now())
+                                    // Join la table carts pour vérifier le statut de "is_paid"
+                                    ->join('carts', 'customer_orders.cart_id', '=', 'carts.id')
+                                    ->where('carts.is_paid', 1) // Utilisation de is_paid dans la table carts
+                                    ->get();
+
+        foreach ($expiredOrders as $order) {
+            $panel = Panel::find($order->panel_id);
+
+            if ($panel && $panel->is_available == 0) {
+                $panel->update(['is_available' => 1]);
+
+                Log::info("Le panneau ID {$panel->id} est maintenant disponible.");
+            }
         }
 
         $request->session()->regenerate();
