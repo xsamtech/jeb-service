@@ -51,4 +51,14 @@ class Expense extends Model
     {
         return self::whereMonth('outflow_date', $month)->whereYear('outflow_date', $year)->sum('amount');
     }
+
+    /**
+     * Expenses of the precise period
+     * 
+     * @return float
+     */
+    public static function totalMonthlyTitheExpenses($month, $year): float
+    {
+        return self::where('designation', 'Dîme (10%)')->whereMonth('outflow_date', $month)->whereYear('outflow_date', $year)->sum('amount');
+    }
 }

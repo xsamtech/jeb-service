@@ -991,7 +991,7 @@ class DashboardController extends Controller
 
                     $end_date = null;
 
-                    if ($request->filled('end_date')) {
+                    if (isset($request->end_date[$key]) && !empty($request->end_date[$key])) {
                         $parts = explode(' ', $request->end_date[$key]); // ['30/05/2025', '14:30']
 
                         if (count($parts) === 2) {
@@ -999,6 +999,10 @@ class DashboardController extends Controller
                             $time = $parts[1];
                             $end_date = "$year-$month-$day $time:00"; // DATETIME format
                         }
+                    }
+
+                    if (!$end_date) {
+                        $end_date = now()->addDays(1);
                     }
 
                     $customer_order = CustomerOrder::create([

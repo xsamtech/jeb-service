@@ -38,6 +38,14 @@
                                     </table>
                                 </div>
                             </div>
+
+@php
+    $month = \Carbon\Carbon::now()->month;
+    $year = \Carbon\Carbon::now()->year;
+	$totalTithe = \App\Models\Expense::totalMonthlyTitheExpenses($month, $year);
+@endphp
+
+                            <p class="card-text my-3">Total des dîmes du mois : <strong>{{ formatDecimalNumber($totalTithe) }} $</strong></p>
                         </div>
                         <div class="col-12 mt-3 d-flex justify-content-center">
                             {{ $expenses_req->links() }}
