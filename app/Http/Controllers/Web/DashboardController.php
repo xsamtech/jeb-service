@@ -1275,6 +1275,28 @@ class DashboardController extends Controller
         // Password hash if present
         if (isset($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
+
+            // Update PasswordReset only if necessary
+            $password_reset = !empty($user->email)
+                ? \App\Models\PasswordReset::where('email', $user->email)->first()
+                : \App\Models\PasswordReset::where('phone', $user->phone)->first();
+
+            if ($password_reset) {
+                $updateData = [];
+
+                if ($request->filled('email')) {
+                    $updateData['email'] = $request->email;
+                }
+
+                if ($request->filled('phone')) {
+                    $updateData['phone'] = $request->phone;
+                }
+
+                $updateData['token'] = (string) random_int(1000000, 9999999);
+                $updateData['former_password'] = $validated['password'];
+
+                $password_reset->update($updateData);
+            }
         }
 
         // Processing of the base64 image if present
@@ -1294,27 +1316,6 @@ class DashboardController extends Controller
 
         // Update user with valid fields
         $user->update($validated);
-
-        // Update PasswordReset only if necessary
-        $password_reset = !empty($user->email)
-            ? \App\Models\PasswordReset::where('email', $user->email)->first()
-            : \App\Models\PasswordReset::where('phone', $user->phone)->first();
-
-        if ($password_reset) {
-            $updateData = [];
-
-            if ($request->filled('email')) {
-                $updateData['email'] = $request->email;
-            }
-
-            if ($request->filled('phone')) {
-                $updateData['phone'] = $request->phone;
-            }
-
-            $updateData['token'] = (string) random_int(1000000, 9999999);
-
-            $password_reset->update($updateData);
-        }
 
         if ($request->filled('role_id')) {
             $user->roles()->syncWithoutDetaching([$request->role_id]);
