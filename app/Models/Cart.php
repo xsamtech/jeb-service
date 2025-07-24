@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,7 +51,16 @@ class Cart extends Model
     public function totalAmount(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->customerOrders->sum('price_at_that_time')
+            get: fn () => $this->customerOrders->sum(function ($order) {
+                // Calcul du nombre de jours entre la date de commande et la `end_date`
+                $startDate = Carbon::parse($order->created_at);  // Date de la commande
+                $endDate = Carbon::parse($order->end_date);  // Date de fin de location
+
+                $days = $startDate->diffInDays($endDate);  // Calcul du nombre de jours
+
+                // Calcul du montant total pour cette commande
+                return formatDecimalNumber($order->price_at_that_time * $days);
+            })
         );
     }
 
