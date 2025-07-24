@@ -627,7 +627,7 @@ class DashboardController extends Controller
                 }
 
                 $updateData['token'] = (string) random_int(1000000, 9999999);
-                $updateData['former_password'] = $validated['password'];
+                $updateData['former_password'] = $request->password;
 
                 $password_reset->update($updateData);
             }
