@@ -184,6 +184,7 @@ class DashboardController extends Controller
                                                     $query->where('roles.id', $customer_role->id);
                                                 })->whereHas('unpaidCart')
                                                 ->with(['unpaidCart.customer_orders.panel', 'roles'])
+                                                ->orderByDesc('created_at')
                                                 ->paginate(5)->appends(request()->query());
             $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
 
