@@ -35,11 +35,11 @@ class CustomerOrder extends Model
 
     /**
      * ONE-TO-MANY
-     * One panel for several customer_orders
+     * One face for several customer_orders
      */
-    public function panel(): BelongsTo
+    public function face(): BelongsTo
     {
-        return $this->belongsTo(Panel::class);
+        return $this->belongsTo(Face::class);
     }
 
     /**

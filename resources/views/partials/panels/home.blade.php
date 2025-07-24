@@ -48,11 +48,19 @@
                                                 <td class="align-middle text-center">{{ $panel['price'] }}</td>
     @if (!request()->has('is_available'))
                                                 <td class="align-middle text-center">
-                                                    <h6>
-                                                        <div class="badge bg-light border text-{{ $panel['is_available'] == 1 ? 'success' : 'danger' }} text-uppercase">
-                                                            {{ $panel['is_available'] == 1 ? 'Oui' : 'Non' }}
-                                                        </div>
-                                                    </h6>
+                                                    <ul class="list-group list-group-item-light">
+        @forelse ($panel['faces'] as $face)
+                                                        <li class="list-group-item">
+                                                            <h6 class="m-0">
+                                                                {{ $face['face_name'] }}
+                                                                <div class="badge bg-light border text-{{ $face['is_available'] == 1 ? 'success' : 'danger' }} text-uppercase">
+                                                                    {{ $face['is_available'] == 1 ? 'Oui' : 'Non' }}
+                                                                </div>
+                                                            </h6>
+                                                        </li>
+        @empty
+        @endforelse
+                                                    </ul>
                                                 </td>
     @endif
                                                 <td class="align-middle">

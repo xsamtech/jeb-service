@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @author Xanders
  * @see https://team.xsamtech.com/xanderssamoth
  */
-class Panel extends JsonResource
+class Face extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -21,11 +21,8 @@ class Panel extends JsonResource
     {
         return [
             'id' => $this->id,
-            'dimensions' => $this->dimensions . ' m',
-            'format' => $this->format,
-            'price' => formatDecimalNumber($this->price) . ' $',
-            'location' => $this->location,
-            'faces' => Face::collection($this->faces),
+            'format' => $this->face_name,
+            'is_available' => $this->is_available,
             'created_by' => !empty($this->created_by) ? ModelsUser::find($this->created_by) : $this->created_by,
             'updated_by' => !empty($this->updated_by) ? ModelsUser::find($this->updated_by) : $this->updated_by,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
