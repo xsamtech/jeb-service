@@ -71,7 +71,7 @@ class Cart extends Model
     public function getRemainingAmountAttribute()
     {
         // Total orders for this cart
-        $totalOrders = $this->customer_orders()->sum('price_at_that_time');  // The total price of orders
+        $totalOrders = $this->total_amount;  // The total price of orders
 
         // Total expenses associated with each order
         $totalTitheExpenses = $this->customer_orders()
