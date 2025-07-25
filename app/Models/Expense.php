@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,18 @@ class Expense extends Model
     /**
      * Expenses of the precise period
      * 
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function titheExpenses(): Collection
+    {
+        return self::where('designation', 'Dîme (10%)')->get();
+    }
+
+    /**
+     * Expenses of the precise period
+     * 
+     * @param  int $month
+     * @param  int $year
      * @return float
      */
     public static function totalMonthlyExpenses($month, $year): float
@@ -55,6 +68,8 @@ class Expense extends Model
     /**
      * Expenses of the precise period
      * 
+     * @param  int $month
+     * @param  int $year
      * @return float
      */
     public static function totalMonthlyTitheExpenses($month, $year): float
