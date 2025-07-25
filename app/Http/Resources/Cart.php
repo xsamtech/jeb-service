@@ -30,7 +30,9 @@ class Cart extends JsonResource
             'all_expenses_total' => formatDecimalNumber($this->allExpensesTotal) . '$',
             'orders' => CustomerOrder::collection($this->customer_orders),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s')
+            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at_explicit' => explicitDate($this->created_at),
+            'updated_at_explicit' => explicitDate($this->updated_at)
         ];
     }
 }

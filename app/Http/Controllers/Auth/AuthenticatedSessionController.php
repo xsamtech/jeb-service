@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\CustomerOrder;
-use App\Models\Panel;
+use App\Models\Face;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Carbon\Carbon;
@@ -63,6 +63,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        // Rendre un panneau disponible à nouveau
         $expiredOrders = CustomerOrder::where('end_date', '<', Carbon::now())
                                     // Join la table carts pour vérifier le statut de "is_paid"
                                     ->join('carts', 'customer_orders.cart_id', '=', 'carts.id')
@@ -70,12 +71,12 @@ class AuthenticatedSessionController extends Controller
                                     ->get();
 
         foreach ($expiredOrders as $order) {
-            $panel = Panel::find($order->panel_id);
+            $face = Face::find($order->face_id);
 
-            if ($panel && $panel->is_available == 0) {
-                $panel->update(['is_available' => 1]);
+            if ($face && $face->is_available == 0) {
+                $face->update(['is_available' => 1]);
 
-                Log::info("Le panneau ID {$panel->id} est maintenant disponible.");
+                Log::info("La face du panneau « {$face->panel->location} » est maintenant disponible.");
             }
         }
 

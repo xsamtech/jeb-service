@@ -146,9 +146,6 @@
                         <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="ajax-loader" class="position-absolute d-none" style="top: 10px; right: 10px;">
-                            <img src="{{ asset('assets/img/ajax-loading.gif') }}" alt="Chargement..." width="32" height="32">
-                        </div>
                         <form id="{{ $entity == 'orders' ? 'addOrderForm' : 'addRoleForm' }}" action="{{ route('dashboard.users.entity', ['entity' => $entity]) }}" method="POST">
         @csrf
                             <input type="hidden" id="customer_phone_hidden" name="customer_phone">
@@ -167,7 +164,7 @@
                                             <div class="col-lg-6 col-sm-8 mx-auto">
                                                 <div id="profileImageWrapper" class="mb-3 position-relative">
                                                     <img src="{{ asset('assets/img/user.png') }}" alt="Avatar" class="other-user-image img-fluid img-thumbnail rounded-4">
-                                                    <label role="button" for="image_profile" class="btn btn-secondary px-2 py-1 rounded-circle position-absolute end-0 bottom-0">
+                                                    <label role="button" for="image_profile" class="btn btn-secondary p-2 rounded-circle position-absolute end-0 bottom-0">
                                                         <i class="bi bi-pencil-fill text-white"></i>
                                                         <input type="file" name="image_profile" id="image_profile" class="d-none">
                                                     </label>
@@ -205,29 +202,34 @@
                                 <!-- Orders data -->
                                 <div class="col-lg-7 mt-sm-0 mt-3">
                                     <small class="small mb-2 d-block text-center"><i class="bi bi-info-circle me-2"></i>Clic sur panneau pour sélectionner</small>
-                                    <div id="availablePanels" class="card card-body border mb-3" style="overflow: auto; max-height: 390px;">
+                                    <div id="availablePanels" class="card card-body border mb-3">
         @forelse ($available_panels as $panel)
-                                        <input type="checkbox" class="btn-check" id="panelCheckbox{{ $panel['id'] }}" name="panels_ids[]" value="{{ $panel['id'] }}" autocomplete="off">
-
-                                        <label class="btn btn-light border text-start mb-3 position-relative" for="panelCheckbox{{ $panel['id'] }}">
-                                            <div class="card card-body border-0 bg-transparent p-0">
+                                        <div class="bg-light border mb-3 p-3">
+                                            <div class="card card-body border-0 bg-transparent mb-3 p-0">
                                                 <p class="card-text mb-1">{{ $panel['location'] }}</p>
                                                 <p class="mb-2">
                                                     <span class="badge text-bg-dark fw-normal">{{ $panel['dimensions'] }}</span>
                                                 </p>
                                                 <small class="small mb-0"><u>Format</u> : {{ $panel['format'] }}</small><br>
+                                            </div>
+            @foreach ($panel['faces'] as $face)
+                                            <input type="checkbox" class="btn-check" id="panelCheckbox{{ $face['id'] }}" name="panels_ids[]" value="{{ $face['id'] }}" autocomplete="off">
+
+                                            <label class="btn btn-light border text-start mb-1 position-relative" for="panelCheckbox{{ $face['id'] }}">
+                                                <p class="card-text mb-1 fw-bold text-uppercase">{{ $face['face_name'] }}</p>
                                                 <small class="small"><u>Prix</u> : {{ $panel['price'] }}</small>
-                                            </div>
 
-                                            <!-- This icon will only be displayed when the checkbox is checked -->
-                                            <i class="bi bi-check display-6 text-white position-absolute bottom-0 end-0"></i>
+                                                <!-- This icon will only be displayed when the checkbox is checked -->
+                                                <i class="bi bi-check display-6 text-white position-absolute top-0 end-0"></i>
 
-                                            <!-- End date -->
-                                            <div class="col-sm-6 mt-3">
-                                                <label for="end_date{{ $panel['id'] }}" class="form-label fw-bold visually-hidden">Date/Heure de fin de location</label>
-                                                <input type="datetime" name="end_date[]" class="form-control" style="min-width: 20rem;" id="end_date{{ $panel['id'] }}" placeholder="Date/Heure de fin de location">
-                                            </div>
-                                        </label>
+                                                <!-- End date -->
+                                                <div class="col-sm-6 mt-3">
+                                                    <label for="end_date{{ $face['id'] }}" class="form-label fw-bold visually-hidden">Date/Heure de fin de location</label>
+                                                    <input type="datetime" name="end_date[]" class="form-control" style="min-width: 20rem;" id="end_date{{ $face['id'] }}" placeholder="Date/Heure de fin de location">
+                                                </div>
+                                            </label>
+            @endforeach
+                                        </div>
         @empty
                                         <h2 class="text-center fst-italic">Il n'y a pas de panneau disponible</h2>
         @endforelse
@@ -345,17 +347,29 @@
                                 <!-- Format -->
                                 <div class="col-sm-6">
                                     <label for="format" class="form-label fw-bold">Format</label>
-                                    <input type="text" name="format" class="form-control" id="format">
+                                    <select name="format" id="format" class="form-select">
+                                        <option>Portrait</option>
+                                        <option>Paysage</option>
+                                    </select>
+                                </div>
+
+                                <!-- Number of faces -->
+                                <div class="col-sm-6">
+                                    <label for="number_of_faces" class="form-label fw-bold">Nombre des faces</label>
+                                    <select name="number_of_faces" id="number_of_faces" class="form-select">
+                                        <option value="1">1 Face (Recto)</option>
+                                        <option value="2">2 Faces (Recto/Verso)</option>
+                                    </select>
                                 </div>
 
                                 <!-- Price -->
                                 <div class="col-sm-6">
-                                    <label for="price" class="form-label fw-bold">Prix</label>
+                                    <label for="price" class="form-label fw-bold">Prix unitaire</label>
                                     <input type="number" step="0.01" name="price" class="form-control" id="price">
                                 </div>
 
                                 <!-- Location -->
-                                <div class="col-sm-6">
+                                <div class="col-12">
                                     <label for="location" class="form-label fw-bold">Site / Emplacement</label>
                                     <textarea class="form-control" name="location" id="location"></textarea>
                                 </div>

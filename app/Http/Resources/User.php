@@ -40,7 +40,6 @@ class User extends JsonResource
             'is_active' => $this->is_active,
             'avatar_url' => $this->avatar_url != null ? $this->avatar_url : getWebURL() . '/assets/img/user.png',
             'roles' => Role::collection($this->roles)->sortByDesc('created_at')->toArray(),
-            'unpaid_cart' => $this->unpaidCart ? Cart::make($this->unpaidCart) : null,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s')
         ];

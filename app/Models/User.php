@@ -8,6 +8,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -83,7 +85,7 @@ class User extends Authenticatable
     /**
      * Unpaid cart
      */
-    public function unpaidCart()
+    public function unpaidCart(): HasOneThrough
     {
         return $this->hasOneThrough(
             Cart::class,
@@ -93,5 +95,11 @@ class User extends Authenticatable
             'id',        // Locale key on "User"
             'cart_id'    // Locale key on "CustomerOrder"
         )->where('is_paid', 0);
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(CustomerOrder::class)
+                ->select('customer_orders.cart_id') ;  // Trier par date de création des commandes
     }
 }

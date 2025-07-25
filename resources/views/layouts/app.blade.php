@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <!-- Meta Tags -->
@@ -65,6 +64,11 @@
         <!-- MODALS-->
 
         <main class="flex-shrink-0">
+@if (Route::is('dashboard.users.entity') && $entity == 'orders')
+            <div id="ajax-loader" class="d-flex w-100 h-100 justify-content-center align-items-center d-none position-absolute top-0 start-0" style="z-index: 999; background: rgba(0, 0, 0, 0.3);">
+                <img src="{{ asset('assets/img/ajax-loading.gif') }}" alt="Chargement..." width="100" height="100" height="32">
+            </div>
+@endif
             <div id="ajax-alert-container"></div>
 @if (\Session::has('success_message'))
             <!-- Alert Start -->

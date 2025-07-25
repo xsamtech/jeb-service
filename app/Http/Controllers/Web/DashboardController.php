@@ -13,6 +13,7 @@ use App\Models\Accountancy;
 use App\Models\Cart;
 use App\Models\CustomerOrder;
 use App\Models\Expense;
+use App\Models\Face;
 use App\Models\File;
 use App\Models\Panel;
 use App\Models\PasswordReset;
@@ -175,18 +176,27 @@ class DashboardController extends Controller
 
         if ($entity == 'orders') {
             // panels
-            $available_panels_collection = Panel::where('is_available', '=', 1)->orderByDesc('created_at')->get();
+            $available_panels_collection = Panel::with(['faces' => function($query) {
+                                                        $query->where('is_available', 1);
+                                                    }])->whereHas('faces', function($query) {
+                                                        $query->where('is_available', 1);
+                                                    })->orderByDesc('created_at')->get();
+
             $available_panels_data = ResourcesPanel::collection($available_panels_collection)->resolve();
             $count_customers = User::whereHas('roles', function ($query) use ($customer_role) {
-                                    $query->where('roles.id', $customer_role->id);
-                                })->count();
-            $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
-                                                    $query->where('roles.id', $customer_role->id);
-                                                })->whereHas('unpaidCart')
-                                                ->with(['unpaidCart.customer_orders.panel', 'roles'])
-                                                ->orderByDesc('created_at')
-                                                ->paginate(5)->appends(request()->query());
-            $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
+                                        $query->where('roles.id', $customer_role->id);
+                                    })->count();
+            $customers_ids = User::whereHas('roles', function ($query) use ($customer_role) {
+                                        $query->where('roles.id', $customer_role->id);
+                                    })->pluck('id')->toArray();
+            $carts_collection = Cart::with(['customer_orders.user', 'customer_orders.face', 'customer_orders.expenses'])
+                                        ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
+                                        ->whereIn('customer_orders.user_id', $customers_ids)
+                                        ->select('carts.*')
+                                        ->groupBy('carts.id')
+                                        ->orderBy('carts.created_at', 'desc')
+                                        ->paginate(5)->appends(request()->query());
+            $carts_data = ResourcesCart::collection($carts_collection)->resolve();
 
             // page title
             $entity_title = 'Locations des clients';
@@ -195,8 +205,8 @@ class DashboardController extends Controller
                 'roles' => $roles,
                 'customer' => $customer_role,
                 'count_customers' => $count_customers,
-                'users' => $customers_data,
-                'users_req' => $unpaid_customers_collection,
+                'carts' => $carts_data,
+                'carts_req' => $carts_collection,
                 'available_panels' => $available_panels_data,
                 'entity' => $entity,
                 'entity_title' => $entity_title
@@ -681,14 +691,34 @@ class DashboardController extends Controller
             'location.required' => 'Veuillez donner son emplacement.',
         ]);
 
-        Panel::create([
+        $faces_text = $request->number_of_faces == 2 ? 'faces' : 'face';
+        $panel = Panel::create([
             'dimensions' => $request->dimensions,
-            'format' => $request->format,
+            'format' => $request->format . ' (' . $request->number_of_faces . ' ' . $faces_text . ')',
             'price' => $request->price,
             'location' => $request->location,
-            // 'is_available' => $request->is_available,
             'created_by' => Auth::id(),
         ]);
+
+        if ($request->number_of_faces == 1) {
+            Face::create([
+                'face_name' => 'Recto',
+                'is_available' => !empty($request->is_available) ? $request->is_available : 1,
+                'panel_id' => $panel->id,
+            ]);
+
+        } else if ($request->number_of_faces == 2) {
+            Face::create([
+                'face_name' => 'Recto',
+                'is_available' => !empty($request->is_available) ? $request->is_available : 1,
+                'panel_id' => $panel->id,
+            ]);
+            Face::create([
+                'face_name' => 'Verso',
+                'is_available' => !empty($request->is_available) ? $request->is_available : 1,
+                'panel_id' => $panel->id,
+            ]);
+        }
 
         // If image files exist
         // if ($request->hasFile('images_urls')) {
@@ -982,10 +1012,10 @@ class DashboardController extends Controller
                     return response()->json(['status' => 'error', 'message' => 'Veuillez choisir au moins un panneau.'], 422);
                 }
 
-                foreach ($request->panels_ids as $key => $panel_id) {
-                    $panel = Panel::find($panel_id);
+                foreach ($request->panels_ids as $key => $face_id) {
+                    $face = Face::find($face_id);
 
-                    if (!$panel || !$panel->is_available) {
+                    if (!$face || !$face->is_available) {
                         DB::rollBack();
 
                         return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
@@ -1008,11 +1038,11 @@ class DashboardController extends Controller
                     }
 
                     $customer_order = CustomerOrder::create([
-                        'panel_id'           => $panel->id,
-                        'user_id'            => $customer->id,
-                        'cart_id'            => $cart->id,
-                        'price_at_that_time' => $panel->price,
+                        'price_at_that_time' => $face->panel->price,
                         'end_date' => $end_date,
+                        'user_id'            => $customer->id,
+                        'face_id'           => $face->id,
+                        'cart_id'            => $cart->id,
                     ]);
 
                     // Get number of days via "end_date"
@@ -1035,7 +1065,7 @@ class DashboardController extends Controller
                         'expense_id' => $expense->id
                     ]);
 
-                    $panel->update(['is_available' => 0]);
+                    $face->update(['is_available' => 0]);
                 }
 
                 Accountancy::create(['cart_id' => $cart->id]);
@@ -1391,7 +1421,7 @@ class DashboardController extends Controller
             }
 
             foreach ($cart->customer_orders as $order) {
-                $order->panel->update(['is_available' => 1]);
+                $order->face->update(['is_available' => 1]);
             }
 
             if (!empty($updates)) {

@@ -1,10 +1,9 @@
                     <div id="dataList" class="row">
                         <div class="col-md-12">
                             <div class="card card-body border">
-{{-- <pre>{{ print_r($users[0]['unpaid_cart'], true) }}</pre> --}}
                                 <!-- Data list content -->
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered border-top">
+                                    <table class="m-0 table table-striped table-bordered border-top">
                                         <thead>
                                             <tr>
                                                 <th></th>
@@ -17,57 +16,47 @@
                                         </thead>
 
                                         <tbody>
-@forelse ($users as $user)
+@forelse ($carts as $cart)
     @php
-        $cart = $user['unpaid_cart']?->resolve();
+        $first_order = $cart['orders'][0];
     @endphp
                                             <tr>
-                                                <td class="align-middle">
-                                                    <img src="{{ $user['avatar_url'] }}" alt="{{ $user['firstname'] . ' ' . $user['lastname'] }}" width="50" class="ms-sm-2 rounded-circle">
+                                                <td>
+                                                    <!-- Affichage de l'avatar de l'utilisateur -->
+                                                    <img src="{{ $first_order->user->avatar_url ?? asset('assets/img/user.png') }}" alt="Avatar" class="img-fluid" width="50" height="50" style="border-radius: 50%;">
                                                 </td>
-                                                <td class="align-middle">{{ $user['firstname'] . ' ' . $user['lastname'] }}</td>
-                                                <td class="align-middle">{{ $user['phone'] }}</td>
-                                                <td class="align-middle">
+                                                <td>
+                                                    <!-- Nom complet de l'utilisateur -->
+                                                    {{ $first_order->user->firstname }} {{ $first_order->user->lastname }}
+                                                </td>
+                                                <td>
+                                                    <!-- Téléphone de l'utilisateur -->
+                                                    {{ $first_order->user->phone }}
+                                                </td>
+                                                <td>
+                                                    <p class="mb-2 text-decoration-underline">Loué(s) le {{ explicitDate($cart['created_at']) }}</p>
+                                                    <ul class="ps-3">
+    @foreach ($cart['orders'] as $order)
+        @php
+            $date1 = new Carbon\Carbon($order['created_at']);
+            $date2 = new Carbon\Carbon($order['end_date']);
+            $duration = $date1->diff($date2);
+            // Calculate total price
+            $count_duration = ($duration->d == 0 ? 1 : $duration->d);
+            $total_price = $order['price_at_that_time'] * $count_duration;
 
-    @if (!empty($cart) && !empty($cart['orders']))
-                                                    <ul class="mb-0">
-        @foreach ($cart['orders'] as $order)
-                                                        <li>
-                                                            {{ $order['panel']['location'] ?? 'Panneau inconnu' }}
+        @endphp
+                                                        <li class="mb-1" style="max-width: 160px; min-width: 100px; line-height: 20px;">
+                                                            {{ $order['face']['panel']['location'] }} (<strong>{{ strtoupper($order['face']['face_name']) }}</strong>)
 
-            @if (count($order['expenses']) > 1)
-                                                            <ul class="mb-3">
-                @foreach ($order['expenses'] as $expense)
-                                                                <li>
-                                                                    <u>{{ $expense['designation'] }}</u> : <strong>{{ formatDecimalNumber($expense['amount']) }}$</strong>
-                                                                </li>
-                @endforeach
-                                                            </ul>
-            @else
-                                                            <p class="mb-3"><u>{{ $order['expenses'][0]['designation'] }}</u> : <strong>{{ formatDecimalNumber($order['expenses'][0]['amount']) }}$</strong></p>
-            @endif
-
+                                                            <p class="mt-1 mb-1">{{ formatIntegerNumber($order['face']['panel']['price']) }}$ <i class="bi bi-x-lg"></i> {{ $count_duration . ' jour' . ($count_duration > 1 ? 's' : '') }}</p>
+                                                            <p class="mt-0 fw-bold">Sous-total : {{ $total_price }}$</p>
                                                         </li>
-        @endforeach
+    @endforeach
                                                     </ul>
-    @endif
                                                 </td>
-                                                <td class="align-middle">
-                                                    <p class="mb-2">
-                                                        <u>Total des prix</u><br/> <strong>{{ $cart['total_amount'] }}</strong>
-                                                    </p>
-                                                    <p class="m-0">
-                                                        <u>Dépenses</u>
-                                                        <ul class="ps-2 m-0">
-                                                            <li>Pour dîmes : {{ $cart['tithe_10_percent_expenses_total'] }}</li>
-                                                            <li>Pour autres : {{ $cart['other_expenses_total'] }}</li>
-                                                        </ul>
-                                                        <hr class="m-0">
-                                                        <p class="m-0 text-center">Total : <strong>{{ $cart['all_expenses_total'] }}</strong></p>
-                                                    </p>
-                                                    <p class="mb-2">
-                                                        <u>Reste à la caisse</u><br/> <strong>{{ $cart['remaining_amount'] }}</strong>
-                                                    </p>
+                                                <td>
+                                                    {{ $cart['total_amount'] }}
                                                 </td>
                                                 <td class="align-middle">
                                                     <a class="btn btn-sm w-100 btn-info py-0 rounded-pill" href="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}">
@@ -106,6 +95,6 @@
                             </div>
                         </div>
                         <div class="col-12 mt-3 d-flex justify-content-center">
-                            {{ $users_req->links() }}
+                            {{ $carts_req->links() }}
                         </div>
                     </div>
