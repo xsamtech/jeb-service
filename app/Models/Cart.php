@@ -74,7 +74,7 @@ class Cart extends Model
         $totalOrders = $this->total_amount;  // The total price of orders
 
         // Total expenses associated with each order
-        $totalTitheExpenses = $this->customer_orders()
+        $totalExpenses = $this->customer_orders()
                                 ->whereHas('expenses')
                                 ->with('expenses')  // Relationship with expenses
                                 ->get()
@@ -85,7 +85,7 @@ class Cart extends Model
                                 })->sum();
 
         // The remaining money is the difference between the total orders and expenses
-        return $totalOrders - $totalTitheExpenses;
+        return $totalOrders - $totalExpenses;
     }
 
     /**

@@ -23,7 +23,7 @@ class Cart extends JsonResource
             'id' => $this->id,
             'payment_code' => $this->payment_code,
             'is_paid' => $this->is_paid,
-            'total_amount' => $this->total_amount . '$',
+            'total_amount' => formatDecimalNumber($this->total_amount) . '$',
             'remaining_amount' => formatDecimalNumber($this->remainingAmount) . '$',
             'tithe_10_percent_expenses_total' => formatDecimalNumber($this->dime10PercentExpensesTotal) . '$',
             'other_expenses_total' => formatDecimalNumber($this->otherExpensesTotal) . '$',

@@ -4,6 +4,7 @@
                                 <!-- Data list content -->
                                 <div class="table-responsive">
                                     <table class="table table-striped table-bordered border-top">
+                                        <caption>{{ count($selected_cart['orders']) > 1 ? 'Panneaux loués' : 'Panneau loué' }} le {{ $selected_cart['created_at_explicit'] }}</caption>
                                         <thead>
                                             <tr>
                                                 <th>Designation</th>
@@ -18,7 +19,7 @@
 @forelse ($selected_cart['orders'] as $order)
                                             <tr>
                                                 <td class="align-middle">
-                                                    {{ $order->panel->location }}
+                                                    {{ $order->face->panel->location }} (<strong>{{ strtoupper($order->face->face_name) }}</strong>) 
                                                 </td>
                                                 <td class="align-middle">
                                                     {{ formatDecimalNumber($order->price_at_that_time) . ' $' }}

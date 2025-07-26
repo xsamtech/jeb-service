@@ -33,7 +33,7 @@
                                     <h3 class="text-white fw-light mt-2">Caisse</h3>
                                     <h5 class="text-white">{{ data_get($balance_summary, 'total_earnings', 0) . ' $' }}</h5>
                                 </div>
-                                <a href="{{ route('dashboard.statistics') }}" class="stretched-link"></a>
+                                <a role="button" class="stretched-link"></a>
                             </div>
                         </div>
 

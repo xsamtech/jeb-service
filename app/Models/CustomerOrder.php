@@ -59,4 +59,12 @@ class CustomerOrder extends Model
     {
         return $this->hasMany(Expense::class);
     }
+
+    /**
+     * Order tithe
+     */
+    public function getTitheAttribute()
+    {
+        return $this->expenses()->where('designation', 'Dîme (10%)')->pluck('amount')->first();
+    }
 }

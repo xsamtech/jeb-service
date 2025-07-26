@@ -34,6 +34,8 @@
         <style>
             * { font-family: "Plus Jakarta Sans", sans-serif }
             textarea { resize: none; }
+            table { caption-side: top; /* S'assure que le titre est en haut de la table */ }
+            caption { font-size: 1.2em; font-weight: bold; color: #333; text-align: center; margin-bottom: 10px; }
             th, td, .form-label { font-size: 14px }
             .user-account { text-decoration: none; color: #000; }
             .navbar-toggler { position: absolute; right: 1rem; z-index: 9997; }
