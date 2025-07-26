@@ -11,7 +11,9 @@
                                                 <th>Prix unitaire</th>
                                                 <th>Nombre de jours</th>
                                                 <th>Prix total</th>
+@if ($selected_cart['is_paid'] == 0)
                                                 <th></th>
+@endif
                                             </tr>
                                         </thead>
 
@@ -31,14 +33,6 @@
         $duration = $date1->diff($date2);
     @endphp
                                                     {{ $duration->d . ' ' . ( $duration->d > 1 ? 'jours' : 'jour') }}
-                                                    {{-- <form class="row row-cols-sm-auto g-0 align-items-center" method="POST" action="{{ route('dashboard.user.entity.datas', ['entity' => 'orders', 'id' => $order->id]) }}">
-                                                        <div class="col-12">
-                                                            <input type="text" name="end_date" id="end_date{{ $order->id }}" class="form-control rounded-0" value="{{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $order->end_date)->format('d/m/Y H:i') }}">
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <button type="submit" class="btn bg-gradient-primary-to-secondary rounded-0" style="width: 37px; height: 37px; padding: 0;"><i class="bi bi-check text-white fs-3" style="position: relative;; top: -3px;"></i></button>
-                                                        </div>
-                                                    </form> --}}
                                                 </td>
                                                 <td class="align-middle">
     @php
@@ -47,11 +41,13 @@
     @endphp
                                                     {{ formatDecimalNumber($total_price) . ' $' }}
                                                 </td>
+@if ($selected_cart['is_paid'] == 0)
                                                 <td class="align-middle">
                                                     <a class="btn btn-sm w-100 btn-danger py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'orders', 'id' => $order->id]) }}">
                                                         <i class="bi bi-trash me-2"></i>Retirer
                                                     </a>
                                                 </td>
+@endif
                                             </tr>
 @empty
 @endforelse

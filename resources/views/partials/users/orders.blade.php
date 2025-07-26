@@ -80,14 +80,16 @@
                                                     <a class="btn btn-sm w-100 btn-info py-0 rounded-pill" href="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}">
                                                         Détails<i class="bi bi-chevron-double-right ms-1"></i>
                                                     </a>
+    @if ($cart['is_paid'] == 0)
                                                     <a class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
+    @endif
     @if ($cart['is_paid'] == 0)
                                                     <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
         @csrf
                                                         <input type="hidden" name="is_paid" value="1">
-                                                        <button class="btn btn-sm w-100 btn-success mt-1 py-0 rounded-pill">
+                                                        <button class="btn btn-sm w-100 btn-outline-success mt-1 pt-0 pb-1 rounded-pill">
                                                             Attester paiement
                                                         </button>
                                                     </form>
@@ -95,7 +97,7 @@
                                                     <form action="{{ route('dashboard.user.entity.datas', ['entity' => 'cart', 'id' => $cart['id']]) }}" method="post">
         @csrf
                                                         <input type="hidden" name="is_paid" value="0">
-                                                        <button class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill">
+                                                        <button class="btn btn-sm w-100 btn-outline-danger mt-1 pt-0 pb-1 rounded-pill">
                                                             Annuler paiement
                                                         </button>
                                                     </form>

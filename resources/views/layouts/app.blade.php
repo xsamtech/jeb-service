@@ -664,11 +664,12 @@
 
                         data.orders.forEach(order => {
                             const orderItem = document.createElement('div');
+                            const orderFace = (order.face && order.face.face_name ? order.face.face_name.toUpperCase() : '');
 
-                            orderItem.classList.add('order-item', 'btn', 'btn-light', 'mb-2', 'w-100');
+                            orderItem.classList.add('order-item', 'btn', 'btn-sm', 'btn-light', 'text-start', 'mb-2', 'w-100');
                             orderItem.setAttribute('role', 'button');
                             orderItem.dataset.id = order.id;
-                            orderItem.innerHTML = order.panel.location;
+                            orderItem.innerHTML = `${order.panel.location} (${orderFace})<br><strong>Le ${order.created_at_explicit}</strong>`;
                             orderList.appendChild(orderItem);
 
                             // Ajouter un event listener pour chaque commande
@@ -702,7 +703,9 @@
                     fetch(`${currentHost}/order/${orderId}`)
                     .then(response => response.json())
                     .then(order => {
-                        document.getElementById('location').textContent = order.panel.location;
+                        const orderFace = (order.face && order.face.face_name ? order.face.face_name.toUpperCase() : '');
+
+                        document.getElementById('location').textContent = `${order.panel.location} (${orderFace})`;
                         document.getElementById('created_at').textContent = order.created_at_explicit;
                         document.getElementById('user_fullname').textContent = `${order.user.firstname} ${order.user.lastname}`;
                         document.getElementById('order_id').value = order.id;

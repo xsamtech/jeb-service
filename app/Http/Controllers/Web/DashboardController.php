@@ -73,7 +73,10 @@ class DashboardController extends Controller
      */
     public function getOrders(Request $request)
     {
-        $orders = CustomerOrder::with('panel', 'user')->paginate(10)->appends($request->query());
+        $orders = CustomerOrder::with('face.panel', 'user')
+                                    ->whereHas('cart', function ($query) { 
+                                        $query->where('is_paid', 0); 
+                                    })->orderByDesc('created_at')->paginate(10)->appends($request->query());
 
         return response()->json([
             'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
@@ -784,8 +787,12 @@ class DashboardController extends Controller
         $customerOrder = CustomerOrder::find($request->customer_order_id);
 
         if ($customerOrder) {
+            $date1 = new Carbon($customerOrder->created_at);
+            $date2 = new Carbon($customerOrder->end_date);
+            $duration = $date1->diff($date2);
             // Prix de la commande
-            $order_price = $customerOrder->price_at_that_time;
+            $count_duration = ($duration->d == 0 ? 1 : $duration->d);
+            $order_price = $customerOrder->price_at_that_time * $count_duration;
 
             // Met à jour le reste d'argent après la nouvelle dépense
             $rest_of_money = $order_price - $request->amount;

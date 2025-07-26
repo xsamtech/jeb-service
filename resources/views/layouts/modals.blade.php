@@ -429,9 +429,9 @@
 
                                 <div id="selectedOrder" class="col-12 d-none">
                                     <div class="card card-body">
-                                        <p class="card-text">Emplacements : <span id="location"></span></p>
-                                        <p class="card-text">Date de commande : <span id="created_at"></span></p>
-                                        <p class="card-text">Loué par : <span id="user_fullname"></span></p>
+                                        <p class="card-text small"><u>Panneau</u> :<br><strong id="location"></strong></p>
+                                        <p class="card-text small"><u>Date de commande</u> :<br><strong>Le</strong> <strong id="created_at"></strong></p>
+                                        <p class="card-text small"><u>Loué par</u> :<br><strong id="user_fullname"></strong></p>
                                     </div>
                                 </div>
                             </div>
@@ -446,7 +446,7 @@
             </div>
         </div>
 
-        <!-- ### Add new admin ### -->
+        <!-- ### Orders list ### -->
         <div class="modal fade" id="ordersListModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">

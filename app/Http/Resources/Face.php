@@ -21,7 +21,7 @@ class Face extends JsonResource
     {
         return [
             'id' => $this->id,
-            'format' => $this->face_name,
+            'face_name' => $this->face_name,
             'is_available' => $this->is_available,
             'created_by' => !empty($this->created_by) ? ModelsUser::find($this->created_by) : $this->created_by,
             'updated_by' => !empty($this->updated_by) ? ModelsUser::find($this->updated_by) : $this->updated_by,

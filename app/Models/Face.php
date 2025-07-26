@@ -30,7 +30,7 @@ class Face extends Model
      */
     public function panel(): BelongsTo
     {
-        return $this->belongsTo(Panel::class);
+        return $this->belongsTo(Panel::class, 'panel_id');
     }
 
     /**

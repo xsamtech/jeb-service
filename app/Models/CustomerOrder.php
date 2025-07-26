@@ -67,4 +67,12 @@ class CustomerOrder extends Model
     {
         return $this->expenses()->where('designation', 'Dîme (10%)')->pluck('amount')->first();
     }
+
+    /**
+     * Undirect relationship between "customer_orders" and "panels"
+     */
+    public function panel()
+    {
+        return $this->hasOneThrough(Panel::class, Face::class, 'panel_id', 'id', 'face_id', 'panel_id');
+    }
 }
