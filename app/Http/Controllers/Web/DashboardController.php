@@ -198,7 +198,7 @@ class DashboardController extends Controller
                                         ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
                                         ->whereIn('customer_orders.user_id', $customers_ids)
                                         ->select('carts.*')
-                                        ->groupBy('carts.id')
+                                        ->groupBy('carts.id', 'carts.created_at')
                                         ->orderBy('carts.created_at', 'desc')
                                         ->paginate(5)->appends(request()->query());
             $carts_data = ResourcesCart::collection($carts_collection)->resolve();
