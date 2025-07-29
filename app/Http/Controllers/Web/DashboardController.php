@@ -197,7 +197,7 @@ class DashboardController extends Controller
             $carts_collection = Cart::with(['customer_orders.user', 'customer_orders.face', 'customer_orders.expenses'])
                                         ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
                                         ->whereIn('customer_orders.user_id', $customers_ids)
-                                        ->select('carts.*')
+                                        ->select('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
                                         ->groupBy('carts.id', 'carts.created_at')
                                         ->orderBy('carts.created_at', 'desc')
                                         ->paginate(5)->appends(request()->query());
