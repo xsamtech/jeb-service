@@ -500,6 +500,22 @@ class DashboardController extends Controller
 
             $accountancy = Accountancy::where('expense_id', $expense->id)->first();
 
+            if ($expense->customer_order_id != null) {
+                $tithe_expense = Expense::where('designation', 'Dîme (10%)')->where('customer_order_id', $expense->customer_order_id)->first();
+
+                if (!$tithe_expense) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Dîme de location pour cette dépense non trouvée',
+                    ], 404);
+                }
+
+                $order_price = ($tithe_expense->amount * 10) + $expense->amount;
+                $new_tithe_amount = $order_price / 10;
+
+                $tithe_expense->update(['amount' => $new_tithe_amount]);
+            }
+
             // Withdraw expense with its accountancy
             $accountancy->delete();
             $expense->delete();

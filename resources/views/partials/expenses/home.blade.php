@@ -24,7 +24,7 @@
                                                     <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.expense.datas', ['id' => $expense['id']]) }}">
                                                         Détails<i class="bi bi-chevron-double-right ms-1"></i>
                                                     </a>
-                                                    <a class="btn btn-sm btn-danger ms-sm-2 py-0 rounded-pill" href="{{ route('dashboard.expense.delete', ['id' => $expense['id']]) }}">
+                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-2 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'expense', 'item-{{ $expense['id'] }}')">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>
