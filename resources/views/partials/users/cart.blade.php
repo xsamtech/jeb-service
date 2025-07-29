@@ -43,7 +43,7 @@
                                                 </td>
 @if ($selected_cart['is_paid'] == 0)
                                                 <td class="align-middle">
-                                                    <a class="btn btn-sm w-100 btn-danger py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'orders', 'id' => $order->id]) }}">
+                                                    <a role="button" class="btn btn-sm w-100 btn-danger py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'order', 'item-{{ $order->id }}')">
                                                         <i class="bi bi-trash me-2"></i>Retirer
                                                     </a>
                                                 </td>

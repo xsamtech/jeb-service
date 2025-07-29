@@ -81,7 +81,7 @@
                                                         Détails<i class="bi bi-chevron-double-right ms-1"></i>
                                                     </a>
     @if ($cart['is_paid'] == 0)
-                                                    <a class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'cart', 'id' => $cart['id']]) }}">
+                                                    <a role="button" class="btn btn-sm w-100 btn-danger mt-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'cart', 'item-{{ $cart['id'] }}')">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
     @endif

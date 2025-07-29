@@ -50,13 +50,16 @@
                                                 <td class="align-middle text-center">
                                                     <ul class="list-group list-group-item-light">
         @forelse ($panel['faces'] as $face)
-                                                        <li class="list-group-item">
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
                                                             <h6 class="m-0">
                                                                 {{ $face['face_name'] }}
                                                                 <div class="badge bg-light border text-{{ $face['is_available'] == 1 ? 'success' : 'danger' }} text-uppercase">
                                                                     {{ $face['is_available'] == 1 ? 'Oui' : 'Non' }}
                                                                 </div>
                                                             </h6>
+                                                            <a role="button" title="Supprimer la face" onclick="event.preventDefault(); performAction('delete', 'face', 'item-{{ $face['id'] }}')">
+                                                                <i class="bi bi-x-lg"></i>
+                                                            </a>
                                                         </li>
         @empty
         @endforelse
@@ -67,7 +70,7 @@
                                                     <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.panel.datas', ['id' => $panel['id']]) }}">
                                                         Détails<i class="bi bi-chevron-double-right ms-1"></i>
                                                     </a>
-                                                    <a class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" href="{{ route('dashboard.panel.delete', ['id' => $panel['id']]) }}">
+                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'panel', 'item-{{ $panel['id'] }}')">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>

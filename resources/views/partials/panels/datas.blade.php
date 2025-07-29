@@ -17,34 +17,31 @@
                                         <!-- Format -->
                                         <div class="col-sm-6">
                                             <label for="format" class="form-label fw-bold">Format</label>
-                                            <input type="text" name="format" class="form-control" id="format" value="{{ $selected_panel['format'] }}">
+                                            <select name="format" id="format" class="form-select">
+                                                <option {{ explode(' ', $selected_panel['format'])[0] == 'Portrait' ? 'selected' : '' }}>Portrait</option>
+                                                <option {{ explode(' ', $selected_panel['format'])[0] == 'Paysage' ? 'selected' : '' }}>Paysage</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Number of faces -->
+                                        <div class="col-sm-6">
+                                            <label for="number_of_faces" class="form-label fw-bold">Nombre des faces</label>
+                                            <select name="number_of_faces" id="number_of_faces" class="form-select">
+                                                <option {{ count($selected_panel['faces']) == 1 ? 'selected' : '' }} value="1">1 Face (Recto)</option>
+                                                <option {{ count($selected_panel['faces']) == 2 ? 'selected' : '' }} value="2">2 Faces (Recto/Verso)</option>
+                                            </select>
                                         </div>
 
                                         <!-- Price -->
                                         <div class="col-sm-6">
-                                            <label for="price" class="form-label fw-bold">Prix</label>
+                                            <label for="price" class="form-label fw-bold">Prix unitaire</label>
                                             <input type="number" step="0.01" name="price" class="form-control" id="price" value="{{ $selected_panel['price'] }}">
                                         </div>
 
                                         <!-- Location -->
-                                        <div class="col-sm-6">
+                                        <div class="col-12">
                                             <label for="location" class="form-label fw-bold">Site / Emplacement</label>
                                             <textarea class="form-control" name="location" id="location">{{ $selected_panel['location'] }}</textarea>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-3 text-center">
-                                        <label class="form-label fw-bold">Est disponible</label>
-                                        <div class="d-flex justify-content-center">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="is_available" id="is_available1" value="1"{{ $selected_panel['is_available'] == 1 ? ' checked' : '' }}>
-                                                <label class="form-check-label" for="is_available1">Oui</label>
-                                            </div>
-
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="is_available" id="is_available0" value="0"{{ $selected_panel['is_available'] == 0 ? ' checked' : '' }}>
-                                                <label class="form-check-label" for="is_available0">Non</label>
-                                            </div>
                                         </div>
                                     </div>
 

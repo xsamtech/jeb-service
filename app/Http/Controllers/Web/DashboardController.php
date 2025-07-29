@@ -69,7 +69,8 @@ class DashboardController extends Controller
     /**
      * GET: Orders list (paginated)
      *
-     * @return \Illuminate\View\View
+     * @param  \Illuminate\Http\Request
+     * @return \Illuminate\Http\Response
      */
     public function getOrders(Request $request)
     {
@@ -87,7 +88,8 @@ class DashboardController extends Controller
     /**
      * GET: Selected order
      *
-     * @return \Illuminate\View\View
+     * @param  int $id
+     * @return \Illuminate\Http\Response
      */
     public function getOrderDetails($id)
     {
@@ -397,134 +399,195 @@ class DashboardController extends Controller
 
     // ==================================== HTTP DELETE METHODS ====================================
     /**
-     * GET: Delete panel
+     * GET: Delete something
      *
-     * @param  int $id
-     * @throws \Illuminate\Http\RedirectResponse
-     */
-    public function removePanel($id)
-    {
-        $panel = Panel::find($id);
-
-        if (!$panel) {
-            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Panneau non trouvé.');
-        }
-
-        $filesToDelete = File::where('panel_id', $panel->id)->get();
-
-        foreach ($filesToDelete as $file) {
-            // Delete the file from the file system
-            $relativeStoragePath = str_replace(getWebURL() . '/storage/', '', $file->file_url);
-
-            Storage::disk('public')->delete($relativeStoragePath);
-
-            // Deletes the row at the database
-            $file->delete();
-        }
-
-        $panel->delete();
-
-        return redirect('/panels')->with('success_message', 'Panneau supprimé.');
-    }
-
-    /**
-     * GET: Delete expense
-     *
-     * @param  int $id
-     * @throws \Illuminate\Http\RedirectResponse
-     */
-    public function removeExpense($id)
-    {
-        $expense = Expense::find($id);
-
-        if (!$expense) {
-            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Dépense non trouvée.');
-        }
-
-        $accountancy = Accountancy::where('expense_id', $expense->id)->first();
-
-        // Wihdraw panel & accountancy order
-        $accountancy->delete();
-        $expense->delete();
-
-        return redirect('/expenses')->with('success_message', 'Dépense supprimée.');
-    }
-
-    /**
-     * GET: Delete customer
-     *
-     * @param  int $id
-     * @throws \Illuminate\Http\RedirectResponse
-     */
-    public function removeUser($id)
-    {
-        $user = User::find($id);
-
-        if (!$user) {
-            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Utilisateur non trouvé.');
-        }
-
-        $user->delete();
-
-        return redirect('/users')->with('success_message', 'Utilisateur supprimé.');
-    }
-
-    /**
-     * GET: Delete customer
-     *
-     * @param  \Illuminate\Http\Request  $request
      * @param  string $entity
      * @param  int $id
      * @throws \Illuminate\Http\RedirectResponse
      */
-    public function removeUserEntity(Request $request, $entity, $id)
+    public function removeData(Request $request, $entity, $id)
     {
-        if (!in_array($entity, ['roles', 'orders', 'cart'])) {
-            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Il n\'y a aucun lien de ce genre.');
+        if ($entity == 'panel') {
+            $panel = Panel::find($id);
+
+            if (!$panel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Panneau non trouvé',
+                ], 404);
+            }
+
+            $facesToDelete = Face::where('panel_id', $panel->id)->get();
+            $filesToDelete = File::where('panel_id', $panel->id)->get();
+
+            if (count($facesToDelete) > 0) {
+                foreach ($facesToDelete as $face) {
+                    // Deletes the row at the database
+                    $face->delete();
+                }
+            }
+
+            if (count($filesToDelete) > 0) {
+                foreach ($filesToDelete as $file) {
+                    // Delete the file from the file system
+                    $relativeStoragePath = str_replace(getWebURL() . '/storage/', '', $file->file_url);
+
+                    Storage::disk('public')->delete($relativeStoragePath);
+
+                    // Deletes the row at the database
+                    $file->delete();
+                }
+            }
+
+            $panel->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Panneau supprimé',
+            ]);
         }
 
-        if ($entity == 'roles') {
+        if ($entity == 'face') {
+            $face = Face::find($id);
+
+            if (!$face) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face de panneau non trouvée',
+                ], 404);
+            }
+
+            $panel = $face->panel;
+
+            if (!$panel) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Panneau non trouvé',
+                ], 404);
+            }
+
+            $panel_faces = $panel->faces;
+
+            if (count($panel_faces) == 2) {
+                $panel_format_text = explode(' ', $panel->format)[0];
+                $panel_new_format = $panel_format_text . ' (1 face)';
+
+                $panel->update(
+                    ['format' => $panel_new_format]
+                );
+
+                $face->delete();
+
+            } elseif (count($panel_faces) == 1) {
+                $panel->delete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Face de panneau supprimée',
+            ]);
+        }
+
+        if ($entity == 'expense') {
+            $expense = Expense::find($id);
+
+            if (!$expense) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dépense non trouvée',
+                ], 404);
+            }
+
+            $accountancy = Accountancy::where('expense_id', $expense->id)->first();
+
+            // Withdraw expense with its accountancy
+            $accountancy->delete();
+            $expense->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dépense supprimée',
+            ]);
+        }
+
+        if ($entity == 'user') {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé',
+                ], 404);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Utilisateur supprimé',
+            ]);
+        }
+
+        if ($entity == 'role') {
             $role = Role::find($id);
 
             if (!$role) {
-                return back()->with('error_message', 'Rôle non trouvé.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Rôle non trouvé',
+                ], 404);
             }
 
             $role->delete();
 
-            return redirect('/users/' . $entity)->with('success_message', 'Rôle supprimé.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Rôle supprimé',
+            ]);
         }
 
-        if ($entity == 'orders') {
+        if ($entity == 'order') {
             // Check if cart exists, is unpaid
-            $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->first();
+            $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->latest()->first();
 
             if (!$cart) {
-                return back()->with('error_message', 'Location de panneau non trouvée.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Location de panneau non trouvée',
+                ], 404);
             }
 
-            // Get the ordered panel with the pivot relationship
-            $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['panel_id', $id]])->first();
+            // Get the ordered face with the pivot relationship
+            $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['face_id', $id]])->first();
 
             if (!$customer_order) {
-                return back()->with('error_message', 'Panneau non trouvé dans la location.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face de panneau non trouvée dans la location',
+                ], 404);
             }
 
-            // Retrieve the panel in stock
-            $in_stock_panel = Panel::find($customer_order->panel_id);
+            // Retrieve the face in the stock
+            $in_stock_face = Face::find($customer_order->face_id);
 
-            if (!$in_stock_panel) {
-                return back()->with('error_message', 'Panneau introuvable dans le stock.');
+            if (!$in_stock_face) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Face de panneau introuvable dans le stock',
+                ], 404);
             }
 
-            // Updates the panel stock
-            $in_stock_panel->update([
+            // Update the face in the stock
+            $in_stock_face->update([
                 'is_available' => 1
             ]);
 
             $customer_order->delete();
 
-            return redirect('/users/' . $entity . '/' . $cart->id)->with('success_message', 'Panneau retiré de la location.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Face de panneau retirée de la location',
+            ]);
         }
 
         if ($entity == 'cart') {
@@ -532,16 +595,31 @@ class DashboardController extends Controller
             $cart = Cart::find('id');
 
             if (!$cart) {
-                return back()->with('error_message', 'Locations non trouvées.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Locations non trouvées',
+                ], 404);
             }
 
+            $ordersToDelete = CustomerOrder::where('cart_id', $cart->id)->get();
             $accountancy = Accountancy::where('cart_id', $cart->id)->first();
 
-            // Wihdraw panel & accountancy order
+            if (count($ordersToDelete) > 0) {
+                // Withdraw orders based on cart
+                foreach ($ordersToDelete as $order) {
+                    // Deletes the row at the database
+                    $order->delete();
+                }
+            }
+
+            // Withdraw cart & accountancy
             $accountancy->delete();
             $cart->delete();
 
-            return redirect('/users/orders')->with('success_message', 'Locations supprimée.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Locations supprimées',
+            ]);
         }
     }
 
@@ -683,9 +761,6 @@ class DashboardController extends Controller
             'format' => ['required', 'string'],
             'price' => ['required', 'numeric', 'between:0,9999999.99'],
             'location' => ['required', 'string'],
-            // 'is_available' => ['required', 'boolean'],
-            // 'images_urls.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,bmp,gif', 'max:2048'],
-            // 'file_name' => ['nullable', 'string'],
         ], [
             'dimensions.required' => 'Veuillez mettre les dimensions.',
             'dimensions.unique' => 'Cette dimension existe déjà.',
@@ -722,25 +797,6 @@ class DashboardController extends Controller
                 'panel_id' => $panel->id,
             ]);
         }
-
-        // If image files exist
-        // if ($request->hasFile('images_urls')) {
-        //     foreach ($request->file('images_urls') as $singleFile) {
-        //         $extension = $singleFile->getClientOriginalExtension();
-        //         $uniqueName = Str::random(50) . '.' . $extension;
-        //         $relativePath = 'images/messages/' . $panel->id . '/' . $uniqueName;
-
-        //         // Storage in the public disk
-        //         $singleFile->storeAs('images/messages/' . $panel->id, $uniqueName, 'public');
-
-        //         File::create([
-        //             'file_name' => trim($request->file_name ?? '') ?: $singleFile->getClientOriginalName(),
-        //             'file_url' => getWebURL() . '/storage/' . $relativePath,
-        //             'file_type' => 'photo',
-        //             'panel_id' => $panel->id,
-        //         ]);
-        //     }
-        // }
 
         return response()->json(['status' => 'success', 'message' => 'Panneau ajouté avec succès.']);
     }
@@ -1126,10 +1182,6 @@ class DashboardController extends Controller
             $rules['location'] = ['nullable', 'string', 'max:65535'];
         }
 
-        if ($request->has('is_available')) {
-            $rules['is_available'] = ['required', 'boolean'];
-        }
-
         if ($request->hasFile('images_urls')) {
             $rules['images_urls.*'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,bmp,gif', 'max:2048'];
             $rules['file_name'] = ['nullable', 'string'];
@@ -1140,12 +1192,62 @@ class DashboardController extends Controller
             $rules['deleted_file_ids.*'] = ['integer', 'exists:files,id'];
         }
 
-        $validated = $request->validate($rules);
+        // Gestion des faces : ajout/suppression/modification des faces
+        $existing_faces = Face::where('panel_id', $panel->id)->get();
+        $current_format = $panel->format;
+        $current_faces_count = $existing_faces->count();  // Nombre actuel de faces du panneau
 
-        $validated['updated_by'] = Auth::id();
+        // Étape 1 : Mettre à jour le format uniquement si le nombre de faces change
+        if ($request->number_of_faces != $current_faces_count) {
+            // Si le format contient "(1 face)", on le remplace par "(2 faces)" ou inversement
+            if (strpos($current_format, '(1 face)') !== false) {
+                $new_format = str_replace('(1 face)', '(2 faces)', $current_format);
+                $panel->format = $new_format;
 
-        // Fields update
-        $panel->update($validated);
+            } elseif (strpos($current_format, '(2 faces)') !== false) {
+                $new_format = str_replace('(2 faces)', '(1 face)', $current_format);
+                $panel->format = $new_format;
+            }
+        }
+
+        // Étape 2 : Gestion des faces
+        if ($request->number_of_faces == 1) {
+            // Si le panneau avait 2 faces, on supprime la face "Verso"
+            if ($existing_faces->count() == 2) {
+                Face::where('panel_id', $panel->id)->where('face_name', 'Verso')->delete();
+            }
+
+            // Assure-toi qu'il y a au moins la face "Recto"
+            if ($existing_faces->count() == 0) {
+                Face::create([
+                    'face_name' => 'Recto',
+                    'is_available' => !empty($request->is_available) ? $request->is_available : 1,
+                    'panel_id' => $panel->id,
+                ]);
+            }
+
+        } else if ($request->number_of_faces == 2) {
+            // Si le panneau avait une seule face, on ajoute la face "Verso" ou "Recto"
+            if ($existing_faces->count() == 1) {
+                $existing_face = $existing_faces->first();
+                $new_face_name = $existing_face->face_name == 'Recto' ? 'Verso' : 'Recto';
+
+                // Création de la nouvelle face
+                Face::create([
+                    'face_name' => $new_face_name,
+                    'is_available' => !empty($request->is_available) ? $request->is_available : 1,
+                    'panel_id' => $panel->id,
+                ]);
+            }
+        }
+
+        // Mise à jour des autres champs du panneau
+        $panel->update([
+            'dimensions' => $request->dimensions ?? $panel->dimensions,
+            'price' => $request->price ?? $panel->price,
+            'location' => $request->location ?? $panel->location,
+            'updated_by' => Auth::id(),
+        ]);
 
         // Deleting selected files
         if (!empty($request->deleted_file_ids)) {

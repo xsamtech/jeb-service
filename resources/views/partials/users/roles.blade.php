@@ -22,7 +22,7 @@
                                                     <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.user.entity.datas', ['entity' => 'roles', 'id' => $role->id]) }}">
                                                         Détails<i class="bi bi-chevron-double-right ms-1"></i>
                                                     </a>
-                                                    <a class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" href="{{ route('dashboard.user.entity.delete', ['entity' => 'roles', 'id' => $role->id]) }}">
+                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'role', 'item-{{ $role->id }}')">
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </td>

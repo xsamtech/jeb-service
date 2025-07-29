@@ -26,6 +26,7 @@
 
         <!-- Addons CSS-->
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/jquery/jquery-ui/jquery-ui.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/sweetalert2/dist/sweetalert2.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/jquery/datetimepicker/css/jquery.datetimepicker.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/cropper/css/cropper.min.css') }}">
 
@@ -34,6 +35,7 @@
         <style>
             * { font-family: "Plus Jakarta Sans", sans-serif }
             textarea { resize: none; }
+            form { margin: 0; }
             table { caption-side: top; /* S'assure que le titre est en haut de la table */ }
             caption { font-size: 1.2em; font-weight: bold; color: #333; text-align: center; margin-bottom: 10px; }
             th, td, .form-label { font-size: 14px }
@@ -193,6 +195,71 @@
         <!-- Custom JS-->
         <script src="{{ asset('assets/js/scripts.custom.js') }}"></script>
         <script type="text/javascript">
+            /**
+             * Perform action
+             * 
+             * @param boolean success
+             * @param string message
+             */
+            function performAction(action, entity, entity_id) {
+                if (action === 'delete') {
+                    var entityId = parseInt(entity_id.split('-')[1]);
+
+                    Swal.fire({
+                        title: 'Attention suppression',
+                        text: 'Voulez-vous vraiment supprimer ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Oui, supprimer',
+                        cancelButtonText: 'Annuler'
+
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                headers: headers,
+                                type: 'DELETE',
+                                url: `${currentHost}/delete/${entity}/${entityId}`,
+                                contentType: false,
+                                processData: false,
+                                data: JSON.stringify({ 'entity' : entity, 'id' : entityId }),
+                                success: function (result) {
+                                    if (!result.success) {
+                                        Swal.fire({
+                                            title: 'Oups !',
+                                            text: result.message,
+                                            icon: 'error'
+                                        });
+
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Parfait !',
+                                            text: result.message,
+                                            icon: 'success'
+                                        });
+                                        location.reload();
+                                    }
+                                },
+                                error: function (xhr, error, status_description) {
+                                    console.log(xhr.responseJSON);
+                                    console.log(xhr.status);
+                                    console.log(error);
+                                    console.log(status_description);
+                                }
+                            });
+
+                        } else {
+                            Swal.fire({
+                                title: 'Annuler',
+                                text: 'Suppression annulée',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            }
+
             /**
              * Check string is numeric
              * 

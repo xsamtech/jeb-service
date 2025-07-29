@@ -44,27 +44,24 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::post('/panels', [DashboardController::class, 'addPanel']);
     Route::get('/panels/{id}', [DashboardController::class, 'panelDatas'])->whereNumber('id')->name('dashboard.panel.datas');
     Route::post('/panels/{id}', [DashboardController::class, 'updatePanel'])->whereNumber('id');
-    Route::get('/delete/panels/{id}', [DashboardController::class, 'removePanel'])->whereNumber('id')->name('dashboard.panel.delete');
     Route::post('/panel-quantity/{entity}/{id}', [DashboardController::class, 'updatePanelQuantity'])->whereNumber('id')->name('dashboard.panel.updateQuantity');
     Route::get('/expenses', [DashboardController::class, 'expenses'])->name('dashboard.expenses');
     Route::post('/expenses', [DashboardController::class, 'addExpense']);
     Route::get('/expenses/{id}', [DashboardController::class, 'expenseDatas'])->whereNumber('id')->name('dashboard.expense.datas');
     Route::post('/expenses/{id}', [DashboardController::class, 'updateExpense'])->whereNumber('id');
-    Route::get('/delete/expenses/{id}', [DashboardController::class, 'removeExpense'])->whereNumber('id')->name('dashboard.expense.delete');
     Route::get('/users', [DashboardController::class, 'users'])->name('dashboard.users');
     Route::post('/users', [DashboardController::class, 'addUser']);
     Route::get('/users/{id}', [DashboardController::class, 'userDatas'])->whereNumber('id')->name('dashboard.user.datas');
     Route::post('/users/{id}', [DashboardController::class, 'updateUser'])->whereNumber('id');
-    Route::get('/delete/users/{id}', [DashboardController::class, 'removeUser'])->whereNumber('id')->name('dashboard.user.delete');
     Route::get('/users/{entity}', [DashboardController::class, 'usersEntity'])->name('dashboard.users.entity');
     Route::post('/users/{entity}', [DashboardController::class, 'addUserEntity']);
     Route::get('/users/{entity}/{id}', [DashboardController::class, 'userEntityDatas'])->whereNumber('id')->name('dashboard.user.entity.datas');
     Route::post('/users/{entity}/{id}', [DashboardController::class, 'updateUserEntity'])->whereNumber('id');
-    Route::get('/delete/users/{entity}/{id}', [DashboardController::class, 'removeUserEntity'])->whereNumber('id')->name('dashboard.user.entity.delete');
     Route::get('/statistics', [DashboardController::class, 'statistics'])->name('dashboard.statistics');
     Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
     Route::get('/account/settings', [DashboardController::class, 'account'])->name('dashboard.account.settings');
     Route::post('/account/settings', [DashboardController::class, 'updateAccount']);
+    Route::delete('/delete/{entity}/{id}', [DashboardController::class, 'removeData'])->whereNumber('id')->name('data.delete');
 });
 Route::get('/check-panels', function () {
     CheckExpiredPanelsJob::dispatch();
