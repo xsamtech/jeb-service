@@ -315,7 +315,7 @@ class DashboardController extends Controller
         }
 
         if (!empty($expense->customer_order_id)) {
-            $expense_order = CustomerOrder::find($id);
+            $expense_order = CustomerOrder::find($expense->customer_order_id);
 
             if (is_null($expense_order)) {
                 return redirect('/expenses')->with('error_message', 'Location non trouvée.');
