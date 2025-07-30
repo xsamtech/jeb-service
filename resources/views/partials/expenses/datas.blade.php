@@ -27,6 +27,7 @@
                                         </div>
 
                                         <!-- Add order -->
+{{ dd($expense_order) }}
 @if ($expense_order != null)
                                         <div id="selectedOrder" class="col-12 d-none">
                                             <div class="card card-body">
