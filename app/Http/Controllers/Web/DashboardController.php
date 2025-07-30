@@ -322,6 +322,7 @@ class DashboardController extends Controller
             }
         }
 
+        dd($expense_order);
         return view('expenses', [
             'selected_expense' => new ResourcesExpense($expense),
             'expense_order' => !empty($expense_order) ? new ResourcesCustomerOrder($expense_order) : null,
