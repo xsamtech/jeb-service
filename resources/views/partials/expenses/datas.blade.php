@@ -23,7 +23,7 @@
                                         <!-- Outflow date -->
                                         <div class="col-sm-6">
                                             <label for="outflow_date" class="form-label fw-bold">Date/Heure de sortie</label>
-                                            <input type="datetime" name="outflow_date" class="form-control" id="outflow_date" value="{{ $selected_expense->outflow_date }}">
+                                            <input type="datetime" name="outflow_date" class="form-control" id="outflow_date" value="{{ !empty($selected_expense->outflow_date) ? $selected_expense->outflow_date->format('d/m/Y H:i') : null }}">
                                         </div>
 {{-- 
                                         <!-- Add order -->
