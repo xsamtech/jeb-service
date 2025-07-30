@@ -27,7 +27,7 @@
                                         </div>
 
                                         <!-- Add order -->
-@if (!empty($expense_order))
+@if ($expense_order != null)
                                         <div id="selectedOrder" class="col-12 d-none">
                                             <div class="card card-body">
                                                 <div class="d-flex justify-content-center align-items-center">
