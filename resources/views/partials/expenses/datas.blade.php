@@ -25,21 +25,26 @@
                                             <label for="outflow_date" class="form-label fw-bold">Date/Heure de sortie</label>
                                             <input type="datetime" name="outflow_date" class="form-control" id="outflow_date" value="{{ !empty($selected_expense->outflow_date) ? Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $selected_expense->outflow_date)->format('d/m/Y H:i') : null }}">
                                         </div>
-{{-- 
-                                        <!-- Add order -->
-                                        <div class="col-sm-6">
-                                            <input type="hidden" name="customer_order_id" id="order_id">
-                                            <label class="form-label fw-bold">Associer à une location</label>
-                                            <a role="button" id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</a>
-                                        </div>
 
+                                        <!-- Add order -->
+@if (!empty($expense_order))
                                         <div id="selectedOrder" class="col-12 d-none">
                                             <div class="card card-body">
-                                                <p class="card-text small"><u>Panneau</u> :<br><strong id="location"></strong></p>
-                                                <p class="card-text small"><u>Date de commande</u> :<br><strong>Le</strong> <strong id="created_at"></strong></p>
-                                                <p class="card-text small"><u>Loué par</u> :<br><strong id="user_fullname"></strong></p>
+                                                <div class="d-flex justify-content-center align-items-center">
+                                                    <input type="hidden" name="customer_order_id" id="order_id">
+                                                    <a role="button" id="openOrderModal" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#ordersListModal2">
+                                                        <i class="bi bi-trash me-2"></i>Changer de location
+                                                    </a>
+                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-2 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'expense_order', 'item-{{ $expense_order->id }}')">
+                                                        <i class="bi bi-trash me-2"></i>Supprimer
+                                                    </a>
+                                                </div>
+                                                <p class="card-text small"><u>Panneau</u> :<br><strong id="location">{{ $expense_order->panel->location . ' (' . strtolower($expense_order->face->face_name) . ')' }}</strong></p>
+                                                <p class="card-text small"><u>Date de commande</u> :<br><strong>Le</strong> <strong id="created_at">{{ $expense_order->created_at_explicit }}</strong></p>
+                                                <p class="card-text small"><u>Loué par</u> :<br><strong id="user_fullname">{{ $expense_order->user->firstname . ' ' . $expense_order->user->lastname }}</strong></p>
                                             </div>
-                                        </div> --}}
+                                        </div>
+@endif
                                     </div>
 
                                     <button type="submit" class="btn bg-gradient-primary-to-secondary w-100 mt-3 rounded-pill text-white">@lang('miscellaneous.register')</button>

@@ -308,12 +308,24 @@ class DashboardController extends Controller
     public function expenseDatas($id)
     {
         $expense = Expense::find($id);
+        $expense_order = null;
 
-        if (!$expense) {
-            return redirect(RouteServiceProvider::HOME)->with('error_message', 'Dépense non trouvée.');
+        if (is_null($expense)) {
+            return redirect('/expenses')->with('error_message', 'Dépense non trouvée.');
         }
 
-        return view('expenses', ['selected_expense' => new ResourcesExpense($expense)]);
+        if (!empty($expense->customer_order_id)) {
+            $expense_order = CustomerOrder::find($id);
+
+            if (is_null($expense_order)) {
+                return redirect('/expenses')->with('error_message', 'Location non trouvée.');
+            }
+        }
+
+        return view('expenses', [
+            'selected_expense' => new ResourcesExpense($expense),
+            'expense_order' => !empty($expense_order) ? new ResourcesCustomerOrder($expense_order) : null,
+        ]);
     }
 
     /**
