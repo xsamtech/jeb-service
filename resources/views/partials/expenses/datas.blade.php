@@ -1,6 +1,6 @@
 
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-lg-6 col-md-7 mx-auto">
                             <div class="card card-body border">
                                 <h4 class="card-title mb-0 text-gradient text-center fw-bold">Modifier la dépense</h4>
 
