@@ -5,47 +5,44 @@
                                 <h4 class="card-title mb-0 text-gradient text-center fw-bold">Modifier la dépense</h4>
 
                                 <!-- Find by is_available -->
-                                <form method="POST" action="{{ route('dashboard.expense.datas', ['id' => $selected_expense['id']]) }}" class="mx-auto mt-3">
+                                <form method="POST" action="{{ route('dashboard.expense.datas', ['id' => $selected_expense->id]) }}" class="mx-auto mt-3">
 @csrf
                                     <div class="row g-3">
-                                        {{-- <!-- Dimensions -->
+                                        <!-- Expense reason (designation) -->
                                         <div class="col-sm-6">
-                                            <label for="dimensions" class="form-label fw-bold">Dimensions</label>
-                                            <input type="text" name="dimensions" class="form-control" id="dimensions" value="{{ $selected_expense['dimensions'] }}">
+                                            <label for="designation" class="form-label fw-bold">Motif de dépense</label>
+                                            <input type="text" name="designation" class="form-control" id="designation" value="{{ $selected_expense->designation }}">
                                         </div>
 
-                                        <!-- Format -->
+                                        <!-- Amount -->
                                         <div class="col-sm-6">
-                                            <label for="format" class="form-label fw-bold">Format</label>
-                                            <select name="format" id="format" class="form-select">
-                                                <option {{ explode(' ', $selected_expense['format'])[0] == 'Portrait' ? 'selected' : '' }}>Portrait</option>
-                                                <option {{ explode(' ', $selected_expense['format'])[0] == 'Paysage' ? 'selected' : '' }}>Paysage</option>
-                                            </select>
+                                            <label for="amount" class="form-label fw-bold">Montant (en $)</label>
+                                            <input type="number" step="0.01" name="amount" class="form-control" id="amount" value="{{ $selected_expense->amount }}">
                                         </div>
 
-                                        <!-- Number of faces -->
+                                        <!-- Outflow date -->
                                         <div class="col-sm-6">
-                                            <label for="number_of_faces" class="form-label fw-bold">Nombre des faces</label>
-                                            <select name="number_of_faces" id="number_of_faces" class="form-select">
-                                                <option {{ count($selected_expense['faces']) == 1 ? 'selected' : '' }} value="1">1 Face (Recto)</option>
-                                                <option {{ count($selected_expense['faces']) == 2 ? 'selected' : '' }} value="2">2 Faces (Recto/Verso)</option>
-                                            </select>
+                                            <label for="outflow_date" class="form-label fw-bold">Date/Heure de sortie</label>
+                                            <input type="datetime" name="outflow_date" class="form-control" id="outflow_date" value="{{ $selected_expense->outflow_date }}">
+                                        </div>
+{{-- 
+                                        <!-- Add order -->
+                                        <div class="col-sm-6">
+                                            <input type="hidden" name="customer_order_id" id="order_id">
+                                            <label class="form-label fw-bold">Associer à une location</label>
+                                            <a role="button" id="openOrderModal" class="btn btn-sm btn-light border w-100" data-bs-toggle="modal" data-bs-target="#ordersListModal">Voir la liste</a>
                                         </div>
 
-                                        <!-- Price -->
-                                        <div class="col-sm-6">
-                                            <label for="price" class="form-label fw-bold">Prix unitaire</label>
-                                            <input type="number" step="0.01" name="price" class="form-control" id="price" value="{{ $selected_expense['price'] }}">
-                                        </div>
-
-                                        <!-- Location -->
-                                        <div class="col-12">
-                                            <label for="location" class="form-label fw-bold">Site / Emplacement</label>
-                                            <textarea class="form-control" name="location" id="location">{{ $selected_expense['location'] }}</textarea>
-                                        </div>
+                                        <div id="selectedOrder" class="col-12 d-none">
+                                            <div class="card card-body">
+                                                <p class="card-text small"><u>Panneau</u> :<br><strong id="location"></strong></p>
+                                                <p class="card-text small"><u>Date de commande</u> :<br><strong>Le</strong> <strong id="created_at"></strong></p>
+                                                <p class="card-text small"><u>Loué par</u> :<br><strong id="user_fullname"></strong></p>
+                                            </div>
+                                        </div> --}}
                                     </div>
 
-                                    <button type="submit" class="btn bg-gradient-primary-to-secondary w-100 mt-3 rounded-pill text-white">@lang('miscellaneous.register')</button> --}}
+                                    <button type="submit" class="btn bg-gradient-primary-to-secondary w-100 mt-3 rounded-pill text-white">@lang('miscellaneous.register')</button>
                                 </form>
 
                             </div>
