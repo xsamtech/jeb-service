@@ -1,4 +1,4 @@
-@extends('layouts.app', ['page_title' => Route::is('dashboard.expense.datas') ? 'Dépense du ' . explicitDate($expense->outflow_date) : 'Gérer les dépenses'])
+@extends('layouts.app', ['page_title' => (!empty($selected_expense) ? 'Dépense du ' . explicitDate($selected_expense->outflow_date) : 'Gérer les dépenses')])
 
 @section('app-content')
 
