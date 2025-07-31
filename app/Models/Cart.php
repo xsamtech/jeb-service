@@ -89,6 +89,17 @@ class Cart extends Model
     }
 
     /**
+     * Order expenses
+     */
+    public function getExpensesAttribute()
+    {
+        return $this->customer_orders()
+                ->whereHas('expenses')
+                ->with(['expenses'])
+                ->get();
+    }
+
+    /**
      * Total expenses "Dîme (10%)"
      */
     public function getDime10PercentExpensesTotalAttribute()

@@ -10,6 +10,7 @@
                                                 <th>Designation</th>
                                                 <th>Prix unitaire</th>
                                                 <th>Nombre de jours</th>
+                                                <th>Dépenses</th>
                                                 <th>Prix total</th>
 @if ($selected_cart['is_paid'] == 0)
                                                 <th></th>
@@ -35,21 +36,28 @@
                                                     {{ $duration->d . ' ' . ( $duration->d > 1 ? 'jours' : 'jour') }}
                                                 </td>
                                                 <td class="align-middle">
+    @foreach ($order['expenses'] as $expense)
+        @if ($expense->customer_order_id == $order->id)
+                                                    <p class="mt-1 mb-0"><u>{{ $expense->designation }}</u> : <strong>{{ formatDecimalNumber($expense->amount) }}$</strong></p>
+        @endif
+    @endforeach
+                                                </td>
+                                                <td class="align-middle">
     @php
         $count_duration = ($duration->d == 0 ? 1 : $duration->d);
         $total_price = $order->price_at_that_time * $count_duration;
     @endphp
                                                     {{ formatDecimalNumber($total_price) . ' $' }}
                                                 </td>
-@if ($selected_cart['is_paid'] == 0)
+    @if ($selected_cart['is_paid'] == 0)
                                                 <td class="align-middle">
                                                     <a role="button" class="btn btn-sm w-100 btn-danger py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'order', 'item-{{ $order->id }}')">
                                                         <i class="bi bi-trash me-2"></i>Retirer
                                                     </a>
                                                 </td>
-@endif
+    @endif
                                             </tr>
-@empty
+    @empty
 @endforelse
                                         </tbody>
                                     </table>
