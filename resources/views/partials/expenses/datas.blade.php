@@ -27,7 +27,7 @@
                                         </div>
 
                                         <!-- Add order -->
-@if ($expense_order != null)
+@if ($selected_expense->customer_order_id != null)
                                         <div id="selectedOrder" class="col-12 d-none">
                                             <div class="card card-body">
                                                 <div class="d-flex justify-content-center align-items-center">
@@ -39,7 +39,7 @@
                                                         <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </div>
-                                                <p class="card-text small"><u>Panneau</u> :<br><strong id="location">{{ $expense_order->panel->location . ' (' . strtolower($expense_order->face->face_name) . ')' }}</strong></p>
+                                                <p class="card-text small"><u>Panneau</u> :<br><strong id="location">{{ $expense_order->face->panel->location . ' (' . strtolower($expense_order->face->face_name) . ')' }}</strong></p>
                                                 <p class="card-text small"><u>Date de commande</u> :<br><strong>Le</strong> <strong id="created_at">{{ $expense_order->created_at_explicit }}</strong></p>
                                                 <p class="card-text small"><u>Loué par</u> :<br><strong id="user_fullname">{{ $expense_order->user->firstname . ' ' . $expense_order->user->lastname }}</strong></p>
                                             </div>
