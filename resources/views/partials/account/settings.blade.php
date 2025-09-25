@@ -1,5 +1,5 @@
 
-                            <div class="card card-body border pt-sm-4 pt-0 px-4">
+                            <div class="card card-body border pt-sm-4 pt-0 px-4 rounded-4">
                                 <div class="mt-sm-0 my-4 text-center">
                                     <h1 class="card-title fw-bolder"><span class="text-gradient d-inline">Paramètres du compte</span></h1>
                                 </div>

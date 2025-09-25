@@ -1,6 +1,6 @@
-@extends('layouts.app', ['page_title' => Route::is('dashboard.account.settings') ? 'Paramètres du compte' : 'Mon profil'])
+@extends('layouts.sheet', ['page_title' => Route::is('dashboard.account.settings') ? 'Paramètres du compte' : 'Mon profil'])
 
-@section('app-content')
+@section('sheet-content')
 
             <section class="pb-3">
                 <div class="container-lg container-fluid px-sm-5">

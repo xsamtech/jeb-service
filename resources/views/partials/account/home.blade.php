@@ -1,5 +1,5 @@
 
-                            <div class="card card-body border p-sm-4 p-0">
+                            <div class="card card-body border p-sm-4 p-0 rounded-4">
                                 <div class="table-responsive">
                                     <div class="mt-sm-0 my-4 text-center">
                                         <h1 class="card-title fw-bolder"><span class="text-gradient d-inline">@lang('miscellaneous.account.personal_infos.title')</span></h1>

@@ -29,9 +29,13 @@
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/cropper/css/cropper.min.css') }}">
 
         <!-- Core theme CSS (includes Bootstrap)-->
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/addons/mdb/css/mdb.dark.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}" />
         <style>
             textarea { resize: none; }
+            .form-check-label { color: var(--bs-gray-500); }
+            .card { border-color: var(--bs-gray-700); }
+            .col-auto { color: var(--bs-white); }
             @media (min-width: 992px) {
                 #navbarLinksContent { position: relative; top: -2.25rem; }
             }
@@ -79,16 +83,16 @@
 
         <main class="flex-shrink-0">
             <!-- Navigation-->
-            <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <nav class="navbar navbar-expand-lg navbar-dark py-3">
                 <div class="container px-5">
                     <a class="navbar-brand" href="{{ route('dashboard.home') }}">
-                        <img src="{{ asset('assets/img/brand.png') }}" alt="Logo" width="150">
+                        <img src="{{ asset('assets/img/brand-dark.png') }}" alt="Logo" width="150">
                     </a>
 @empty($exception)
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarLinksContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navbarLinksContent">
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder align-top">
-                            <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Connexion</a></li>
+                            {{-- <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Connexion</a></li> --}}
     @if (Route::is('login'))
         @if (!$admins_exist)
                             <li class="nav-item"><a class="nav-link" href="{{ route('register') }}">Inscription</a></li>
@@ -105,7 +109,7 @@
         </main>
 
         <!-- Footer-->
-        <footer class="bg-white py-4 mt-auto">
+        <footer class="py-4 mt-auto">
             <div class="container px-5">
                 <div class="row align-items-center justify-content-between flex-column flex-sm-row">
                     <div class="col-auto"><div class="small m-0">Copyright &copy; {{ date('Y') }} JEB Services</div></div>
