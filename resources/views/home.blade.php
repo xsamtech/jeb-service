@@ -44,7 +44,7 @@
 
                                 <!-- Add panel button -->
                                 <p class="mt-sm-0 mt-2 mb-0">
-@if (Route::is('dashboard.panel.datas'))
+@if (Route::is('dashboard.home.datas'))
                                     <a href="{{ route('dashboard.panels') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                         <i class="bi bi-chevron-double-left me-2"></i>Retour
                                     </a>
