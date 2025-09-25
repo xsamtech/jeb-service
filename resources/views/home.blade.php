@@ -7,14 +7,11 @@
                 <div class="container-fluid container-lg">
                     <div id="dataList" class="row">
                         <div class="col-md-12">
-                            <div class="card card-body px-sm-3 px-2 border d-sm-flex flex-sm-row justify-content-between">
+                            <div class="card card-body border d-sm-flex flex-sm-row justify-content-between">
 @if (Route::is('dashboard.home'))
                                 <!-- Choose a month -->
                                 <form method="GET" class="form-search">
-                                    <div class="row g-1 justify-center align-items-center">
-                                        <div class="col-auto">
-                                            <small>Période :</small>
-                                        </div>
+                                    <div class="row g-1 align-items-center">
                                         <div class="col-auto">
                                             <select name="month" id="month" class="form-select form-select-sm">
                                                 <option value="1"{{ request()->get('month') == '1' || \Carbon\Carbon::now()->month == 1 ? ' selected' : '' }}>Janvier</option>
