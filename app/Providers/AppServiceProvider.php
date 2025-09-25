@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @author Xanders
@@ -38,6 +39,15 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrap();
 
         view()->composer('*', function ($view) {
+            if (Auth::check()) {
+                $current_user = new ResourcesUser(Auth::user());
+                $panels_collection = request()->has('is_available') ? Panel::where('is_available', '=', request()->get('is_available'))->orderByDesc('created_at')->paginate(5)->appends(request()->query()) : Panel::orderByDesc('created_at')->paginate(5)->appends(request()->query());
+                $panels_data = ResourcesPanel::collection($panels_collection)->resolve();
+
+                $view->with('panels_req', $panels_collection);
+                $view->with('panels', $panels_data);
+            }
+
             $reportService = app(FinancialReportService::class);
 
             // 🕐 Période à afficher (peut aussi venir de la requête si besoin)

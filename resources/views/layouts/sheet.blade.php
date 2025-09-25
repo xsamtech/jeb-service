@@ -42,6 +42,9 @@
             th, td, .form-label { font-size: 14px; }
             td { padding-top: 1rem!important; padding-bottom: 1rem!important; }
             th, td, .table { background-color: transparent!important; }
+            .form-select { color: var(--bs-gray-500); background-color: transparent!important; border-color: var(--bs-gray-500)!important; }
+            .form-select:focus, .form-select-dropdown { background-color: var(--bs-dark)!important; }
+            .form-select option { color: var(--bs-gray-500); background-color: var(--bs-dark)!important; }
             .user-account { text-decoration: none; }
             .navbar-toggler { position: absolute; right: 1rem; z-index: 9997; }
             .modal { z-index: 9998; }
@@ -51,6 +54,8 @@
             .btn-check:checked + label i { display: inline; /* Visible quand coché */ }
             .form-check-label { color: var(--bs-gray-500); }
             .card { border-color: var(--bs-gray-700)!important; }
+            .modal-header { border-bottom-color: var(--bs-gray-500)!important; }
+            .pagination .page-item.active .page-link { box-shadow: none; }
             .col-auto, .list-group-item { color: var(--bs-white)!important; }
             #availablePanels.is-invalid { border-color: #dc3545 !important; box-shadow: 0 0 0 0.25rem rgba(220,53,69,.25); }
             @media (min-width: 992px) {
