@@ -11,7 +11,7 @@
 @if (Route::is('dashboard.home'))
                                 <!-- Choose a month -->
                                 <form method="GET" class="form-search">
-                                    <div class="row g-1 align-items-center">
+                                    <div class="row g-2 align-items-center">
                                         <div class="col-auto">
                                             <select name="month" id="month" class="form-select form-select-sm">
                                                 <option value="1"{{ request()->get('month') == '1' || \Carbon\Carbon::now()->month == 1 ? ' selected' : '' }}>Janvier</option>
@@ -43,7 +43,7 @@
 @endif
 
                                 <!-- Add panel button -->
-                                <p class="mt-sm-0 mt-1 mb-0">
+                                <p class="mt-sm-0 mt-2 mb-0">
 @if (Route::is('dashboard.panel.datas'))
                                     <a href="{{ route('dashboard.panels') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                         <i class="bi bi-chevron-double-left me-2"></i>Retour
