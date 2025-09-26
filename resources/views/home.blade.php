@@ -8,7 +8,9 @@
                     <div id="dataList" class="row px-lg-4">
                         <div class="col-md-12">
                             <div class="card card-body d-sm-flex flex-sm-row justify-content-between mb-3 border rounded-0">
-@if (Route::is('dashboard.home'))
+@if (Route::is('dashboard.home.datas'))
+                                <p class="mt-sm-0 mt-2 mb-0">{{ $entity_title }}</p>
+@else
                                 <!-- Choose a month -->
                                 <form method="GET" class="form-search">
                                     <div class="row g-2 align-items-center">
