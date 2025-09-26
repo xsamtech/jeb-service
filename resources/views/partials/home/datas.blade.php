@@ -1,7 +1,6 @@
 
-                    <div class="row">
-                        <div class="col-lg-6 col-md-7 mx-auto">
-                            <div class="card card-body border">
+                            <!-- Update panel -->
+                            <div class="card card-body">
                                 <h4 class="card-title mb-0 text-gradient text-center fw-bold">Modifier le panneau</h4>
 
                                 <!-- Find by is_available -->
@@ -48,6 +47,3 @@
                                     <button type="submit" class="btn bg-gradient-primary-to-secondary w-100 mt-3 rounded-pill text-white">@lang('miscellaneous.register')</button>
                                 </form>
                             </div>
-                        </div>
-                    </div>
-

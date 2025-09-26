@@ -4,8 +4,8 @@
 
             <!-- Content Section-->
             <section class="pb-3">
-                <div class="container-fluid container-lg">
-                    <div id="dataList" class="row">
+                <div class="container-fluid">
+                    <div id="dataList" class="row px-lg-4">
                         <div class="col-md-12">
                             <div class="card card-body d-sm-flex flex-sm-row justify-content-between mb-3 border rounded-0">
 @if (Route::is('dashboard.home'))
@@ -36,7 +36,7 @@
                                             </select>
                                         </div>
                                         <div class="col-auto">
-                                            <input type="submit" class="btn btn-sm bg-gradient-primary-to-secondary py-1 text-light" value="Voir">
+                                            <input type="submit" class="btn btn-sm bg-gradient-primary-to-secondary py-1 text-light" value="Afficher">
                                         </div>
                                     </div>
                                 </form>
@@ -54,55 +54,11 @@
                                 </p>
                             </div>
 
-                            <!-- Table header -->
-                            <div class="card card-body p-0 d-sm-block d-none border-bottom-0 rounded-0">
-                                <div class="row g-0">
-                                    <div class="col-sm-3">
-                                        <div class="card card-body h-100 border-0 rounded-0">
-                                            <small>Site / Emplacement</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="card card-body h-100 border-0 border-start rounded-0">
-                                            <small>Taxe d’implantation</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-7">
-                                        <div class="row g-0">
-                                            <div class="col-sm-3">
-                                                <div class="card card-body h-100 border-0 border-start rounded-0">
-                                                    <small>Taxe d’affichage</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="card card-body h-100 border-0 border-start rounded-0">
-                                                    <small>Date limite de location</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="card card-body h-100 border-0 border-start rounded-0">
-                                                    <small>Dépenses</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-3">
-                                                <div class="card card-body h-100 border-0 border-start rounded-0">
-                                                    <small>Montant restant</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Table body -->
-                            <div class="card card-body rounded-0">
-                                
-                            </div>
-
-                            <!-- Table footer -->
-                            <div class="card card-body rounded-0 pb-0 border-0">
-                                {{ $panels_req->links() }}
-                            </div>
+@if (!empty($selected_panel))
+    @include('partials.home.datas')
+@else
+    @include('partials.home.home')
+@endif
                         </div>
                     </div>
                 </div>

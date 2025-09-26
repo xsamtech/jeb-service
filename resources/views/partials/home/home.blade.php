@@ -1,91 +1,120 @@
 
-                    <div id="dataList" class="row">
-                        <div class="col-md-12">
-                            <div class="card card-body border">
-                                <!-- Find by is_available -->
-                                <form method="GET" class="form-search mx-auto mb-3">
-                                    <div class="row g-1">
-                                        <div class="col-auto">
-                                            <select name="is_available" id="is_available" class="form-select form-select-sm">
-                                                <option class="small" disabled{{ !request()->has('is_available') ? ' selected' : '' }}>Choisir un état</option>
-                                                <option value="1"{{ request()->get('is_available') == '1' ? ' selected' : '' }}>Disponible</option>
-                                                <option value="0"{{ request()->get('is_available') == '0' ? ' selected' : '' }}>Indisponible</option>
-                                            </select>
+                            <!-- Table header -->
+                            <div id="tableHeader" class="card card-body p-0 d-sm-block d-none border-bottom-0 rounded-0 text-center">
+                                <div class="row g-0">
+                                    <div class="col-sm-4">
+                                        <div class="row g-0">
+                                            <div class="col-sm-7">
+                                                <div class="card card-body h-100 border-0 rounded-0">
+                                                    Site / Emplacement
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Taxe d’implantation
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-auto">
-                                            <input type="submit" class="btn btn-sm btn-dark py-1" value="Trier">
-                                        </div>
-@if (request()->has('is_available'))
-                                        <div class="col-auto">
-                                            <a href="{{ route('dashboard.panels') }}" class="btn btn-sm btn-link py-1">Voir tous les panneaux</a>
-                                        </div>
-@endif
                                     </div>
-                                </form>
-
-                                <!-- Data list content -->
-                                <div class="table-responsive">
-                                    <table class="table table-bordered border-top">
-                                        <thead>
-                                            <tr class="bg-light">
-                                                <th style="max-width: 12rem;">Site / Emplacement</th>
-                                                <th>Dimension</th>
-                                                <th>Format</th>
-                                                <th>Prix unitaire</th>
-@if (!request()->has('is_available'))
-                                                <th>Est disponible</th>
-@endif
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-@forelse ($panels as $panel)
-                                            <tr>
-                                                <td class="align-middle" style="max-width: 12rem; background-color: #bdf">{{ $panel['location'] }}</td>
-                                                <td class="align-middle text-center">{{ $panel['dimensions'] }}</td>
-                                                <td class="align-middle text-center">{{ $panel['format'] }}</td>
-                                                <td class="align-middle text-center">{{ $panel['price'] }}</td>
-    @if (!request()->has('is_available'))
-                                                <td class="align-middle text-center">
-                                                    <ul class="list-group list-group-item-light">
-        @forelse ($panel['faces'] as $face)
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <h6 class="m-0">
-                                                                {{ $face['face_name'] }}
-                                                                <div class="badge bg-light border text-{{ $face['is_available'] == 1 ? 'success' : 'danger' }} text-uppercase">
-                                                                    {{ $face['is_available'] == 1 ? 'Oui' : 'Non' }}
-                                                                </div>
-                                                            </h6>
-                                                            <a role="button" title="Supprimer la face" onclick="event.preventDefault(); performAction('delete', 'face', 'item-{{ $face['id'] }}')">
-                                                                <i class="bi bi-x-lg"></i>
-                                                            </a>
-                                                        </li>
-        @empty
-        @endforelse
-                                                    </ul>
-                                                </td>
-    @endif
-                                                <td class="align-middle">
-                                                    <a class="btn btn-sm btn-info py-0 rounded-pill" href="{{ route('dashboard.panel.datas', ['id' => $panel['id']]) }}">
-                                                        Détails<i class="bi bi-chevron-double-right ms-1"></i>
-                                                    </a>
-                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'panel', 'item-{{ $panel['id'] }}')">
-                                                        <i class="bi bi-trash me-2"></i>Supprimer
-                                                    </a>
-                                                </td>
-                                            </tr>
-@empty
-                                            <tr>
-                                                <td colspan="{{ request()->has('is_available') ? 6 : 7 }}" class="lead text-center">La liste est encore vide</td>
-                                            </tr>
-@endforelse
-                                        </tbody>
-                                    </table>
+                                    <div class="col-sm-8">
+                                        <div class="row g-0">
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Faces
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Taxe d’affichage
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Date limite de location
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Dépenses
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 border-0 border-start rounded-0">
+                                                    Montant restant
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-12 mt-3 d-flex justify-content-center">
-                            {{ $panels_req->links() }}
-                        </div>
-                    </div>
+
+                            <!-- Table body -->
+@forelse ($panels as $panel)
+                            <div id="tableBody" class="card card-body mb-sm-0 mb-3 p-0 @if (!$loop->first) border-top-0 @endif rounded-0">
+                                <div class="row g-0">
+                                    <div class="col-sm-4">
+                                        <div class="row g-0">
+                                            <div class="col-sm-7">
+                                                <div class="card card-body h-100 border-0 rounded-0 panel-column" style="background-color: rgba(300,300,300,0.07);">
+                                                    {{ $panel['location'] }}
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <div class="card card-body h-100 rounded-0 panel-column">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-8">
+    @forelse ($panel['faces'] as $face)
+                                        <div class="row g-0">
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 rounded-0 face-column">
+                                                    {{ $face['face_name'] }}
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="card card-body h-100 rounded-0 face-column">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <div class="card card-body h-100 rounded-0 face-column">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 rounded-0 face-column">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 rounded-0 face-column">
+
+                                                </div>
+                                            </div>
+                                        </div>
+        
+    @empty
+                                        <div class="row g-0">
+                                            <div class="col-sm-2">
+                                                <div class="card card-body h-100 rounded-0 panel-column">
+                                                    <span class="text-muted fst-italic">Il n'y a aucune face pour ce panneau</span>
+                                                </div>
+                                            </div>
+                                        </div>
+    @endforelse
+                                    </div>
+                                </div>
+                            </div>
+@empty
+                            <div class="card card-body rounded-0 text-center">
+                                <span class="text-muted fst-italic">Il n'y a encore aucun panneau enregistré</span>
+                            </div>
+@endforelse
+
+                            <!-- Table footer -->
+                            <div id="tableFooter" class="card card-body rounded-0 pb-0 border-0">
+                                {{ $panels_req->links() }}
+                            </div>

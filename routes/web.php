@@ -40,7 +40,7 @@ Route::middleware('localization')->group(function () {
 });
 Route::middleware(['auth', 'localization'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard.home');
-    Route::get('/{id}', [DashboardController::class, 'datas'])->name('dashboard.home.datas');
+    Route::get('/{id}', [DashboardController::class, 'datas'])->whereNumber('id')->name('dashboard.home.datas');
     Route::get('/panels', [DashboardController::class, 'panels'])->name('dashboard.panels');
     Route::post('/panels', [DashboardController::class, 'addPanel']);
     Route::get('/panels/{id}', [DashboardController::class, 'panelDatas'])->whereNumber('id')->name('dashboard.panel.datas');
