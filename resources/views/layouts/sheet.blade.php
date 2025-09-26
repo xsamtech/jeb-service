@@ -116,7 +116,7 @@
                         <img src="{{ asset('assets/img/brand-dark.png') }}" alt="Logo" width="150">
                     </a>
                     <a href="{{ route('dashboard.account') }}" class="position-absolute d-sm-none d-inline-block me-2 rounded-circle user-account user-image" style="top: 2rem; right: 3rem;">
-                        <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle img-thumbnail">
+                        <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="46" class="rounded-circle">
                     </a>
                     <form action="{{ route('logout') }}" method="POST">
 @csrf
@@ -125,7 +125,7 @@
                     <div class="dropdown position-relative">
                         <a role="button" class="d-sm-inline-block d-none flex-row ms-5 my-3 rounded-pill user-account user-image" data-bs-toggle="dropdown" aria-expanded="false">
                             <strong class="d-lg-inline-block d-none text-gradient">{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}</strong>
-                            <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle img-thumbnail">
+                            <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle">
                         </a>
 
                         <ul class="dropdown-menu bg-dark position-absolute" style="right: 0; top: 3.1rem; width: 12rem;">
