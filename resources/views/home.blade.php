@@ -1,4 +1,4 @@
-@extends('layouts.sheet')
+@extends('layouts.sheet', ['page_title' => (!empty($entity_title) ? $entity_title : 'JEB Services')])
 
 @section('sheet-content')
 
@@ -45,7 +45,7 @@
                                 <!-- Add panel button -->
                                 <p class="mt-sm-0 mt-2 mb-0">
 @if (Route::is('dashboard.home.datas'))
-                                    <a href="{{ route('dashboard.panels') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
+                                    <a href="{{ route('dashboard.home') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                         <i class="bi bi-chevron-double-left me-2"></i>Retour
                                     </a>
 @else
@@ -54,7 +54,7 @@
                                 </p>
                             </div>
 
-@if (!empty($selected_panel))
+@if (!empty($selected_item))
     @include('partials.home.datas')
 @else
     @include('partials.home.home')

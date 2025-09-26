@@ -53,6 +53,43 @@ class DashboardController extends Controller
     }
 
     /**
+     * GET: Datas from sheet page
+     *
+     * @param  string $entity
+     * @param  int $id
+     * @return \Illuminate\View\View
+     */
+    public function datas($entity, $id)
+    {
+        $entity_title = null;
+        $selected_item = null;
+
+        if ($entity == 'panel') {
+            $entity_title = 'Détails sur le panneau';
+            $selected_item = Panel::find($id);
+
+            if (!$selected_item) {
+                return redirect(RouteServiceProvider::HOME)->with('error_message', 'Panneau non trouvé.');
+            }
+        }
+
+        if ($entity == 'face') {
+            $entity_title = 'Détails sur la face';
+            $selected_item = Face::find($id);
+
+            if (!$selected_item) {
+                return redirect(RouteServiceProvider::HOME)->with('error_message', 'Face non trouvée.');
+            }
+        }
+
+        return view('home', [
+            'selected_item' => $selected_item,
+            'entity' => $entity,
+            'entity_title' => $entity_title,
+        ]);
+    }
+
+    /**
      * GET: Home page
      *
      * @return \Illuminate\View\View

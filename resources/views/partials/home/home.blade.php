@@ -50,18 +50,18 @@
 
                             <!-- Table body -->
 @forelse ($panels as $panel)
-                            <div id="tableBody" class="card card-body mb-sm-0 mb-3 p-0 @if (!$loop->first) border-top-0 @endif rounded-0">
+                            <div id="tableBody" class="card card-body mb-sm-0 mb-3 p-0 @if (!$loop->first) border-top-0 @endif rounded-0 text-center">
                                 <div class="row g-0">
                                     <div class="col-sm-4">
                                         <div class="row g-0">
                                             <div class="col-sm-7">
-                                                <div class="card card-body h-100 border-0 rounded-0 panel-column" style="background-color: rgba(300,300,300,0.07);">
+                                                <div class="card card-body h-100 border-0 rounded-0 text-start" style="background-color: rgba(300,300,300,0.07);">
                                                     {{ $panel['location'] }}
                                                 </div>
                                             </div>
                                             <div class="col-sm-5">
                                                 <div class="card card-body h-100 rounded-0 panel-column">
-
+test{{ $loop->index }}
                                                 </div>
                                             </div>
                                         </div>
@@ -70,7 +70,7 @@
     @forelse ($panel['faces'] as $face)
                                         <div class="row g-0">
                                             <div class="col-sm-2">
-                                                <div class="card card-body h-100 rounded-0 face-column">
+                                                <div class="card card-body h-100 rounded-0 face-column" style="background-color: rgba(300,300,300,0.07);">
                                                     {{ $face['face_name'] }}
                                                 </div>
                                             </div>
