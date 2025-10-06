@@ -34,6 +34,15 @@ class Panel extends Model
 
     /**
      * MANY-TO-ONE
+     * Several expenses for a panel
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * MANY-TO-ONE
      * Several files for a panel
      */
     public function files(): HasMany

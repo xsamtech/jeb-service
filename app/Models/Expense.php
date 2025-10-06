@@ -35,6 +35,15 @@ class Expense extends Model
     }
 
     /**
+     * ONE-TO-MANY
+     * One panel for several files
+     */
+    public function panel(): BelongsTo
+    {
+        return $this->belongsTo(Panel::class);
+    }
+
+    /**
      * MANY-TO-ONE
      * Several accountancies for an expense
      */

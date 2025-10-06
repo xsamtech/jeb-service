@@ -66,6 +66,7 @@
                 .user-account { position: relative; top: -0.8rem; }
             }
             @media (min-width: 480px) {
+                #tableBody .taxe-implantation { min-height: 6.7rem!important; }
                 #tableBody .panel-column { border-color: transparent!important; border-left-color: var(--bs-gray-700)!important; }
                 #tableBody .face-column { border-color: transparent!important; border-top-color: var(--bs-gray-700)!important; border-left-color: var(--bs-gray-700)!important; }
             }
@@ -179,6 +180,20 @@
         <!-- Custom JS-->
         <script src="{{ asset('assets/js/scripts.custom.js') }}"></script>
         <script type="text/javascript">
+            /**
+             * Listens for the click event on the ".switch-view" button
+             */
+            $('.switch-view').click(function() {
+                // e.preventDefault();
+
+                // Find the parent of each ".switch-view" button
+                var container = $(this).closest('.card-body');
+
+                // Toggle the ".show-data" and ".update-data" blocks
+                container.find('.show-data').toggleClass('d-none');
+                container.find('.update-data').toggleClass('d-none');
+            });
+
             /**
              * Perform action
              * 

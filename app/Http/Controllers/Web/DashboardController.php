@@ -41,15 +41,78 @@ class DashboardController extends Controller
     /**
      * GET: Home page
      *
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
     // public function index()
     // {
     //     return view('dashboard');
     // }
-    public function index()
+    public function index(Request $request)
     {
-        return view('home');
+        // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
+        $month = $request->get('month', Carbon::now()->month);
+        $year = $request->get('year', Carbon::now()->year);
+
+        // Récupérer tous les panneaux avec leurs relations nécessaires
+        $panels = Panel::with([
+            'faces.customer_orders.expenses' => function ($query) use ($month, $year) {
+                $query->whereYear('created_at', $year)->whereMonth('created_at', $month);
+            },
+            'expenses' => function ($query) use ($month, $year) {
+                $query->whereYear('created_at', $year)->whereMonth('created_at', $month)->where('designation', 'Taxe implantation');
+            }])->get();
+
+        // Traitement des données pour l'affichage dans la vue
+        $panelsData = $panels->map(function ($panel) {
+            $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
+
+            return [
+                'id' => $panel->id,
+                'panel' => $panel->location,
+                'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
+                'expenses' => $panel->faces->map(function ($face) {
+                    // Récupérer la première commande client (ou la plus récente si nécessaire)
+                    $customerOrder = $face->customer_orders->sortByDesc('created_at')->first();
+
+                    $taxeAffichage = $customerOrder
+                                        ? $customerOrder->expenses->where('designation', 'Taxe affichage')->first()
+                                        : null;
+
+                    // Autres dépenses
+                    $otherExpenses = $customerOrder
+                                        ? $customerOrder->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage'])
+                                        : collect();
+
+                    $totalOtherExpenses = $otherExpenses->sum('amount');
+                    $priceAtThatTime = $customerOrder ? $customerOrder->price_at_that_time : 0;
+                    $remainingAmount = $priceAtThatTime - $totalOtherExpenses;
+
+                    return [
+                        'customer_order_id' => $customerOrder ? $customerOrder->id : null,
+                        'face_name' => $face->face_name,
+                        'taxe_affichage' => $taxeAffichage ? $taxeAffichage->amount : 0,
+                        'date_limite_location' => $customerOrder ? $customerOrder->end_date : '---',
+                        'other_expenses' => $otherExpenses->map(fn($e) => $e->designation),
+                        'other_expenses' => $otherExpenses->map(function ($e) {
+                            return [
+                                'designation' => $e->designation,
+                                'amount' => $e->amount,
+                            ];
+                        }),
+                        'total_other_expenses' => $totalOtherExpenses,
+                        'remaining_amount' => $remainingAmount,
+                    ];
+                }),
+            ];
+        });
+
+        // Envoi des données à la vue sans encapsuler dans un JSON
+        return view('home', [
+            'panelsData' => $panelsData,
+            'month' => $month,
+            'year' => $year,
+        ]);
     }
 
     /**
