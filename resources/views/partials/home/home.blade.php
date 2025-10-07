@@ -63,7 +63,7 @@
                                             </div>
                                             <div class="col-sm-5">
                                                 <div class="card card-body rounded-0 panel-column taxe-implantation">
-                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’implantation :</span>
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’implantation</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatIntegerNumber($panel['taxe_implantation']) }} $</span>
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
@@ -91,7 +91,7 @@
                                             </div>
                                             <div class="col-sm-3">
                                                 <div class="card card-body h-100 rounded-0 face-column">
-                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’affichage :</span>
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’affichage</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatIntegerNumber($face['taxe_affichage']) }} $</span>
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
@@ -109,7 +109,7 @@
                                             </div>
                                             <div class="col-sm-3">
                                                 <div class="card card-body h-100 rounded-0 face-column">
-                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Date limite de location :</span>
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Date limite de location</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ $face['date_limite_location'] }}</span>
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
@@ -127,7 +127,7 @@
                                             </div>
                                             <div class="col-sm-2">
                                                 <div class="card card-body h-100 rounded-0 face-column">
-                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Autres dépenses :</span>
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Autres dépenses</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatIntegerNumber($face['total_other_expenses']) }} $</span>
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
@@ -150,6 +150,7 @@
                                             </div>
                                             <div class="col-sm-2">
                                                 <div class="card card-body h-100 rounded-0 face-column">
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Montant restant</span>
                                                     <strong>{{ formatIntegerNumber($face['remaining_amount']) . ' $' }}</strong>
                                                 </div>
                                             </div>
