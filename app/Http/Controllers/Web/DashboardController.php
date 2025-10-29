@@ -44,37 +44,58 @@ class DashboardController extends Controller
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\View\View
      */
-    // public function index()
-    // {
-    //     return view('dashboard');
-    // }
     public function index(Request $request)
     {
+        $monthsInFrench = [
+            1 => 'janvier',
+            2 => 'février',
+            3 => 'mars',
+            4 => 'avril',
+            5 => 'mai',
+            6 => 'juin',
+            7 => 'juillet',
+            8 => 'août',
+            9 => 'septembre',
+            10 => 'octobre',
+            11 => 'novembre',
+            12 => 'décembre',
+        ];
         // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
         $month = $request->get('month', Carbon::now()->month);
         $year = $request->get('year', Carbon::now()->year);
+        // Récupérer le nom du mois en fonction de la valeur de $month
+        $monthName = $monthsInFrench[$month];
 
         // Récupérer tous les panneaux avec leurs relations nécessaires
         $panels = Panel::with([
-            'faces.customer_orders.expenses' => function ($query) use ($month, $year) {
-                $query->whereYear('created_at', $year)->whereMonth('created_at', $month);
+            // 🔹 On filtre ici les commandes clients selon leur end_date (mois et année)
+            'faces.customer_orders' => function ($query) use ($month, $year) {
+                $query->whereYear('end_date', $year)
+                    ->whereMonth('end_date', $month)
+                    ->with(['expenses' => function ($query) use ($month, $year) {
+                        $query->whereYear('updated_at', $year)
+                            ->whereMonth('updated_at', $month);
+                    }]);
             },
             'expenses' => function ($query) use ($month, $year) {
-                $query->whereYear('created_at', $year)->whereMonth('created_at', $month)->where('designation', 'Taxe implantation');
-            }])->get();
+                $query->whereYear('updated_at', $year)
+                    ->whereMonth('updated_at', $month)
+                    ->where('designation', 'Taxe implantation');
+            }
+        ])->get();
 
         // Traitement des données pour l'affichage dans la vue
         $panelsData = $panels->map(function ($panel) {
             $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
+            $taxeImplantationAmount = $taxeImplantation ? $taxeImplantation->amount : 0;
 
             return [
                 'id' => $panel->id,
                 'panel' => $panel->location,
                 'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
-                'expenses' => $panel->faces->map(function ($face) {
-                    // Récupérer la première commande client (ou la plus récente si nécessaire)
+                'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
+                    // 🔹 Maintenant, seules les customer_orders correspondant au mois/année sont présentes
                     $customerOrder = $face->customer_orders->sortByDesc('created_at')->first();
-
                     $taxeAffichage = $customerOrder
                                         ? $customerOrder->expenses->where('designation', 'Taxe affichage')->first()
                                         : null;
@@ -85,15 +106,19 @@ class DashboardController extends Controller
                                         : collect();
 
                     $totalOtherExpenses = $otherExpenses->sum('amount');
+                    $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
+                    $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
                     $priceAtThatTime = $customerOrder ? $customerOrder->price_at_that_time : 0;
-                    $remainingAmount = $priceAtThatTime - $totalOtherExpenses;
+                    $remainingAmount = $taxeAffichageAmount > 0 ? $priceAtThatTime - ($totalTaxes + $totalOtherExpenses) : 0;
 
                     return [
                         'customer_order_id' => $customerOrder ? $customerOrder->id : null,
+                        'face_id' => $face->id,
                         'face_name' => $face->face_name,
+                        'face_price' => $face->panel->price,
                         'taxe_affichage' => $taxeAffichage ? $taxeAffichage->amount : 0,
+                        // 🔹 Dynamique : si aucune commande ce mois-là → '---'
                         'date_limite_location' => $customerOrder ? $customerOrder->end_date : '---',
-                        'other_expenses' => $otherExpenses->map(fn($e) => $e->designation),
                         'other_expenses' => $otherExpenses->map(function ($e) {
                             return [
                                 'designation' => $e->designation,
@@ -112,6 +137,7 @@ class DashboardController extends Controller
             'panelsData' => $panelsData,
             'month' => $month,
             'year' => $year,
+            'monthName' => $monthName,
         ]);
     }
 
@@ -161,10 +187,10 @@ class DashboardController extends Controller
     {
         $customer_role = Role::where('role_name', 'Client')->first();
         $unpaid_customers_collection = User::whereHas('roles', function ($query) use ($customer_role) {
-                                                $query->where('roles.id', $customer_role->id);
-                                            })->whereHas('unpaidCart')
-                                            ->with(['unpaidCart.customer_orders.panel', 'roles'])
-                                            ->paginate(5)->appends(request()->query());
+            $query->where('roles.id', $customer_role->id);
+        })->whereHas('unpaidCart')
+            ->with(['unpaidCart.customer_orders.panel', 'roles'])
+            ->paginate(5)->appends(request()->query());
         $customers_data = ResourcesUser::collection($unpaid_customers_collection)->resolve();
 
         return response()->json(['message' => 'Clients ayant panier impayé', 'data' => $customers_data]);
@@ -179,9 +205,9 @@ class DashboardController extends Controller
     public function getOrders(Request $request)
     {
         $orders = CustomerOrder::with('face.panel', 'user')
-                                    ->whereHas('cart', function ($query) { 
-                                        $query->where('is_paid', 0); 
-                                    })->orderByDesc('created_at')->paginate(10)->appends($request->query());
+            ->whereHas('cart', function ($query) {
+                $query->where('is_paid', 0);
+            })->orderByDesc('created_at')->paginate(10)->appends($request->query());
 
         return response()->json([
             'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
@@ -285,26 +311,26 @@ class DashboardController extends Controller
 
         if ($entity == 'orders') {
             // panels
-            $available_panels_collection = Panel::with(['faces' => function($query) {
-                                                        $query->where('is_available', 1);
-                                                    }])->whereHas('faces', function($query) {
-                                                        $query->where('is_available', 1);
-                                                    })->orderByDesc('created_at')->get();
+            $available_panels_collection = Panel::with(['faces' => function ($query) {
+                $query->where('is_available', 1);
+            }])->whereHas('faces', function ($query) {
+                $query->where('is_available', 1);
+            })->orderByDesc('created_at')->get();
 
             $available_panels_data = ResourcesPanel::collection($available_panels_collection)->resolve();
             $count_customers = User::whereHas('roles', function ($query) use ($customer_role) {
-                                        $query->where('roles.id', $customer_role->id);
-                                    })->count();
+                $query->where('roles.id', $customer_role->id);
+            })->count();
             $customers_ids = User::whereHas('roles', function ($query) use ($customer_role) {
-                                        $query->where('roles.id', $customer_role->id);
-                                    })->pluck('id')->toArray();
+                $query->where('roles.id', $customer_role->id);
+            })->pluck('id')->toArray();
             $carts_collection = Cart::with(['customer_orders.user', 'customer_orders.face', 'customer_orders.expenses'])
-                                        ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
-                                        ->whereIn('customer_orders.user_id', $customers_ids)
-                                        ->select('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
-                                        ->groupBy('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
-                                        ->orderBy('carts.created_at', 'desc')
-                                        ->paginate(5)->appends(request()->query());
+                ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
+                ->whereIn('customer_orders.user_id', $customers_ids)
+                ->select('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
+                ->groupBy('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
+                ->orderBy('carts.created_at', 'desc')
+                ->paginate(5)->appends(request()->query());
             $carts_data = ResourcesCart::collection($carts_collection)->resolve();
 
             // page title
@@ -364,22 +390,22 @@ class DashboardController extends Controller
             //                     })->orderBy('firstname')->limit(15)->get();
 
             $customers = User::whereHas('roles', function ($query) use ($customer_role) {
-                                    $query->where('roles.id', $customer_role->id);
-                                })->when($search, function ($query, $search) {
-                                    $query->where(function ($q) use ($search) {
-                                        $q->where('firstname', 'LIKE', '%' . $search . '%')->orWhere('lastname', 'LIKE', '%' . $search . '%');
-                                    });
-                                })->orderBy('firstname')->get();
+                $query->where('roles.id', $customer_role->id);
+            })->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('firstname', 'LIKE', '%' . $search . '%')->orWhere('lastname', 'LIKE', '%' . $search . '%');
+                });
+            })->orderBy('firstname')->get();
 
             if ($customers->isEmpty()) {
                 return response()->json([
-                    'status' => 'error', 
+                    'status' => 'error',
                     'message' => 'Aucun client trouvé.'
                 ]);
             }
 
             return response()->json([
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => 'Clients trouvés.',
                 'data' => ResourcesUser::collection($customers)->resolve()
             ]);
@@ -593,7 +619,6 @@ class DashboardController extends Controller
                 );
 
                 $face->delete();
-
             } elseif (count($panel_faces) == 1) {
                 $panel->delete();
             }
@@ -916,7 +941,6 @@ class DashboardController extends Controller
                 'is_available' => !empty($request->is_available) ? $request->is_available : 1,
                 'panel_id' => $panel->id,
             ]);
-
         } else if ($request->number_of_faces == 2) {
             Face::create([
                 'face_name' => 'Recto',
@@ -1267,7 +1291,6 @@ class DashboardController extends Controller
                 DB::commit();
 
                 return response()->json(['status' => 'success', 'message' => 'Location ajoutée avec succès.']);
-
             } catch (\Exception $e) {
                 DB::rollBack();
 
@@ -1335,7 +1358,6 @@ class DashboardController extends Controller
             if (strpos($current_format, '(1 face)') !== false) {
                 $new_format = str_replace('(1 face)', '(2 faces)', $current_format);
                 $panel->format = $new_format;
-
             } elseif (strpos($current_format, '(2 faces)') !== false) {
                 $new_format = str_replace('(2 faces)', '(1 face)', $current_format);
                 $panel->format = $new_format;
@@ -1357,7 +1379,6 @@ class DashboardController extends Controller
                     'panel_id' => $panel->id,
                 ]);
             }
-
         } else if ($request->number_of_faces == 2) {
             // Si le panneau avait une seule face, on ajoute la face "Verso" ou "Recto"
             if ($existing_faces->count() == 1) {
@@ -1655,7 +1676,6 @@ class DashboardController extends Controller
                 if ($request->is_paid == 1) {
                     $updates['payment_code'] = (string) random_int(1000000, 9999999);
                     $message = 'Locations payées.';
-
                 } else {
                     $updates['payment_code'] = null;
                 }

@@ -91,6 +91,7 @@
 
         <main class="flex-shrink-0">
             <div id="ajax-alert-container"></div>
+            <!-- Alert End -->
 @if (\Session::has('success_message'))
             <!-- Alert Start -->
             <div class="position-relative">

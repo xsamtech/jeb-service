@@ -16,24 +16,24 @@
                                     <div class="row g-2 align-items-center">
                                         <div class="col-auto">
                                             <select name="month" id="month" class="form-select form-select-sm">
-                                                <option value="1"{{ request()->get('month') == '1' || \Carbon\Carbon::now()->month == 1 ? ' selected' : '' }}>Janvier</option>
-                                                <option value="2"{{ request()->get('month') == '2' || \Carbon\Carbon::now()->month == 2 ? ' selected' : '' }}>Février</option>
-                                                <option value="3"{{ request()->get('month') == '3' || \Carbon\Carbon::now()->month == 3 ? ' selected' : '' }}>Mars</option>
-                                                <option value="4"{{ request()->get('month') == '4' || \Carbon\Carbon::now()->month == 4 ? ' selected' : '' }}>Avril</option>
-                                                <option value="5"{{ request()->get('month') == '5' || \Carbon\Carbon::now()->month == 5 ? ' selected' : '' }}>Mai</option>
-                                                <option value="6"{{ request()->get('month') == '6' || \Carbon\Carbon::now()->month == 6 ? ' selected' : '' }}>Juin</option>
-                                                <option value="7"{{ request()->get('month') == '7' || \Carbon\Carbon::now()->month == 7 ? ' selected' : '' }}>Juillet</option>
-                                                <option value="8"{{ request()->get('month') == '8' || \Carbon\Carbon::now()->month == 8 ? ' selected' : '' }}>Ao&ucirc;t</option>
-                                                <option value="9"{{ request()->get('month') == '9' || \Carbon\Carbon::now()->month == 9 ? ' selected' : '' }}>Septembre</option>
-                                                <option value="10"{{ request()->get('month') == '10' || \Carbon\Carbon::now()->month == 10 ? ' selected' : '' }}>Octobre</option>
-                                                <option value="11"{{ request()->get('month') == '11' || \Carbon\Carbon::now()->month == 11 ? ' selected' : '' }}>Novembre</option>
-                                                <option value="12"{{ request()->get('month') == '12' || \Carbon\Carbon::now()->month == 12 ? ' selected' : '' }}>Décembre</option>
+                                                <option value="1" {{ $month == '1' ? ' selected' : '' }}>Janvier</option>
+                                                <option value="2" {{ $month == '2' ? ' selected' : '' }}>Février</option>
+                                                <option value="3" {{ $month == '3' ? ' selected' : '' }}>Mars</option>
+                                                <option value="4" {{ $month == '4' ? ' selected' : '' }}>Avril</option>
+                                                <option value="5" {{ $month == '5' ? ' selected' : '' }}>Mai</option>
+                                                <option value="6" {{ $month == '6' ? ' selected' : '' }}>Juin</option>
+                                                <option value="7" {{ $month == '7' ? ' selected' : '' }}>Juillet</option>
+                                                <option value="8" {{ $month == '8' ? ' selected' : '' }}>Ao&ucirc;t</option>
+                                                <option value="9" {{ $month == '9' ? ' selected' : '' }}>Septembre</option>
+                                                <option value="10" {{ $month == '10' ? ' selected' : '' }}>Octobre</option>
+                                                <option value="11" {{ $month == '11' ? ' selected' : '' }}>Novembre</option>
+                                                <option value="12" {{ $month == '12' ? ' selected' : '' }}>Décembre</option>
                                             </select>
                                         </div>
                                         <div class="col-auto">
                                             <select name="year" id="year" class="form-select form-select-sm">
     @for ($i = 1900; $i < \Carbon\Carbon::now()->year + 1 ; $i++)
-                                                <option {{ request()->get('year') == $i || \Carbon\Carbon::now()->year == $i ? ' selected' : '' }}>{{ $i }}</option>
+                                                <option {{ $year == $i ? ' selected' : '' }}>{{ $i }}</option>
     @endfor
                                             </select>
                                         </div>

@@ -34,9 +34,19 @@ if (!function_exists('inArrayR')) {
 if (!function_exists('explicitMonth')) {
     function explicitMonth($month)
     {
-        setlocale(LC_ALL, app()->getLocale());
+        Carbon::setLocale(app()->getLocale());
 
-        return utf8_encode(strftime("%B", strtotime(date('F', mktime(0, 0, 0, $month, 10)))));
+        return Carbon::createFromFormat('m', $month)->translatedFormat('F');
+    }
+}
+
+// Day/Month readable
+if (!function_exists('explicitDayMonth')) {
+    function explicitDayMonth($date)
+    {
+        Carbon::setLocale(app()->getLocale());
+
+        return Carbon::parse($date)->translatedFormat('l d F');
     }
 }
 
@@ -44,10 +54,29 @@ if (!function_exists('explicitMonth')) {
 if (!function_exists('explicitDate')) {
     function explicitDate($date)
     {
-        setlocale(LC_ALL, app()->getLocale());
+        Carbon::setLocale(app()->getLocale());
 
-        return utf8_encode(Carbon::parse($date)->formatLocalized('%d %B %Y'));
-        // return utf8_encode(Carbon::parse($date)->formatLocalized('%A %d %B %Y'));
+        return Carbon::parse($date)->translatedFormat('l d F Y');
+    }
+}
+
+// Date/Time fully readable
+if (!function_exists('explicitDateTime')) {
+    function explicitDateTime($date)
+    {
+        // Gets the current locale
+        $locale = app()->getLocale();
+        Carbon::setLocale($locale);
+
+        // Formats the date and time with "à" according to the language
+        // $formattedDate = Carbon::parse($date)->translatedFormat('l d F Y');
+        $formattedDate = Carbon::parse($date)->translatedFormat('d F Y');
+        $formattedTime = Carbon::parse($date)->translatedFormat('H:i');
+
+        // Dynamic translate of "à" depending on the locale
+        $atWord = __('miscellaneous.at_time');
+
+        return "{$formattedDate} {$atWord} {$formattedTime}";
     }
 }
 

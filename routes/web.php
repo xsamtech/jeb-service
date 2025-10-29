@@ -6,6 +6,7 @@
  */
 
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\HomeController;
 use App\Jobs\CheckExpiredPanelsJob;
 // use App\Http\Controllers\Web\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -46,10 +47,10 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::get('/panels/{id}', [DashboardController::class, 'panelDatas'])->whereNumber('id')->name('dashboard.panel.datas');
     Route::post('/panels/{id}', [DashboardController::class, 'updatePanel'])->whereNumber('id');
     Route::post('/panel-quantity/{entity}/{id}', [DashboardController::class, 'updatePanelQuantity'])->whereNumber('id')->name('dashboard.panel.updateQuantity');
-    Route::get('/expenses', [DashboardController::class, 'expenses'])->name('dashboard.expenses');
-    Route::post('/expenses', [DashboardController::class, 'addExpense']);
-    Route::get('/expenses/{id}', [DashboardController::class, 'expenseDatas'])->whereNumber('id')->name('dashboard.expense.datas');
-    Route::post('/expenses/{id}', [DashboardController::class, 'updateExpense'])->whereNumber('id');
+    // Route::get('/expenses', [DashboardController::class, 'expenses'])->name('dashboard.expenses');
+    // Route::post('/expenses', [DashboardController::class, 'addExpense']);
+    // Route::get('/expenses/{id}', [DashboardController::class, 'expenseDatas'])->whereNumber('id')->name('dashboard.expense.datas');
+    // Route::post('/expenses/{id}', [DashboardController::class, 'updateExpense'])->whereNumber('id');
     Route::get('/users', [DashboardController::class, 'users'])->name('dashboard.users');
     Route::post('/users', [DashboardController::class, 'addUser']);
     Route::get('/users/{id}', [DashboardController::class, 'userDatas'])->whereNumber('id')->name('dashboard.user.datas');
@@ -69,5 +70,9 @@ Route::get('/check-panels', function () {
 
     return "Panneaux vérifiés !";
 });
+Route::post('/expenses/taxe-implantation', [HomeController::class, 'storeTaxeImplantation'])->name('expenses.store.taxe_implantation');
+Route::post('/expenses/taxe-affichage', [HomeController::class, 'storeTaxeAffichage'])->name('expenses.store.taxe_affichage');
+Route::post('/expenses/other-expense', [HomeController::class, 'storeOtherExpense'])->name('expenses.store.other_expense');
+Route::post('/expenses/update-end-date', [HomeController::class, 'updateEndDate'])->name('expenses.update_end_date');
 
 require __DIR__ . '/auth.php';
