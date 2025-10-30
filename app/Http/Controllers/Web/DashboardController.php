@@ -108,11 +108,18 @@ class DashboardController extends Controller
                     $totalOtherExpenses = $otherExpenses->sum('amount');
                     $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
                     $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
-                    $priceAtThatTime = $customerOrder ? $customerOrder->price_at_that_time : 0;
+
+                    // Calculer la différence entre la date du début de location et celle de la fin de location
+                    $date1 = $customerOrder ? new Carbon($customerOrder->updated_at) : null;
+                    $date2 = $customerOrder ? new Carbon($customerOrder->end_date) : null;
+                    $duration = $customerOrder ? ($date1->diff($date2))->d : null;
+
+                    $priceAtThatTime = $customerOrder ? $customerOrder->price_at_that_time * $duration : 0;
                     $remainingAmount = $taxeAffichageAmount > 0 ? $priceAtThatTime - ($totalTaxes + $totalOtherExpenses) : 0;
 
                     return [
                         'customer_order_id' => $customerOrder ? $customerOrder->id : null,
+                        'customer_order_creation' => $customerOrder ? $customerOrder->updated_at : null,
                         'face_id' => $face->id,
                         'face_name' => $face->face_name,
                         'face_price' => $face->panel->price,
@@ -132,12 +139,19 @@ class DashboardController extends Controller
             ];
         });
 
+        // Total des restes à la caisse pour le mois
+        $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+        // Dîme
+        $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
+
         // Envoi des données à la vue sans encapsuler dans un JSON
         return view('home', [
             'panelsData' => $panelsData,
             'month' => $month,
             'year' => $year,
             'monthName' => $monthName,
+            'totalRemaining' => $totalRemaining,
+            'tithe' => $tithe,
         ]);
     }
 

@@ -197,6 +197,27 @@
                             </div>
 @endforelse
 
+                            <div class="row mt-4">
+                                <div class="col-lg-4 col-sm-6 col-12 mx-auto">
+                                    <div class="card card-body p-0 border-0 rounded-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered m-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-uppercase" style="max-width: 100px;">Reste du mois</td>
+                                                        <td>{{ formatIntegerNumber($totalRemaining) }} $</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-uppercase" style="max-width: 100px;">Dîme</td>
+                                                        <td>{{ formatDecimalNumber($tithe) }} $</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {{-- <!-- Table footer -->
                             <div id="tableFooter" class="card card-body rounded-0 pb-0 border-0">
                                 {{ $panels_req->links() }}
