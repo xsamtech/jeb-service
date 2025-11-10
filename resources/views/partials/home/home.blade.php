@@ -107,7 +107,9 @@
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’affichage</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatIntegerNumber($face['taxe_affichage']) }} $</span>
+        @if (!$face['is_active'])
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
+        @endif
                                                     </div>
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('expenses.store.taxe_affichage') }}" method="POST">
@@ -125,7 +127,7 @@
                                                 <div class="card card-body h-100 rounded-0 face-column">
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Date limite de location</span>
                                                     <div class="d-flex justify-content-between show-data">
-                                                        <span class="d-sm-inline-block d-block me-2">{{ $face['date_limite_location'] != '---' ? explicitDateTime($face['date_limite_location']) : $face['date_limite_location'] }}</span>
+                                                        <span class="small d-sm-inline-block d-block me-2">{{ $face['date_limite_location'] != '---' ? explicitDateTime($face['date_limite_location']) : $face['date_limite_location'] }}</span>
         @if ($face['taxe_affichage'] > 0)
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
         @endif

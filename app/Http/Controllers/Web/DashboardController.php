@@ -45,115 +45,141 @@ class DashboardController extends Controller
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
-    {
-        $monthsInFrench = [
-            1 => 'janvier',
-            2 => 'février',
-            3 => 'mars',
-            4 => 'avril',
-            5 => 'mai',
-            6 => 'juin',
-            7 => 'juillet',
-            8 => 'août',
-            9 => 'septembre',
-            10 => 'octobre',
-            11 => 'novembre',
-            12 => 'décembre',
-        ];
-        // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
-        $month = $request->get('month', Carbon::now()->month);
-        $year = $request->get('year', Carbon::now()->year);
-        // Récupérer le nom du mois en fonction de la valeur de $month
-        $monthName = $monthsInFrench[$month];
+{
+    $monthsInFrench = [
+        1 => 'janvier',
+        2 => 'février',
+        3 => 'mars',
+        4 => 'avril',
+        5 => 'mai',
+        6 => 'juin',
+        7 => 'juillet',
+        8 => 'août',
+        9 => 'septembre',
+        10 => 'octobre',
+        11 => 'novembre',
+        12 => 'décembre',
+    ];
 
-        // Récupérer tous les panneaux avec leurs relations nécessaires
-        $panels = Panel::with([
-            // 🔹 On filtre ici les commandes clients selon leur end_date (mois et année)
-            'faces.customer_orders' => function ($query) use ($month, $year) {
-                $query->whereYear('end_date', $year)
-                    ->whereMonth('end_date', $month)
-                    ->with(['expenses' => function ($query) use ($month, $year) {
-                        $query->whereYear('updated_at', $year)
-                            ->whereMonth('updated_at', $month);
-                    }]);
-            },
-            'expenses' => function ($query) use ($month, $year) {
-                $query->whereYear('updated_at', $year)
-                    ->whereMonth('updated_at', $month)
-                    ->where('designation', 'Taxe implantation');
-            }
-        ])->get();
+    // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
+    $month = $request->get('month', Carbon::now()->month);
+    $year = $request->get('year', Carbon::now()->year);
+    // Récupérer le nom du mois en fonction de la valeur de $month
+    $monthName = $monthsInFrench[$month];
 
-        // Traitement des données pour l'affichage dans la vue
-        $panelsData = $panels->map(function ($panel) {
-            $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
-            $taxeImplantationAmount = $taxeImplantation ? $taxeImplantation->amount : 0;
+    // borne basse du mois sélectionné : permet d'exclure les commandes complètement passées avant ce mois
+    $startOfMonth = Carbon::create($year, $month, 1)->startOfDay();
 
-            return [
-                'id' => $panel->id,
-                'panel' => $panel->location,
-                'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
-                'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
-                    // 🔹 Maintenant, seules les customer_orders correspondant au mois/année sont présentes
-                    $customerOrder = $face->customer_orders->sortByDesc('created_at')->first();
-                    $taxeAffichage = $customerOrder
-                                        ? $customerOrder->expenses->where('designation', 'Taxe affichage')->first()
-                                        : null;
+    // Récupérer tous les panneaux avec leurs relations nécessaires
+    $panels = Panel::with([
+        // Charger uniquement les customer_orders dont end_date >= début du mois sélectionné
+        'faces.customer_orders' => function ($query) use ($startOfMonth, $month, $year) {
+            $query->where('end_date', '>=', $startOfMonth)
+                  ->with(['expenses' => function ($q) use ($month, $year) {
+                      $q->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month);
+                  }])
+                  ->orderBy('created_at', 'desc');
+        },
+        'expenses' => function ($query) use ($month, $year) {
+            $query->whereYear('created_at', $year)
+                  ->whereMonth('created_at', $month)
+                  ->where('designation', 'Taxe implantation');
+        }
+    ])->get();
 
-                    // Autres dépenses
-                    $otherExpenses = $customerOrder
-                                        ? $customerOrder->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage'])
-                                        : collect();
+    // Traitement des données pour l'affichage dans la vue
+    $panelsData = $panels->map(function ($panel) {
+        $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
+        $taxeImplantationAmount = $taxeImplantation ? $taxeImplantation->amount : 0;
 
-                    $totalOtherExpenses = $otherExpenses->sum('amount');
-                    $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
-                    $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
+        return [
+            'id' => $panel->id,
+            'panel' => $panel->location,
+            'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
+            'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
+                // On prend la commande la plus récente (par created_at) parmi celles qui ont end_date >= début du mois
+                $customerOrder = $face->customer_orders->sortByDesc('created_at')->first();
 
-                    // Calculer la différence entre la date du début de location et celle de la fin de location
-                    $date1 = $customerOrder ? new Carbon($customerOrder->updated_at) : null;
-                    $date2 = $customerOrder ? new Carbon($customerOrder->end_date) : null;
-                    $duration = $customerOrder ? ($date1->diff($date2))->d : null;
-
-                    $priceAtThatTime = $customerOrder ? $customerOrder->price_at_that_time * $duration : 0;
-                    $remainingAmount = $taxeAffichageAmount > 0 ? $priceAtThatTime - ($totalTaxes + $totalOtherExpenses) : 0;
-
+                if (!$customerOrder) {
                     return [
-                        'customer_order_id' => $customerOrder ? $customerOrder->id : null,
-                        'customer_order_creation' => $customerOrder ? $customerOrder->updated_at : null,
+                        'customer_order_id' => null,
+                        'customer_order_creation' => null,
                         'face_id' => $face->id,
                         'face_name' => $face->face_name,
                         'face_price' => $face->panel->price,
-                        'taxe_affichage' => $taxeAffichage ? $taxeAffichage->amount : 0,
-                        // 🔹 Dynamique : si aucune commande ce mois-là → '---'
-                        'date_limite_location' => $customerOrder ? $customerOrder->end_date : '---',
-                        'other_expenses' => $otherExpenses->map(function ($e) {
-                            return [
-                                'designation' => $e->designation,
-                                'amount' => $e->amount,
-                            ];
-                        }),
-                        'total_other_expenses' => $totalOtherExpenses,
-                        'remaining_amount' => $remainingAmount,
+                        'taxe_affichage' => 0,
+                        'date_limite_location' => '---',
+                        'is_active' => false,
+                        'other_expenses' => [],
+                        'total_other_expenses' => 0,
+                        'remaining_amount' => 0,
                     ];
-                }),
-            ];
-        });
+                }
 
-        // Total des restes à la caisse pour le mois
-        $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
-        // Dîme
-        $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
+                // dépenses liées à la commande (déjà eager-loaded mais on garde la logique)
+                $taxeAffichage = $customerOrder->expenses->where('designation', 'Taxe affichage')->first();
+                $otherExpenses = $customerOrder->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage']);
+                $totalOtherExpenses = $otherExpenses->sum('amount');
+                $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
+                $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
 
-        // Envoi des données à la vue sans encapsuler dans un JSON
-        return view('home', [
-            'panelsData' => $panelsData,
-            'month' => $month,
-            'year' => $year,
-            'monthName' => $monthName,
-            'totalRemaining' => $totalRemaining,
-            'tithe' => $tithe,
-        ]);
-    }
+                // DÉBUT - correction du calcul de durée / prix
+                // Utiliser created_at comme début de location (ou change si tu as une colonne dédiée)
+                $startDate = $customerOrder->created_at ? Carbon::parse($customerOrder->created_at) : null;
+                $endDate = $customerOrder->end_date ? Carbon::parse($customerOrder->end_date) : null;
+
+                // Nombre total de jours (au moins 1)
+                $durationDays = ($startDate && $endDate) ? max(1, $startDate->diffInDays($endDate)) : 1;
+
+                // prix unitaire à l'époque (fallback sur le prix du panneau si null)
+                $unitPrice = $customerOrder->price_at_that_time ?? ($face->panel->price ?? 0);
+                $priceAtThatTime = $unitPrice * $durationDays;
+                // FIN - correction
+
+                $remainingAmount = $taxeAffichageAmount > 0 ? $priceAtThatTime - ($totalTaxes + $totalOtherExpenses) : 0;
+
+                // is_active : true si la end_date est dans le futur par rapport à maintenant
+                $isActive = $endDate ? $endDate->isFuture() : false;
+
+                return [
+                    'customer_order_id' => $customerOrder->id,
+                    'customer_order_creation' => $customerOrder->created_at,
+                    'face_id' => $face->id,
+                    'face_name' => $face->face_name,
+                    'face_price' => $face->panel->price,
+                    'taxe_affichage' => $taxeAffichageAmount,
+                    'date_limite_location' => $customerOrder->end_date,
+                    'is_active' => $isActive,
+                    'other_expenses' => $otherExpenses->map(function ($e) {
+                        return [
+                            'designation' => $e->designation,
+                            'amount' => $e->amount,
+                        ];
+                    }),
+                    'total_other_expenses' => $totalOtherExpenses,
+                    'remaining_amount' => $remainingAmount,
+                ];
+            }),
+        ];
+    });
+
+    // Total des restes à la caisse pour le mois
+    $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+    // Dîme
+    $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
+
+    // Envoi des données à la vue sans encapsuler dans un JSON
+    return view('home', [
+        'panelsData' => $panelsData,
+        'month' => $month,
+        'year' => $year,
+        'monthName' => $monthName,
+        'totalRemaining' => $totalRemaining,
+        'tithe' => $tithe,
+    ]);
+}
+
 
     /**
      * GET: Datas from sheet page
