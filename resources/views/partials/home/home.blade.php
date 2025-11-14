@@ -107,9 +107,9 @@
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’affichage</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatIntegerNumber($face['taxe_affichage']) }} $</span>
-        @if (!$face['is_active'])
+        {{-- @if ($face['is_active']) --}}
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
-        @endif
+        {{-- @endif --}}
                                                     </div>
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('expenses.store.taxe_affichage') }}" method="POST">
@@ -160,6 +160,7 @@
 
         @csrf
                                                             <input type="hidden" name="customer_order_id" value="{{ $face['customer_order_id'] }}">
+                                                            <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
 
                                                             <label for="expense_designation_{{ $loop->index }}" class="form-label m-0">Designation</label>
                                                             <input type="text" name="designation" id="expense_designation_{{ $loop->index }}" class="form-control mb-2" placeholder="Designation">
