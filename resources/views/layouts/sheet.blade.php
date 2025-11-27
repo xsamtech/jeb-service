@@ -140,12 +140,12 @@
                             <img src="{{ !empty(Auth::user()->avatar_url) ? Auth::user()->avatar_url : asset('assets/img/user.png') }}" alt="{{ Auth::user()->firstname . ' ' . Auth::user()->lastname }}" width="50" class="ms-1 rounded-circle">
                         </a>
 
-                        <ul class="dropdown-menu bg-dark position-absolute" style="right: 0; top: 3.1rem; width: 12rem;">
-                            <li><a class="dropdown-item" href="{{ route('dashboard.account') }}"><i class="bi bi-person me-2"></i>Mon compte</a></li>
+                        <ul class="dropdown-menu bg-dark position-absolute py-0" style="right: 0; top: 3.1rem; width: 12rem;">
+                            <li><a class="dropdown-item py-3" href="{{ route('dashboard.account') }}"><i class="bi bi-person me-2"></i>Mon compte</a></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="post">
 @csrf
-                                    <button class="dropdown-item"><i class="bi bi-power me-2"></i>Quitter la session</button>
+                                    <button class="dropdown-item py-3"><i class="bi bi-power me-2"></i>Quitter la session</button>
                                 </form>
                             </li>
                         </ul>

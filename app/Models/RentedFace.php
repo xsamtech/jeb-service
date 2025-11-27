@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @author Xanders
  * @see https://team.xsamtech.com/xanderssamoth
  */
-class Expense extends Model
+class RentedFace extends Model
 {
     use HasFactory;
 
-    protected $table = 'expenses';
+    protected $table = 'rented_faces';
 
     /**
      * The attributes that are mass assignable.
@@ -25,28 +26,28 @@ class Expense extends Model
 
     /**
      * ONE-TO-MANY
-     * One panel for several expenses
+     * One user for several accountancies
      */
-    public function panel(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Panel::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
      * ONE-TO-MANY
-     * One rented_face for several expenses
+     * One face for several accountancies
      */
-    public function rented_face(): BelongsTo
+    public function face(): BelongsTo
     {
-        return $this->belongsTo(RentedFace::class);
+        return $this->belongsTo(Face::class);
     }
 
     /**
-     * ONE-TO-MANY
-     * One month_data for several expenses
+     * MANY-TO-ONE
+     * Several expenses for a rented_face
      */
-    public function month_data(): BelongsTo
+    public function expenses(): HasMany
     {
-        return $this->belongsTo(MonthData::class);
+        return $this->hasMany(Expense::class);
     }
 }

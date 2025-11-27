@@ -46,6 +46,13 @@
 
                                 <!-- Add panel button -->
                                 <p class="mt-sm-0 mt-2 mb-0">
+@if (Route::is('dashboard.home'))
+                                    <button class="btn btn-sm bg-gradient-primary-to-secondary px-4 pb-sm-1 text-white" data-bs-toggle="modal" data-bs-target="#userModal">Ajouter un administrateur</button>
+@endif
+                                </p>
+
+                                <!-- Add panel button -->
+                                <p class="mt-sm-0 mt-2 mb-0">
 @if (Route::is('dashboard.home.datas'))
                                     <a href="{{ route('dashboard.home') }}" class="btn btn-secondary btn-sm pb-sm-1 me-1 float-end text-white">
                                         <i class="bi bi-chevron-double-left me-2"></i>Retour

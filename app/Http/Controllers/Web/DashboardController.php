@@ -3,15 +3,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Cart as ResourcesCart;
-use App\Http\Resources\CustomerOrder as ResourcesCustomerOrder;
 use App\Http\Resources\Expense as ResourcesExpense;
 use App\Http\Resources\Panel as ResourcesPanel;
 use App\Http\Resources\Role as ResourcesRole;
 use App\Http\Resources\User as ResourcesUser;
-use App\Models\Accountancy;
-use App\Models\Cart;
-use App\Models\CustomerOrder;
 use App\Models\Expense;
 use App\Models\Face;
 use App\Models\File;
@@ -24,9 +19,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
@@ -45,140 +40,115 @@ class DashboardController extends Controller
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
-{
-    $monthsInFrench = [
-        1 => 'janvier',
-        2 => 'février',
-        3 => 'mars',
-        4 => 'avril',
-        5 => 'mai',
-        6 => 'juin',
-        7 => 'juillet',
-        8 => 'août',
-        9 => 'septembre',
-        10 => 'octobre',
-        11 => 'novembre',
-        12 => 'décembre',
-    ];
+    {
+        $monthsInFrench = [
+            1 => 'janvier',
+            2 => 'février',
+            3 => 'mars',
+            4 => 'avril',
+            5 => 'mai',
+            6 => 'juin',
+            7 => 'juillet',
+            8 => 'août',
+            9 => 'septembre',
+            10 => 'octobre',
+            11 => 'novembre',
+            12 => 'décembre',
+        ];
 
-    // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
-    $month = $request->get('month', Carbon::now()->month);
-    $year = $request->get('year', Carbon::now()->year);
-    // Récupérer le nom du mois en fonction de la valeur de $month
-    $monthName = $monthsInFrench[$month];
+        // role "Administrateur"
+        $admin_role = Role::where('role_name', 'Administrateur')->first();
+        // Récupérer le mois et l'année depuis le formulaire ou utiliser les valeurs par défaut
+        $month = $request->get('month', Carbon::now()->month);
+        $year = $request->get('year', Carbon::now()->year);
+        // Récupérer le nom du mois en fonction de la valeur de $month
+        $monthName = $monthsInFrench[$month];
 
-    // borne basse du mois sélectionné : permet d'exclure les commandes complètement passées avant ce mois
-    $startOfMonth = Carbon::create($year, $month, 1)->startOfDay();
+        // Récupérer tous les panneaux avec leurs relations nécessaires
+        $panels = Panel::with([
+            'expenses' => function ($query) use ($month, $year) {
+                $query->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->where('designation', 'Taxe implantation');
+            }
+        ])->get();
 
-    // Récupérer tous les panneaux avec leurs relations nécessaires
-    $panels = Panel::with([
-        // Charger uniquement les customer_orders dont end_date >= début du mois sélectionné
-        'faces.customer_orders' => function ($query) use ($startOfMonth, $month, $year) {
-            $query->where('end_date', '>=', $startOfMonth)
-                  ->with(['expenses' => function ($q) use ($month, $year) {
-                      $q->whereYear('created_at', $year)
-                        ->whereMonth('created_at', $month);
-                  }])
-                  ->orderBy('created_at', 'desc');
-        },
-        'expenses' => function ($query) use ($month, $year) {
-            $query->whereYear('created_at', $year)
-                  ->whereMonth('created_at', $month)
-                  ->where('designation', 'Taxe implantation');
-        }
-    ])->get();
+        // Traitement des données pour l'affichage dans la vue
+        $panelsData = $panels->map(function ($panel) {
+            $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
+            $taxeImplantationAmount = $taxeImplantation ? $taxeImplantation->amount : 0;
 
-    // Traitement des données pour l'affichage dans la vue
-    $panelsData = $panels->map(function ($panel) {
-        $taxeImplantation = $panel->expenses->where('designation', 'Taxe implantation')->first();
-        $taxeImplantationAmount = $taxeImplantation ? $taxeImplantation->amount : 0;
+            return [
+                'id' => $panel->id,
+                'panel' => $panel->location,
+                'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
+                'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
+                    // On prend la commande la plus récente (par created_at) parmi celles qui ont end_date >= début du mois
+                    $rentedFace = $face->rented_faces->sortByDesc('created_at')->first();
 
-        return [
-            'id' => $panel->id,
-            'panel' => $panel->location,
-            'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
-            'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
-                // On prend la commande la plus récente (par created_at) parmi celles qui ont end_date >= début du mois
-                $customerOrder = $face->customer_orders->sortByDesc('created_at')->first();
+                    if (!$rentedFace) {
+                        return [
+                            'rented_face_id' => null,
+                            'rented_face_creation' => null,
+                            'face_id' => $face->id,
+                            'face_name' => $face->face_name,
+                            'face_price' => null,
+                            'taxe_affichage' => 0,
+                            'date_limite_location' => '---',
+                            'is_available' => $face->is_available,
+                            'other_expenses' => [],
+                            'total_other_expenses' => 0,
+                            'remaining_amount' => 0,
+                        ];
+                    }
 
-                if (!$customerOrder) {
+                    // dépenses liées à la location
+                    $taxeAffichage = $rentedFace->expenses->where('designation', 'Taxe affichage')->first();
+                    $otherExpenses = $rentedFace->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage']);
+                    $totalOtherExpenses = $otherExpenses->sum('amount');
+                    $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
+                    $price = $rentedFace->price;
+                    $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
+                    $remainingAmount = $taxeAffichageAmount > 0 ? $price - ($totalTaxes + $totalOtherExpenses) : 0;
+
                     return [
-                        'customer_order_id' => null,
-                        'customer_order_creation' => null,
+                        'rented_face_id' => $rentedFace->id,
+                        'rented_face_creation' => $rentedFace->created_at,
                         'face_id' => $face->id,
                         'face_name' => $face->face_name,
-                        'face_price' => $face->panel->price,
-                        'taxe_affichage' => 0,
-                        'date_limite_location' => '---',
-                        'is_active' => false,
-                        'other_expenses' => [],
-                        'total_other_expenses' => 0,
-                        'remaining_amount' => 0,
+                        'face_price' => $price,
+                        'taxe_affichage' => $taxeAffichageAmount,
+                        'date_limite_location' => $rentedFace->end_date,
+                        'is_available' => $face->is_available,
+                        'other_expenses' => $otherExpenses->map(function ($e) {
+                            return [
+                                'designation' => $e->designation,
+                                'amount' => $e->amount,
+                            ];
+                        }),
+                        'total_other_expenses' => $totalOtherExpenses,
+                        'remaining_amount' => $remainingAmount,
                     ];
-                }
+                }),
+            ];
+        });
 
-                // dépenses liées à la commande (déjà eager-loaded mais on garde la logique)
-                $taxeAffichage = $customerOrder->expenses->where('designation', 'Taxe affichage')->first();
-                $otherExpenses = $customerOrder->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage']);
-                $totalOtherExpenses = $otherExpenses->sum('amount');
-                $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
-                $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
+        // Total des restes à la caisse pour le mois
+        $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+        // Dîme
+        $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
 
-                // DÉBUT - correction du calcul de durée / prix
-                // Utiliser created_at comme début de location (ou change si tu as une colonne dédiée)
-                $startDate = $customerOrder->created_at ? Carbon::parse($customerOrder->created_at) : null;
-                $endDate = $customerOrder->end_date ? Carbon::parse($customerOrder->end_date) : null;
-
-                // Nombre total de jours (au moins 1)
-                $durationDays = ($startDate && $endDate) ? max(1, $startDate->diffInDays($endDate)) : 1;
-
-                // prix unitaire à l'époque (fallback sur le prix du panneau si null)
-                $unitPrice = $customerOrder->price_at_that_time ?? ($face->panel->price ?? 0);
-                $priceAtThatTime = $unitPrice * $durationDays;
-                // FIN - correction
-
-                $remainingAmount = $taxeAffichageAmount > 0 ? $priceAtThatTime - ($totalTaxes + $totalOtherExpenses) : 0;
-
-                // is_active : true si la end_date est dans le futur par rapport à maintenant
-                $isActive = $endDate ? $endDate->isFuture() : false;
-
-                return [
-                    'customer_order_id' => $customerOrder->id,
-                    'customer_order_creation' => $customerOrder->created_at,
-                    'face_id' => $face->id,
-                    'face_name' => $face->face_name,
-                    'face_price' => $face->panel->price,
-                    'taxe_affichage' => $taxeAffichageAmount,
-                    'date_limite_location' => $customerOrder->end_date,
-                    'is_active' => $isActive,
-                    'other_expenses' => $otherExpenses->map(function ($e) {
-                        return [
-                            'designation' => $e->designation,
-                            'amount' => $e->amount,
-                        ];
-                    }),
-                    'total_other_expenses' => $totalOtherExpenses,
-                    'remaining_amount' => $remainingAmount,
-                ];
-            }),
-        ];
-    });
-
-    // Total des restes à la caisse pour le mois
-    $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
-    // Dîme
-    $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
-
-    // Envoi des données à la vue sans encapsuler dans un JSON
-    return view('home', [
-        'panelsData' => $panelsData,
-        'month' => $month,
-        'year' => $year,
-        'monthName' => $monthName,
-        'totalRemaining' => $totalRemaining,
-        'tithe' => $tithe,
-    ]);
-}
+        // Envoi des données à la vue sans encapsuler dans un JSON
+        return view('home', [
+            'admin' => $admin_role,
+            'panelsData' => $panelsData,
+            'month' => $month,
+            'year' => $year,
+            'monthName' => $monthName,
+            'totalRemaining' => $totalRemaining,
+            'tithe' => $tithe,
+        ]);
+    }
 
 
     /**
@@ -244,15 +214,15 @@ class DashboardController extends Controller
      */
     public function getOrders(Request $request)
     {
-        $orders = CustomerOrder::with('face.panel', 'user')
-            ->whereHas('cart', function ($query) {
-                $query->where('is_paid', 0);
-            })->orderByDesc('created_at')->paginate(10)->appends($request->query());
+        // $orders = CustomerOrder::with('face.panel', 'user')
+        //     ->whereHas('cart', function ($query) {
+        //         $query->where('is_paid', 0);
+        //     })->orderByDesc('created_at')->paginate(10)->appends($request->query());
 
-        return response()->json([
-            'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
-            'total_pages' => $orders->lastPage(),
-        ]);
+        // return response()->json([
+        //     'orders' => ResourcesCustomerOrder::collection($orders)->resolve(),
+        //     'total_pages' => $orders->lastPage(),
+        // ]);
     }
 
     /**
@@ -263,9 +233,9 @@ class DashboardController extends Controller
      */
     public function getOrderDetails($id)
     {
-        $order = CustomerOrder::with('panel', 'user')->find($id);
+        // $order = CustomerOrder::with('panel', 'user')->find($id);
 
-        return response()->json(new ResourcesCustomerOrder($order));
+        // return response()->json(new ResourcesCustomerOrder($order));
     }
 
     /**
@@ -349,44 +319,44 @@ class DashboardController extends Controller
             ]);
         }
 
-        if ($entity == 'orders') {
-            // panels
-            $available_panels_collection = Panel::with(['faces' => function ($query) {
-                $query->where('is_available', 1);
-            }])->whereHas('faces', function ($query) {
-                $query->where('is_available', 1);
-            })->orderByDesc('created_at')->get();
+        // if ($entity == 'orders') {
+        //     // panels
+        //     $available_panels_collection = Panel::with(['faces' => function ($query) {
+        //         $query->where('is_available', 1);
+        //     }])->whereHas('faces', function ($query) {
+        //         $query->where('is_available', 1);
+        //     })->orderByDesc('created_at')->get();
 
-            $available_panels_data = ResourcesPanel::collection($available_panels_collection)->resolve();
-            $count_customers = User::whereHas('roles', function ($query) use ($customer_role) {
-                $query->where('roles.id', $customer_role->id);
-            })->count();
-            $customers_ids = User::whereHas('roles', function ($query) use ($customer_role) {
-                $query->where('roles.id', $customer_role->id);
-            })->pluck('id')->toArray();
-            $carts_collection = Cart::with(['customer_orders.user', 'customer_orders.face', 'customer_orders.expenses'])
-                ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
-                ->whereIn('customer_orders.user_id', $customers_ids)
-                ->select('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
-                ->groupBy('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
-                ->orderBy('carts.created_at', 'desc')
-                ->paginate(5)->appends(request()->query());
-            $carts_data = ResourcesCart::collection($carts_collection)->resolve();
+        //     $available_panels_data = ResourcesPanel::collection($available_panels_collection)->resolve();
+        //     $count_customers = User::whereHas('roles', function ($query) use ($customer_role) {
+        //         $query->where('roles.id', $customer_role->id);
+        //     })->count();
+        //     $customers_ids = User::whereHas('roles', function ($query) use ($customer_role) {
+        //         $query->where('roles.id', $customer_role->id);
+        //     })->pluck('id')->toArray();
+        //     $carts_collection = Cart::with(['customer_orders.user', 'customer_orders.face', 'customer_orders.expenses'])
+        //         ->join('customer_orders', 'carts.id', '=', 'customer_orders.cart_id')
+        //         ->whereIn('customer_orders.user_id', $customers_ids)
+        //         ->select('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
+        //         ->groupBy('carts.id', 'carts.payment_code', 'carts.is_paid', 'carts.created_at', 'carts.updated_at')
+        //         ->orderBy('carts.created_at', 'desc')
+        //         ->paginate(5)->appends(request()->query());
+        //     $carts_data = ResourcesCart::collection($carts_collection)->resolve();
 
-            // page title
-            $entity_title = 'Locations des clients';
+        //     // page title
+        //     $entity_title = 'Locations des clients';
 
-            return view('users', [
-                'roles' => $roles,
-                'customer' => $customer_role,
-                'count_customers' => $count_customers,
-                'carts' => $carts_data,
-                'carts_req' => $carts_collection,
-                'available_panels' => $available_panels_data,
-                'entity' => $entity,
-                'entity_title' => $entity_title
-            ]);
-        }
+        //     return view('users', [
+        //         'roles' => $roles,
+        //         'customer' => $customer_role,
+        //         'count_customers' => $count_customers,
+        //         'carts' => $carts_data,
+        //         'carts_req' => $carts_collection,
+        //         'available_panels' => $available_panels_data,
+        //         'entity' => $entity,
+        //         'entity_title' => $entity_title
+        //     ]);
+        // }
 
         if ($entity == 'roles') {
             // page title
@@ -478,23 +448,23 @@ class DashboardController extends Controller
     public function expenseDatas($id)
     {
         $expense = Expense::find($id);
-        $expense_order = null;
+        // $expense_order = null;
 
         if (is_null($expense)) {
             return redirect('/expenses')->with('error_message', 'Dépense non trouvée.');
         }
 
-        if (!empty($expense->customer_order_id)) {
-            $expense_order = CustomerOrder::find($expense->customer_order_id);
+        // if (!empty($expense->customer_order_id)) {
+        //     $expense_order = CustomerOrder::find($expense->customer_order_id);
 
-            if (is_null($expense_order)) {
-                return redirect('/expenses')->with('error_message', 'Location non trouvée.');
-            }
-        }
+        //     if (is_null($expense_order)) {
+        //         return redirect('/expenses')->with('error_message', 'Location non trouvée.');
+        //     }
+        // }
 
         return view('expenses', [
             'selected_expense' => new ResourcesExpense($expense),
-            'expense_order' => $expense_order != null ? new ResourcesCustomerOrder($expense_order) : null,
+            // 'expense_order' => $expense_order != null ? new ResourcesCustomerOrder($expense_order) : null,
         ]);
     }
 
@@ -542,21 +512,21 @@ class DashboardController extends Controller
             ]);
         }
 
-        if ($entity == 'cart') {
-            $cart = Cart::find($id);
+        // if ($entity == 'cart') {
+        //     $cart = Cart::find($id);
 
-            if (!$cart) {
-                return redirect(RouteServiceProvider::HOME)->with('error_message', 'Locations non trouvées.');
-            }
+        //     if (!$cart) {
+        //         return redirect(RouteServiceProvider::HOME)->with('error_message', 'Locations non trouvées.');
+        //     }
 
-            $customer_orders = $cart->customer_orders;
+        //     $customer_orders = $cart->customer_orders;
 
-            return view('users', [
-                'selected_cart' => (new ResourcesCart($cart))->toArray(request()),
-                'entity' => $entity,
-                'entity_title' => 'Location de ' . $customer_orders[0]->user->firstname
-            ]);
-        }
+        //     return view('users', [
+        //         'selected_cart' => (new ResourcesCart($cart))->toArray(request()),
+        //         'entity' => $entity,
+        //         'entity_title' => 'Location de ' . $customer_orders[0]->user->firstname
+        //     ]);
+        // }
     }
 
     /**
@@ -679,26 +649,7 @@ class DashboardController extends Controller
                 ], 404);
             }
 
-            $accountancy = Accountancy::where('expense_id', $expense->id)->first();
-
-            if ($expense->customer_order_id != null) {
-                $tithe_expense = Expense::where('designation', 'Dîme (10%)')->where('customer_order_id', $expense->customer_order_id)->first();
-
-                if (!$tithe_expense) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Dîme de location pour cette dépense non trouvée',
-                    ], 404);
-                }
-
-                $order_price = ($tithe_expense->amount * 10) + $expense->amount;
-                $new_tithe_amount = $order_price / 10;
-
-                $tithe_expense->update(['amount' => $new_tithe_amount]);
-            }
-
-            // Withdraw expense with its accountancy
-            $accountancy->delete();
+            // Withdraw expense
             $expense->delete();
 
             return response()->json([
@@ -743,81 +694,81 @@ class DashboardController extends Controller
             ]);
         }
 
-        if ($entity == 'order') {
-            // Check if cart exists, is unpaid
-            $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->latest()->first();
+        // if ($entity == 'order') {
+        //     // Check if cart exists, is unpaid
+        //     $cart = Cart::where([['id', $request->cart_id], ['is_paid', 0]])->latest()->first();
 
-            if (!$cart) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Location de panneau non trouvée',
-                ], 404);
-            }
+        //     if (!$cart) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Location de panneau non trouvée',
+        //         ], 404);
+        //     }
 
-            // Get the ordered face with the pivot relationship
-            $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['face_id', $id]])->first();
+        //     // Get the ordered face with the pivot relationship
+        //     $customer_order = CustomerOrder::where([['cart_id', $cart->id], ['face_id', $id]])->first();
 
-            if (!$customer_order) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Face de panneau non trouvée dans la location',
-                ], 404);
-            }
+        //     if (!$customer_order) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Face de panneau non trouvée dans la location',
+        //         ], 404);
+        //     }
 
-            // Retrieve the face in the stock
-            $in_stock_face = Face::find($customer_order->face_id);
+        //     // Retrieve the face in the stock
+        //     $in_stock_face = Face::find($customer_order->face_id);
 
-            if (!$in_stock_face) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Face de panneau introuvable dans le stock',
-                ], 404);
-            }
+        //     if (!$in_stock_face) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Face de panneau introuvable dans le stock',
+        //         ], 404);
+        //     }
 
-            // Update the face in the stock
-            $in_stock_face->update([
-                'is_available' => 1
-            ]);
+        //     // Update the face in the stock
+        //     $in_stock_face->update([
+        //         'is_available' => 1
+        //     ]);
 
-            $customer_order->delete();
+        //     $customer_order->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Face de panneau retirée de la location',
-            ]);
-        }
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Face de panneau retirée de la location',
+        //     ]);
+        // }
 
-        if ($entity == 'cart') {
-            // Check the existence of the unpaid cart containing the panel order
-            $cart = Cart::find('id');
+        // if ($entity == 'cart') {
+        //     // Check the existence of the unpaid cart containing the panel order
+        //     $cart = Cart::find('id');
 
-            if (!$cart) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Locations non trouvées',
-                ], 404);
-            }
+        //     if (!$cart) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Locations non trouvées',
+        //         ], 404);
+        //     }
 
-            $ordersToDelete = CustomerOrder::where('cart_id', $cart->id)->get();
-            $accountancy = Accountancy::where('cart_id', $cart->id)->first();
+        //     $ordersToDelete = CustomerOrder::where('cart_id', $cart->id)->get();
+        //     $accountancy = Accountancy::where('cart_id', $cart->id)->first();
 
-            if (count($ordersToDelete) > 0) {
-                // Withdraw orders based on cart
-                foreach ($ordersToDelete as $order) {
-                    // Deletes the row at the database
-                    $order->delete();
-                }
-            }
+        //     if (count($ordersToDelete) > 0) {
+        //         // Withdraw orders based on cart
+        //         foreach ($ordersToDelete as $order) {
+        //             // Deletes the row at the database
+        //             $order->delete();
+        //         }
+        //     }
 
-            // Withdraw cart & accountancy
-            $accountancy->delete();
-            $cart->delete();
+        //     // Withdraw cart & accountancy
+        //     $accountancy->delete();
+        //     $cart->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Locations supprimées',
-            ]);
-        }
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Locations supprimées',
+        //     ]);
+        // }
     }
 
     // ==================================== HTTP POST METHODS ====================================
@@ -1023,54 +974,15 @@ class DashboardController extends Controller
             }
         }
 
-        $expense = Expense::create([
+        Expense::create([
             'designation' => $request->designation,
             'amount' => $request->amount,
             'outflow_date' => $outflow,
             'created_by' => Auth::id(),
-            'customer_order_id' => $request->customer_order_id,
+            'panel_id' => $request->panel_id,
+            'rented_face_id' => $request->rented_face_id,
+            'month_data_id' => $request->month_data_id,
         ]);
-
-        Accountancy::create([
-            'expense_id' => $expense->id
-        ]);
-
-        // Récupère la commande associée (CustomerOrder)
-        $customerOrder = CustomerOrder::find($request->customer_order_id);
-
-        if ($customerOrder) {
-            $date1 = new Carbon($customerOrder->created_at);
-            $date2 = new Carbon($customerOrder->end_date);
-            $duration = $date1->diff($date2);
-            // Prix de la commande
-            $count_duration = ($duration->d == 0 ? 1 : $duration->d);
-            $order_price = $customerOrder->price_at_that_time * $count_duration;
-
-            // Met à jour le reste d'argent après la nouvelle dépense
-            $rest_of_money = $order_price - $request->amount;
-
-            // Cherche la dîme existante
-            $tithe_expense = Expense::where([['designation', 'Dîme (10%)'], ['customer_order_id', $request->customer_order_id]])->first();
-
-            if ($tithe_expense) {
-                // Calcul de la nouvelle dîme
-                $new_tithe_amount = $rest_of_money / 10;
-
-                // Mettre à jour la dîme avec la nouvelle valeur
-                $tithe_expense->update([
-                    'amount' => $new_tithe_amount,
-                ]);
-
-                // Mettre à jour la comptabilité de la dîme
-                $tithe_accountancy = Accountancy::where('expense_id', $tithe_expense->id)->first();
-
-                if ($tithe_accountancy) {
-                    $tithe_accountancy->update([
-                        'expense_id' => $tithe_expense->id
-                    ]);
-                }
-            }
-        }
 
         return response()->json(['status' => 'success', 'message' => 'Dépense ajoutée avec succès.']);
     }
@@ -1186,159 +1098,159 @@ class DashboardController extends Controller
             ]);
         }
 
-        if ($entity == 'orders') {
-            // Vérification si un utilisateur existant est sélectionné
-            $isExistingCustomer = $request->filled('customer_phone');
+        // if ($entity == 'orders') {
+        //     // Vérification si un utilisateur existant est sélectionné
+        //     $isExistingCustomer = $request->filled('customer_phone');
 
-            // Validation de base
-            $rules = [
-                'firstname' => ['required', 'string', 'max:255'],
-                'phone'     => ['required', 'string', 'max:45', 'unique:users'],
-                'email'     => ['nullable', 'string', 'email', 'max:255'],
-            ];
+        //     // Validation de base
+        //     $rules = [
+        //         'firstname' => ['required', 'string', 'max:255'],
+        //         'phone'     => ['required', 'string', 'max:45', 'unique:users'],
+        //         'email'     => ['nullable', 'string', 'email', 'max:255'],
+        //     ];
 
-            if (!$isExistingCustomer) {
-                $rules['phone'][] = 'unique:users';
+        //     if (!$isExistingCustomer) {
+        //         $rules['phone'][] = 'unique:users';
 
-                $request->validate($rules, [
-                    'firstname.required' => 'Le prénom est obligatoire.',
-                    'phone.required'     => 'Le n° de téléphone est obligatoire.',
-                ]);
-            }
+        //         $request->validate($rules, [
+        //             'firstname.required' => 'Le prénom est obligatoire.',
+        //             'phone.required'     => 'Le n° de téléphone est obligatoire.',
+        //         ]);
+        //     }
 
-            DB::beginTransaction();
+        //     DB::beginTransaction();
 
-            try {
-                // Rechercher le client existant
-                $customer = null;
+        //     try {
+        //         // Rechercher le client existant
+        //         $customer = null;
 
-                if ($isExistingCustomer) {
-                    $customer = User::where('phone', $request->customer_phone)->first();
-                }
+        //         if ($isExistingCustomer) {
+        //             $customer = User::where('phone', $request->customer_phone)->first();
+        //         }
 
-                // Si le client n'existe pas, on le crée
-                if (!$customer) {
-                    $random_int_token = (string) random_int(1000000, 9999999);
-                    $random_string_password = (string) Str::random();
+        //         // Si le client n'existe pas, on le crée
+        //         if (!$customer) {
+        //             $random_int_token = (string) random_int(1000000, 9999999);
+        //             $random_string_password = (string) Str::random();
 
-                    $customer = User::create([
-                        'firstname' => $request->firstname,
-                        'lastname'  => $request->lastname,
-                        'email'     => $request->email,
-                        'phone'     => $request->phone,
-                        'password'  => Hash::make($random_string_password),
-                    ]);
+        //             $customer = User::create([
+        //                 'firstname' => $request->firstname,
+        //                 'lastname'  => $request->lastname,
+        //                 'email'     => $request->email,
+        //                 'phone'     => $request->phone,
+        //                 'password'  => Hash::make($random_string_password),
+        //             ]);
 
-                    PasswordReset::create([
-                        'email'           => $request->email,
-                        'phone'           => $request->phone,
-                        'token'           => $random_int_token,
-                        'former_password' => $random_string_password
-                    ]);
+        //             PasswordReset::create([
+        //                 'email'           => $request->email,
+        //                 'phone'           => $request->phone,
+        //                 'token'           => $random_int_token,
+        //                 'former_password' => $random_string_password
+        //             ]);
 
-                    // Rôle client
-                    $customer_role = Role::firstOrCreate(
-                        ['role_name' => 'Client'],
-                        ['role_description' => 'Personne ou entreprise louant des panneaux']
-                    );
+        //             // Rôle client
+        //             $customer_role = Role::firstOrCreate(
+        //                 ['role_name' => 'Client'],
+        //                 ['role_description' => 'Personne ou entreprise louant des panneaux']
+        //             );
 
-                    $customer->roles()->attach($customer_role->id);
+        //             $customer->roles()->attach($customer_role->id);
 
-                    // Traitement de l'image
-                    if ($request->filled('image_64')) {
-                        $replace = substr($request->image_64, 0, strpos($request->image_64, ',') + 1);
-                        $image = str_replace([$replace, ' '], ['', '+'], $request->image_64);
-                        $image_path = 'images/users/' . $customer->id . '/avatar/' . Str::random(50) . '.png';
+        //             // Traitement de l'image
+        //             if ($request->filled('image_64')) {
+        //                 $replace = substr($request->image_64, 0, strpos($request->image_64, ',') + 1);
+        //                 $image = str_replace([$replace, ' '], ['', '+'], $request->image_64);
+        //                 $image_path = 'images/users/' . $customer->id . '/avatar/' . Str::random(50) . '.png';
 
-                        Storage::disk('public')->put($image_path, base64_decode($image));
+        //                 Storage::disk('public')->put($image_path, base64_decode($image));
 
-                        $customer->update([
-                            'avatar_url' => Storage::url($image_path),
-                            'updated_at' => now()
-                        ]);
-                    }
-                }
+        //                 $customer->update([
+        //                     'avatar_url' => Storage::url($image_path),
+        //                     'updated_at' => now()
+        //                 ]);
+        //             }
+        //         }
 
-                // Création du panier
-                $cart = Cart::create([
-                    'payment_code' => Str::random(10),
-                    'is_paid'      => 0,
-                ]);
+        //         // Création du panier
+        //         $cart = Cart::create([
+        //             'payment_code' => Str::random(10),
+        //             'is_paid'      => 0,
+        //         ]);
 
-                if (!$request->filled('panels_ids') || !is_array($request->panels_ids)) {
-                    DB::rollBack();
+        //         if (!$request->filled('panels_ids') || !is_array($request->panels_ids)) {
+        //             DB::rollBack();
 
-                    return response()->json(['status' => 'error', 'message' => 'Veuillez choisir au moins un panneau.'], 422);
-                }
+        //             return response()->json(['status' => 'error', 'message' => 'Veuillez choisir au moins un panneau.'], 422);
+        //         }
 
-                foreach ($request->panels_ids as $key => $face_id) {
-                    $face = Face::find($face_id);
+        //         foreach ($request->panels_ids as $key => $face_id) {
+        //             $face = Face::find($face_id);
 
-                    if (!$face || !$face->is_available) {
-                        DB::rollBack();
+        //             if (!$face || !$face->is_available) {
+        //                 DB::rollBack();
 
-                        return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
-                    }
+        //                 return response()->json(['status' => 'error', 'message' => 'Le panneau est déjà commandé.']);
+        //             }
 
-                    $end_date = null;
+        //             $end_date = null;
 
-                    if (isset($request->end_date[$key]) && !empty($request->end_date[$key])) {
-                        $parts = explode(' ', $request->end_date[$key]); // ['30/05/2025', '14:30']
+        //             if (isset($request->end_date[$key]) && !empty($request->end_date[$key])) {
+        //                 $parts = explode(' ', $request->end_date[$key]); // ['30/05/2025', '14:30']
 
-                        if (count($parts) === 2) {
-                            [$day, $month, $year] = explode('/', $parts[0]);
-                            $time = $parts[1];
-                            $end_date = "$year-$month-$day $time:00"; // DATETIME format
-                        }
-                    }
+        //                 if (count($parts) === 2) {
+        //                     [$day, $month, $year] = explode('/', $parts[0]);
+        //                     $time = $parts[1];
+        //                     $end_date = "$year-$month-$day $time:00"; // DATETIME format
+        //                 }
+        //             }
 
-                    if (!$end_date) {
-                        $end_date = now()->addDays(1);
-                    }
+        //             if (!$end_date) {
+        //                 $end_date = now()->addDays(1);
+        //             }
 
-                    $customer_order = CustomerOrder::create([
-                        'price_at_that_time' => $face->panel->price,
-                        'end_date' => $end_date,
-                        'user_id'            => $customer->id,
-                        'face_id'           => $face->id,
-                        'cart_id'            => $cart->id,
-                    ]);
+        //             $customer_order = CustomerOrder::create([
+        //                 'price_at_that_time' => $face->panel->price,
+        //                 'end_date' => $end_date,
+        //                 'user_id'            => $customer->id,
+        //                 'face_id'           => $face->id,
+        //                 'cart_id'            => $cart->id,
+        //             ]);
 
-                    // Get number of days via "end_date"
-                    $date1 = new Carbon($customer_order->created_at);
-                    $date2 = new Carbon($customer_order->end_date);
-                    $duration = $date1->diff($date2);
-                    // Calculate total price
-                    $count_duration = ($duration->d == 0 ? 1 : $duration->d);
-                    $total_price = $customer_order->price_at_that_time * $count_duration;
+        //             // Get number of days via "end_date"
+        //             $date1 = new Carbon($customer_order->created_at);
+        //             $date2 = new Carbon($customer_order->end_date);
+        //             $duration = $date1->diff($date2);
+        //             // Calculate total price
+        //             $count_duration = ($duration->d == 0 ? 1 : $duration->d);
+        //             $total_price = $customer_order->price_at_that_time * $count_duration;
 
-                    $expense = Expense::create([
-                        'designation'       => 'Dîme (10%)',
-                        'amount'            => $total_price / 10,
-                        'outflow_date'      => now(),
-                        'created_by'        => Auth::id(),
-                        'customer_order_id' => $customer_order->id,
-                    ]);
+        //             $expense = Expense::create([
+        //                 'designation'       => 'Dîme (10%)',
+        //                 'amount'            => $total_price / 10,
+        //                 'outflow_date'      => now(),
+        //                 'created_by'        => Auth::id(),
+        //                 'customer_order_id' => $customer_order->id,
+        //             ]);
 
-                    Accountancy::create([
-                        'expense_id' => $expense->id
-                    ]);
+        //             Accountancy::create([
+        //                 'expense_id' => $expense->id
+        //             ]);
 
-                    $face->update(['is_available' => 0]);
-                }
+        //             $face->update(['is_available' => 0]);
+        //         }
 
-                Accountancy::create(['cart_id' => $cart->id]);
-                DB::commit();
+        //         Accountancy::create(['cart_id' => $cart->id]);
+        //         DB::commit();
 
-                return response()->json(['status' => 'success', 'message' => 'Location ajoutée avec succès.']);
-            } catch (\Exception $e) {
-                DB::rollBack();
+        //         return response()->json(['status' => 'success', 'message' => 'Location ajoutée avec succès.']);
+        //     } catch (\Exception $e) {
+        //         DB::rollBack();
 
-                // Log optionnel
-                Log::error('Erreur panier : ' . $e->getMessage());
-                return response()->json(['status' => 'error', 'message' => 'Erreur lors de la création du panier.']);
-            }
-        }
+        //         // Log optionnel
+        //         Log::error('Erreur panier : ' . $e->getMessage());
+        //         return response()->json(['status' => 'error', 'message' => 'Erreur lors de la création du panier.']);
+        //     }
+        // }
 
         return response()->json(['status' => 'success', 'message' => 'Données ajoutées avec succès.']);
     }
@@ -1700,39 +1612,39 @@ class DashboardController extends Controller
             return back()->with('success_message', 'Vos informations ont bien été mises à jour.');
         }
 
-        if ($entity == 'cart') {
-            $cart = Cart::find($id);
+        // if ($entity == 'cart') {
+        //     $cart = Cart::find($id);
 
-            if (!$cart) {
-                return back()->with('error_message', 'Panier non trouvé.');
-            }
+        //     if (!$cart) {
+        //         return back()->with('error_message', 'Panier non trouvé.');
+        //     }
 
-            $updates = [];
-            $message = 'Mise à jour terminée.';
+        //     $updates = [];
+        //     $message = 'Mise à jour terminée.';
 
-            if ($request->filled('is_paid')) {
-                $updates['is_paid'] = $request->is_paid;
+        //     if ($request->filled('is_paid')) {
+        //         $updates['is_paid'] = $request->is_paid;
 
-                if ($request->is_paid == 1) {
-                    $updates['payment_code'] = (string) random_int(1000000, 9999999);
-                    $message = 'Locations payées.';
-                } else {
-                    $updates['payment_code'] = null;
-                }
-            }
+        //         if ($request->is_paid == 1) {
+        //             $updates['payment_code'] = (string) random_int(1000000, 9999999);
+        //             $message = 'Locations payées.';
+        //         } else {
+        //             $updates['payment_code'] = null;
+        //         }
+        //     }
 
-            foreach ($cart->customer_orders as $order) {
-                $order->face->update(['is_available' => 1]);
-            }
+        //     foreach ($cart->customer_orders as $order) {
+        //         $order->face->update(['is_available' => 1]);
+        //     }
 
-            if (!empty($updates)) {
-                $cart->update($updates);
+        //     if (!empty($updates)) {
+        //         $cart->update($updates);
 
-                return back()->with('success_message', $message);
-            }
+        //         return back()->with('success_message', $message);
+        //     }
 
-            // No fields to update
-            return back()->with('error_message', 'Aucune donnée à mettre à jour.');
-        }
+        //     // No fields to update
+        //     return back()->with('error_message', 'Aucune donnée à mettre à jour.');
+        // }
     }
 }

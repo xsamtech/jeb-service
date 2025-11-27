@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\CustomerOrder;
 use App\Models\Face;
+use App\Models\RentedFace;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Carbon\Carbon;
@@ -64,14 +64,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Rendre un panneau disponible à nouveau
-        $expiredOrders = CustomerOrder::where('end_date', '<', Carbon::now())
-                                    // Join la table carts pour vérifier le statut de "is_paid"
-                                    ->join('carts', 'customer_orders.cart_id', '=', 'carts.id')
-                                    ->where('carts.is_paid', 1) // Utilisation de is_paid dans la table carts
-                                    ->get();
+        $expiredRentedFaces = RentedFace::where('end_date', '<=', Carbon::now())->get();
 
-        foreach ($expiredOrders as $order) {
-            $face = Face::find($order->face_id);
+        foreach ($expiredRentedFaces as $rentedFace) {
+            $face = Face::find($rentedFace->face_id);
 
             if ($face && $face->is_available == 0) {
                 $face->update(['is_available' => 1]);

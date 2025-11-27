@@ -4,18 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @author Xanders
  * @see https://team.xsamtech.com/xanderssamoth
  */
-class Face extends Model
+class MonthData extends Model
 {
     use HasFactory;
 
-    protected $table = 'faces';
+    protected $table = 'month_datas';
 
     /**
      * The attributes that are mass assignable.
@@ -25,20 +24,11 @@ class Face extends Model
     protected $guarded = [];
 
     /**
-     * ONE-TO-MANY
-     * One panel for several faces
-     */
-    public function panel(): BelongsTo
-    {
-        return $this->belongsTo(Panel::class, 'panel_id');
-    }
-
-    /**
      * MANY-TO-ONE
-     * Several rented_faces for a face
+     * Several expenses for a month_data
      */
-    public function rented_faces(): HasMany
+    public function expenses(): HasMany
     {
-        return $this->hasMany(RentedFace::class);
+        return $this->hasMany(Expense::class);
     }
 }
