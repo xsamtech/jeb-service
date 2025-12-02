@@ -115,7 +115,6 @@
                                                         <form action="{{ route('expenses.store.taxe_affichage') }}" method="POST">
         @csrf
                                                             <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
-                                                            {{-- <input type="hidden" name="customer_order_id" value="{{ $face['customer_order_id'] }}"> --}}
                                                             <input type="number" name="amount" id="expense_taxe_affichage_{{ $loop->index }}" class="form-control">
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
                                                             <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view"><i class="bi bi-x-lg"></i></a>
