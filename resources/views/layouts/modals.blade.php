@@ -323,7 +323,7 @@
 @endif
 
 @if (Route::is('dashboard.home'))
-        <!-- ### Add new admin ### -->
+        <!-- ### Add new panel ### -->
         <div class="modal fade" id="panelModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -388,8 +388,8 @@
         <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                    <div class="d-block modal-header bg-light text-center">
-                        <h4 class="modal-title text-gradient fw-bold" aria-labelledby="#userModal">Ajouter un administrateur</h4>
+                    <div class="d-block modal-header text-center">
+                        <h4 class="modal-title text-light fw-bold" aria-labelledby="#panelModal">Ajouter un administrateur</h4>
                         <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body">

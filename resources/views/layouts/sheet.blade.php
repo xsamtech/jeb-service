@@ -295,13 +295,78 @@
 
             $(function () {
                 /*
-                 * All about USER
+                 * All about USER/PANEL
                  */
+                // Focus to specific input for each concerned modal
+                $('#userModal').on('shown.bs.modal', function () {
+                    $('#firstname').focus();
+                });
+
                 // Focus to specific input for each concerned modal
                 $('#panelModal').on('shown.bs.modal', function () {
                     $('#dimensions').focus();
                 });
+
                 // Send user registration
+                $('#addUserForm').on('submit', function (e) {
+                    e.preventDefault();
+
+                    // Clean up previous errors and alerts
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.invalid-feedback').remove();
+
+                    // Show the loader
+                    $('#ajax-loader').removeClass('d-none');
+
+                    const formData = new FormData(this);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: $(this).attr('action'),
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (response) {
+                            // Hide the loader
+                            $('#ajax-loader').addClass('d-none');
+                            // Close the modal
+                            $('#userModal').modal('hide');
+
+                            // Success alert
+                            showAlert(true, 'Administrateur ajouté avec succès.');
+
+                            // Just reload the table
+                            $('#dataList').load(location.href + ' #dataList > *');
+                            // Reset the form
+                            $('#addUserForm')[0].reset();
+                            // Remove error classes (just in case)
+                            $('#addUserForm .is-invalid').removeClass('is-invalid');
+                            $('#addUserForm .invalid-feedback').remove();
+                        },
+                        error: function (xhr) {
+                            $('#ajax-loader').addClass('d-none');
+
+                            if (xhr.status === 422) {
+                                const errors = xhr.responseJSON.errors;
+
+                                for (const [field, messages] of Object.entries(errors)) {
+                                    const input = $(`[name="${field}"]`);
+
+                                    input.addClass('is-invalid');
+                                    input.after(`<div class="invalid-feedback d-block">${messages[0]}</div>`);
+                                }
+
+                            } else {
+                                // Close the modal
+                                $('#userModal').modal('hide');
+                                // Error (500) alert
+                                showAlert(false, 'Une erreur est survenue. Veuillez réessayer ultérieurement.');
+                            }
+                        }
+                    });
+                });
+
+                // Send panel registration
                 $('#addPanelForm').on('submit', function (e) {
                     e.preventDefault();
 
