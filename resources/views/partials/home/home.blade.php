@@ -41,7 +41,7 @@
                                             </div>
                                             <div class="col-sm-3">
                                                 <div class="card card-body h-100 border-0 border-start rounded-0" style="background-color: rgba(300,300,300,0.07);">
-                                                    Date limite de location
+                                                    Prix de location
                                                 </div>
                                             </div>
                                             <div class="col-sm-2">
@@ -99,7 +99,7 @@
                                         <div class="row g-0">
                                             <div class="col-sm-2">
                                                 <div class="card card-body h-100 rounded-0 face-column" style="background-color: rgba(300,300,300,0.07);">
-                                                    <p class="m-0"><strong>{{ $face['face_name'] }}</strong> (<u>Prix</u> : {{ formatIntegerNumber($face['face_price']) . ' $' }})</p>
+                                                    <p class="m-0"><strong>{{ $face['face_name'] }}</strong></p>
                                                 </div>
                                             </div>
                                             <div class="col-sm-3">
@@ -125,24 +125,40 @@
                                             </div>
                                             <div class="col-sm-3">
                                                 <div class="card card-body h-100 rounded-0 face-column">
-                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Date limite de location</span>
+                                                    <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Prix de location</span>
+
+                                                    <!-- Affichage simple -->
                                                     <div class="d-flex justify-content-between show-data">
-                                                        <span class="small d-sm-inline-block d-block me-2">{{ $face['date_limite_location'] != '---' ? explicitDateTime($face['date_limite_location']) : $face['date_limite_location'] }}</span>
-        @if ($face['taxe_affichage'] > 0)
-                                                        <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
-        @endif
+                                                        <span class="me-2">
+                                                            {{ formatIntegerNumber($face['face_price']) . ' $' }}
+                                                        </span>
+
+            @if($face['is_available'])
+                                                        <a role="button" class="btn btn-link p-0 switch-view">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+            @endif
                                                     </div>
+
+                                                    <!-- Formulaire de modification -->
                                                     <div class="update-data d-none">
-                                                        <form action="{{ route('expenses.update_end_date') }}" method="POST">
-        @csrf
-                                                            <input type="hidden" name="customer_order_id" value="{{ $face['customer_order_id'] }}">
-                                                            <input type="text" name="end_date" id="end_date_{{ $loop->index }}" class="form-control">
+            @if($face['is_available'])
+                                                        <form action="{{ route('rented_faces.update_price') }}" method="POST">
+                @csrf
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
+                                                            <input type="number" name="price" value="{{ $face['face_price'] }}" class="form-control">
+
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
-                                                            <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view"><i class="bi bi-x-lg"></i></a>
+
+                                                            <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view">
+                                                                <i class="bi bi-x-lg"></i>
+                                                            </a>
                                                         </form>
+            @endif
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div class="col-sm-2">
                                                 <div class="card card-body h-100 rounded-0 face-column">
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Autres dépenses</span>
@@ -159,7 +175,7 @@
         @endforeach
 
         @csrf
-                                                            <input type="hidden" name="customer_order_id" value="{{ $face['customer_order_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
                                                             <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
 
                                                             <label for="expense_designation_{{ $loop->index }}" class="form-label m-0">Designation</label>

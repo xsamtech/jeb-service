@@ -48,6 +48,8 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::post('/panels/{id}', [DashboardController::class, 'updatePanel'])->whereNumber('id');
     Route::post('/panel-quantity/{entity}/{id}', [DashboardController::class, 'updatePanelQuantity'])->whereNumber('id')->name('dashboard.panel.updateQuantity');
 
+    Route::post('/faces/update-price', [DashboardController::class, 'updateFace'])->whereNumber('id')->name('rented_faces.update_price');
+
     // Route::get('/expenses', [DashboardController::class, 'expenses'])->name('dashboard.expenses');
     // Route::post('/expenses', [DashboardController::class, 'addExpense']);
     // Route::get('/expenses/{id}', [DashboardController::class, 'expenseDatas'])->whereNumber('id')->name('dashboard.expense.datas');

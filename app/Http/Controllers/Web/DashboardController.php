@@ -83,13 +83,12 @@ class DashboardController extends Controller
                 'panel' => $panel->location,
                 'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
                 'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
-                    // On prend la commande la plus récente (par created_at) parmi celles qui ont end_date >= début du mois
+
                     $rentedFace = $face->rented_faces->sortByDesc('created_at')->first();
 
                     if (!$rentedFace) {
                         return [
                             'rented_face_id' => null,
-                            'rented_face_creation' => null,
                             'face_id' => $face->id,
                             'face_name' => $face->face_name,
                             'face_price' => null,
@@ -102,18 +101,18 @@ class DashboardController extends Controller
                         ];
                     }
 
-                    // dépenses liées à la location
                     $taxeAffichage = $rentedFace->expenses->where('designation', 'Taxe affichage')->first();
                     $otherExpenses = $rentedFace->expenses->whereNotIn('designation', ['Taxe implantation', 'Taxe affichage']);
-                    $totalOtherExpenses = $otherExpenses->sum('amount');
+
                     $taxeAffichageAmount = $taxeAffichage ? $taxeAffichage->amount : 0;
+                    $totalOtherExpenses = $otherExpenses->sum('amount');
+
                     $price = $rentedFace->price;
-                    $totalTaxes = $taxeAffichageAmount > 0 ? $taxeAffichageAmount + $taxeImplantationAmount : 0;
-                    $remainingAmount = $taxeAffichageAmount > 0 ? $price - ($totalTaxes + $totalOtherExpenses) : 0;
+                    $totalTaxes = $taxeAffichageAmount + $taxeImplantationAmount;
+                    $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
 
                     return [
                         'rented_face_id' => $rentedFace->id,
-                        'rented_face_creation' => $rentedFace->created_at,
                         'face_id' => $face->id,
                         'face_name' => $face->face_name,
                         'face_price' => $price,
@@ -149,7 +148,6 @@ class DashboardController extends Controller
             'tithe' => $tithe,
         ]);
     }
-
 
     /**
      * GET: Datas from sheet page
@@ -907,13 +905,13 @@ class DashboardController extends Controller
         $request->validate([
             'dimensions' => ['required', 'string', 'max:255'],
             'format' => ['required', 'string'],
-            'price' => ['required', 'numeric', 'between:0,9999999.99'],
+            // 'price' => ['required', 'numeric', 'between:0,9999999.99'],
             'location' => ['required', 'string'],
         ], [
             'dimensions.required' => 'Veuillez mettre les dimensions.',
             'dimensions.unique' => 'Cette dimension existe déjà.',
             'format.required' => 'Le format est obligatoire.',
-            'unit_price.required' => 'Le prix est obligatoire.',
+            // 'unit_price.required' => 'Le prix est obligatoire.',
             'location.required' => 'Veuillez donner son emplacement.',
         ]);
 
@@ -921,7 +919,7 @@ class DashboardController extends Controller
         $panel = Panel::create([
             'dimensions' => $request->dimensions,
             'format' => $request->format . ' (' . $request->number_of_faces . ' ' . $faces_text . ')',
-            'price' => $request->price,
+            // 'price' => $request->price,
             'location' => $request->location,
             'created_by' => Auth::id(),
         ]);

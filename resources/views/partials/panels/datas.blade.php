@@ -33,10 +33,10 @@
                                         </div>
 
                                         <!-- Price -->
-                                        <div class="col-sm-6">
+                                        {{-- <div class="col-sm-6">
                                             <label for="price" class="form-label fw-bold">Prix unitaire</label>
                                             <input type="number" step="0.01" name="price" class="form-control" id="price" value="{{ $selected_panel['price'] }}">
-                                        </div>
+                                        </div> --}}
 
                                         <!-- Location -->
                                         <div class="col-12">
