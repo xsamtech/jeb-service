@@ -19,19 +19,27 @@
                             <div class="card card-body p-sm-4">
                                 <form method="POST" action="{{ route('login') }}">
     @csrf
+    @if ($errors->has('login'))
+                                    <div class="mb-0">
+    @else
                                     <div class="mb-3">
+    @endif
                                         <label for="login" class="form-label">Email ou n° de téléphone</label>
-                                        <input type="text" name="login" class="form-control @error('login') is-invalid @enderror" id="login" value="{{ old('login') }}" required autofocus>
+                                        <input type="text" name="login" class="form-control @error('login') is-invalid m-0 @enderror" id="login" value="{{ old('login') }}" required @error('login') autofocus @enderror>
     @error('login')
-                                        <small class="text-danger d-inline-block mt-1 float-end">{{ $message }}</small>
+                                        <small class="d-inline-block w-100 p-0 text-danger text-end">{{ $message }}</small>
     @enderror
                                     </div>
 
+    @if ($errors->has('password'))
+                                    <div class="mb-0">
+    @else
                                     <div class="mb-3">
+    @endif
                                         <label for="password" class="form-label">Mot de passe</label>
-                                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password" required>
+                                        <input type="password" name="password" class="form-control @error('password') is-invalid m-0 @enderror" id="password" required @error('password') autofocus @enderror>
     @error('password')
-                                        <small class="text-danger d-inline-block mt-1 float-end">{{ $message }}</small>
+                                        <small class="d-inline-block w-100 p-0 text-danger text-end">{{ $message }}</small>
     @enderror
                                     </div>
 
