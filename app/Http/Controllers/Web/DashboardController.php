@@ -93,7 +93,7 @@ class DashboardController extends Controller
                             'face_name' => $face->face_name,
                             'face_price' => null,
                             'taxe_affichage' => 0,
-                            'date_limite_location' => '---',
+                            'date_limite_location' => null,
                             'is_available' => $face->is_available,
                             'other_expenses' => [],
                             'total_other_expenses' => 0,
