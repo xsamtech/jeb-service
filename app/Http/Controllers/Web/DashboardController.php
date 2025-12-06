@@ -10,6 +10,7 @@ use App\Http\Resources\User as ResourcesUser;
 use App\Models\Expense;
 use App\Models\Face;
 use App\Models\File;
+use App\Models\MonthData;
 use App\Models\Panel;
 use App\Models\PasswordReset;
 use App\Models\Role;
@@ -133,7 +134,10 @@ class DashboardController extends Controller
         });
 
         // Total des restes à la caisse pour le mois
-        $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+        // $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+        $monthData = MonthData::where('month', $month)->where('year', $year)->first();
+        $totalRemaining = $monthData ? $monthData->remaining_amount : 0;
+        $tithePaid = $monthData ? $monthData->tithe_paid : 0;
         // Dîme
         $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
 
@@ -146,6 +150,7 @@ class DashboardController extends Controller
             'monthName' => $monthName,
             'totalRemaining' => $totalRemaining,
             'tithe' => $tithe,
+            'tithePaid' => $tithePaid,
         ]);
     }
 
