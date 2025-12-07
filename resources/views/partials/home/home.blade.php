@@ -226,7 +226,7 @@
                             <div class="row mt-4">
                                 <div class="col-lg-3 col-sm-6 col-12 ms-auto">
                                     <div class="card p-0 rounded-0">
-                                        <div class="card-header d-flex justify-content-between">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
                                             <p class="m-0">Dépenses du mois</p>
 @if (!$tithePaid)
                                             <a role="button" class="btn btn-link p-0 switch-month-expense"><i class="bi bi-plus-lg"></i></a>
