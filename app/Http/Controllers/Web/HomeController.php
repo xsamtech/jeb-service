@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cart;
-use App\Models\CustomerOrder;
 use App\Models\Expense;
-use App\Models\Face;
+// use App\Models\Face;
 use App\Models\MonthData;
 use App\Models\RentedFace;
 use Carbon\Carbon;
@@ -239,5 +237,28 @@ class HomeController extends Controller
         $rented_face->update(['end_date' => $formattedDate]);
 
         return back()->with('success_message', 'Date de fin mise à jour.');
+    }
+
+    /**
+     * POST: Update the lease end date
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateRentedPrice(Request $request)
+    {
+        if ($request->rented_face_id) {
+            return back()->with('error_message', 'Veuillez choisir une face louée.');
+        }
+
+        if ($request->price) {
+            return back()->with('error_message', 'Veuillez donner le prix de la location.');
+        }
+
+        $rented_face = RentedFace::findOrFail($request->rented_face_id);
+
+        $rented_face->update(['price' => $request->price]);
+
+        return back()->with('success_message', 'Prix de la location mis à jour.');
     }
 }

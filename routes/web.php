@@ -48,7 +48,7 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::post('/panels/{id}', [DashboardController::class, 'updatePanel'])->whereNumber('id');
     Route::post('/panel-quantity/{entity}/{id}', [DashboardController::class, 'updatePanelQuantity'])->whereNumber('id')->name('dashboard.panel.updateQuantity');
 
-    Route::post('/faces/update-price', [DashboardController::class, 'updateFace'])->whereNumber('id')->name('rented_faces.update_price');
+    Route::post('/faces/update-price', [HomeController::class, 'updateRentedPrice'])->whereNumber('id')->name('rented_faces.update_price');
 
     // Route::get('/expenses', [DashboardController::class, 'expenses'])->name('dashboard.expenses');
     // Route::post('/expenses', [DashboardController::class, 'addExpense']);
@@ -72,6 +72,7 @@ Route::middleware(['auth', 'localization'])->group(function () {
     Route::get('/account', [DashboardController::class, 'account'])->name('dashboard.account');
     Route::get('/account/settings', [DashboardController::class, 'account'])->name('dashboard.account.settings');
     Route::post('/account/settings', [DashboardController::class, 'updateAccount']);
+    Route::post('/change/{entity}/{id}', [DashboardController::class, 'changeData'])->whereNumber('id')->name('data.change');
     Route::delete('/delete/{entity}/{id}', [DashboardController::class, 'removeData'])->whereNumber('id')->name('data.delete');
 });
 Route::get('/check-panels', function () {

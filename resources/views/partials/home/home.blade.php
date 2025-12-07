@@ -80,7 +80,9 @@
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’implantation</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatDecimalNumber($panel['taxe_implantation']) }} $</span>
+    @if (!$tithePaid)
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
+    @endif
                                                     </div>
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('expenses.store.taxe_implantation') }}" method="POST">
@@ -113,8 +115,10 @@
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Taxe d’affichage</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatDecimalNumber($face['taxe_affichage']) }} $</span>
-        @if($face['is_available'])
+        @if (!$tithePaid)
+            @if($face['is_available'])
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
+            @endif
         @endif
                                                     </div>
                                                     <div class="update-data d-none">
@@ -138,18 +142,17 @@
                                                             {{ formatDecimalNumber($face['face_price']) . ' $' }}
                                                         </span>
 
+        @if (!$tithePaid)
             @if($face['is_available'])
-                                                        <a role="button" class="btn btn-link p-0 switch-view">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
+                                                        <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
             @endif
+        @endif
                                                     </div>
 
                                                     <!-- Formulaire de modification -->
                                                     <div class="update-data d-none">
-            @if($face['is_available'])
                                                         <form action="{{ route('rented_faces.update_price') }}" method="POST">
-                @csrf
+        @csrf
                                                             <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
                                                             <input type="number" name="price" value="{{ $face['face_price'] }}" class="form-control">
 
@@ -159,7 +162,6 @@
                                                                 <i class="bi bi-x-lg"></i>
                                                             </a>
                                                         </form>
-            @endif
                                                     </div>
                                                 </div>
                                             </div>
@@ -222,7 +224,40 @@
 @endforelse
 
                             <div class="row mt-4">
-                                <div class="col-lg-4 col-sm-6 col-12 mx-auto">
+                                <div class="col-lg-3 col-sm-6 col-12 ms-auto">
+                                    <div class="card p-0 rounded-0">
+                                        <div class="card-header d-flex justify-content-between">
+                                            <p class="m-0">Dépenses du mois</p>
+@if (!$tithePaid)
+                                            <a role="button" class="btn btn-link p-0 switch-month-expense"><i class="bi bi-plus-lg"></i></a>
+@endif
+                                        </div>
+
+                                        <ul class="list-group list-group-flush border-bottom-0 month-expenses">
+@forelse ($monthExpenses as $expense)
+                                            <li class="list-group-item small bg-transparent">{{ $expense->designation . ' : ' . formatDecimalNumber($expense->amount) . ' $' }}</li>
+@empty
+                                            <li class="list-group-item small bg-transparent py-3">Il n'y a aucune dépense pour ce mois</li>
+@endforelse
+                                        </ul>
+
+                                        <div class="card-body update-month-expense d-none">
+                                            <form action="{{ route('expenses.store.other_expense') }}" method="POST">
+@csrf
+                                                <input type="hidden" name="month_data_id" value="{{ $monthDataID }}">
+
+                                                <label for="expense_designation_month" class="form-label m-0">Designation</label>
+                                                <input type="text" name="designation" id="expense_designation_month" class="form-control mb-2" placeholder="Designation">
+
+                                                <label for="expense_amount_month" class="form-label m-0">Montant</label>
+                                                <input type="number" name="amount" id="expense_amount_month" class="form-control">
+
+                                                <button class="btn btn-sm bg-gradient-primary-to-secondary mt-2 px-3 pb-1 rounded-pill text-white">Enregistrer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-sm-6 col-12 mt-sm-0 mt-4 me-auto">
                                     <div class="card card-body p-0 border-0 rounded-0">
                                         <div class="table-responsive">
                                             <table class="table table-bordered m-0">
@@ -232,8 +267,23 @@
                                                         <td>{{ formatDecimalNumber($totalRemaining) }} $</td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-uppercase" style="max-width: 100px;">Dîme</td>
-                                                        <td>{{ formatDecimalNumber($tithe) }} $</td>
+                                                        <td class="text-uppercase" colspan="2">
+                                                            <div class="d-flex justify-content-between">
+                                                                <div>
+                                                                    Dîme : {{ formatDecimalNumber($tithe) }} $
+                                                                </div>
+                                                                <div>
+                                                                    <div class="form-check form-switch">
+@if ($tithePaid)
+                                                                        <label class="form-check-label text-success" for="tithePaid">Payée</label>
+@else
+                                                                        <label class="form-check-label text-danger" for="tithePaid">Non payée</label>
+@endif
+                                                                        <input class="form-check-input" type="checkbox" role="switch" id="tithePaid" onclick="event.preventDefault(); performAction('change', 'tithe_paid', 'item-{{ !$monthDataID ? 0 : $monthDataID }}')">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>

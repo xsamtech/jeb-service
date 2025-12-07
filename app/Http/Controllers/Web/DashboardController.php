@@ -110,7 +110,7 @@ class DashboardController extends Controller
 
                     $price = $rentedFace->price;
                     $totalTaxes = $taxeAffichageAmount + $taxeImplantationAmount;
-                    $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
+                        $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
 
                     return [
                         'rented_face_id' => $rentedFace->id,
@@ -136,10 +136,13 @@ class DashboardController extends Controller
         // Total des restes à la caisse pour le mois
         // $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
         $monthData = MonthData::where('month', $month)->where('year', $year)->first();
+        $monthDataID = $monthData ? $monthData->id : null;
         $totalRemaining = $monthData ? $monthData->remaining_amount : 0;
         $tithePaid = $monthData ? $monthData->tithe_paid : 0;
         // Dîme
         $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
+        // Month expenses
+        $monthExpenses = $monthData ? $monthData->expenses : [];
 
         // Envoi des données à la vue sans encapsuler dans un JSON
         return view('home', [
@@ -148,9 +151,11 @@ class DashboardController extends Controller
             'month' => $month,
             'year' => $year,
             'monthName' => $monthName,
+            'monthDataID' => $monthDataID,
             'totalRemaining' => $totalRemaining,
             'tithe' => $tithe,
             'tithePaid' => $tithePaid,
+            'monthExpenses' => $monthExpenses,
         ]);
     }
 
@@ -897,6 +902,108 @@ class DashboardController extends Controller
         return $request->expectsJson()
             ? response()->json(['success_message' => true, 'avatar_url' => $user->avatar_url ?? null])
             : back()->with('success_message', 'Vos informations ont bien été mises à jour.');
+    }
+
+    /**
+     * GET: Delete something
+     *
+     * @param  string $entity
+     * @param  int $id
+     * @throws \Illuminate\Http\RedirectResponse
+     */
+    public function changeData(Request $request, $entity, $id)
+    {
+        if ($entity == 'expense') {
+            $expense = Expense::find($id);
+
+            if (!$expense) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dépense non trouvée',
+                ], 404);
+            }
+
+            if ($request->filled('designation')) {
+                $expense->update(['designation' => $request->designation]);
+            }
+
+            if ($request->filled('amount')) {
+                $expense->update(['amount' => $request->amount]);
+            }
+
+            if ($request->filled('outflow_date')) {
+                $expense->update(['outflow_date' => $request->outflow_date]);
+            }
+
+            if ($request->filled('panel_id')) {
+                $expense->update(['panel_id' => $request->panel_id]);
+            }
+
+            if ($request->filled('rented_face_id')) {
+                $expense->update(['rented_face_id' => $request->rented_face_id]);
+            }
+
+            if ($request->filled('month_data_id')) {
+                $expense->update(['month_data_id' => $request->month_data_id]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dépense modifiée',
+            ]);
+        }
+
+        if ($entity == 'month_data') {
+            $monthData = MonthData::find($id);
+
+            if (!$monthData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Données du mois non trouvées',
+                ], 404);
+            }
+
+            if ($request->filled('month')) {
+                $monthData->update(['month' => $request->month]);
+            }
+
+            if ($request->filled('year')) {
+                $monthData->update(['year' => $request->year]);
+            }
+
+            if ($request->filled('remaining_amount')) {
+                $monthData->update(['remaining_amount' => $request->remaining_amount]);
+            }
+
+            if ($request->filled('tithe_paid')) {
+                $monthData->update(['tithe_paid' => $request->tithe_paid]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Données du mois modifiées',
+            ]);
+        }
+
+        if ($entity == 'tithe_paid') {
+            $monthData = MonthData::find($id);
+
+            if (!$monthData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Données du mois non trouvées',
+                ], 404);
+            }
+
+            $tithePaid = $monthData->tithe_paid == 0 ? 1 : 0;
+
+            $monthData->update(['tithe_paid' => $tithePaid]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Paiement dîme modifié',
+            ]);
+        }
     }
 
     /**

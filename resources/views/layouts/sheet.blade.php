@@ -195,6 +195,19 @@
                 container.find('.update-data').toggleClass('d-none');
             });
 
+            $('.switch-month-expense').click(function() {
+                if ($('.month-expenses').hasClass('d-none')) {
+                    $('.switch-month-expense').html('<i class="bi bi-plus-lg"></i>');
+
+                } else {
+                    $('.switch-month-expense').html('<i class="bi bi-x-lg"></i>');
+                }
+
+                // Toggle the ".show-data" and ".update-data" blocks
+                $('.month-expenses').toggleClass('d-none');
+                $('.update-month-expense').toggleClass('d-none');
+            });
+
             /**
              * Perform action
              * 
@@ -242,6 +255,12 @@
                                     }
                                 },
                                 error: function (xhr, error, status_description) {
+                                    Swal.fire({
+                                        title: 'Oups !',
+                                        text: xhr.responseJSON.message,
+                                        icon: 'error'
+                                    });
+
                                     console.log(xhr.responseJSON);
                                     console.log(xhr.status);
                                     console.log(error);
@@ -253,6 +272,69 @@
                             Swal.fire({
                                 title: 'Annuler',
                                 text: 'Suppression annulée',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+
+                if (action === 'change') {
+                    var entityId = parseInt(entity_id.split('-')[1]);
+
+                    Swal.fire({
+                        title: 'Attention modification',
+                        text: 'Voulez-vous vraiment modifié ?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Oui, modifier',
+                        cancelButtonText: 'Annuler'
+
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                headers: headers,
+                                type: 'POST',
+                                url: `${currentHost}/change/${entity}/${entityId}`,
+                                contentType: false,
+                                processData: false,
+                                data: JSON.stringify({ 'entity' : entity, 'id' : entityId }),
+                                success: function (result) {
+                                    if (!result.success) {
+                                        Swal.fire({
+                                            title: 'Oups !',
+                                            text: result.message,
+                                            icon: 'error'
+                                        });
+
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Parfait !',
+                                            text: result.message,
+                                            icon: 'success'
+                                        });
+                                        location.reload();
+                                    }
+                                },
+                                error: function (xhr, error, status_description) {
+                                    Swal.fire({
+                                        title: 'Oups !',
+                                        text: xhr.responseJSON.message,
+                                        icon: 'error'
+                                    });
+
+                                    console.log(xhr.responseJSON);
+                                    console.log(xhr.status);
+                                    console.log(error);
+                                    console.log(status_description);
+                                }
+                            });
+
+                        } else {
+                            Swal.fire({
+                                title: 'Annuler',
+                                text: 'Modification annulée',
                                 icon: 'error'
                             });
                         }
