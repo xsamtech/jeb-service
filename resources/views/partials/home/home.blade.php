@@ -68,8 +68,11 @@
                                             <!-- Nom du panneau -->
                                             <div class="col-sm-7">
                                                 <div class="card card-body h-100 border-0 rounded-0 text-start" style="background-color: rgba(300,300,300,0.07);">
-                                                    <a href="{{ route('dashboard.home.datas', ['entity' => 'panel', 'id' => $panel['id']]) }}" class="text-decoration-none">
+                                                    <a href="{{ route('dashboard.home.datas', ['entity' => 'panel', 'id' => $panel['id']]) }}" class="btn btn-sm btn-link p-0 mb-3 text-start text-decoration-none">
                                                         {{ $panel['panel'] }}
+                                                    </a>
+                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'panel', 'item-{{ $panel['id'] }}')">
+                                                        <i class="bi bi-trash me-2"></i>Supprimer
                                                     </a>
                                                 </div>
                                             </div>
@@ -124,7 +127,7 @@
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('expenses.store.taxe_affichage') }}" method="POST">
         @csrf
-                                                            <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
                                                             <input type="number" name="amount" id="expense_taxe_affichage_{{ $loop->index }}" class="form-control">
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
                                                             <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view"><i class="bi bi-x-lg"></i></a>
@@ -153,7 +156,7 @@
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('rented_faces.update_price') }}" method="POST">
         @csrf
-                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
                                                             <input type="number" name="price" value="{{ $face['face_price'] }}" class="form-control">
 
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
@@ -182,7 +185,7 @@
         @endforeach
 
         @csrf
-                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
                                                             <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
 
                                                             <label for="expense_designation_{{ $loop->index }}" class="form-label m-0">Designation</label>
@@ -223,27 +226,28 @@
                             </div>
 @endforelse
 
+@if (count($panelsData) > 0)
                             <div class="row mt-4">
                                 <div class="col-lg-3 col-sm-6 col-12 ms-auto">
                                     <div class="card p-0 rounded-0">
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             <p class="m-0">Dépenses du mois</p>
-@if (!$tithePaid)
+    @if (!$tithePaid)
                                             <a role="button" class="btn btn-link p-0 switch-month-expense"><i class="bi bi-plus-lg"></i></a>
-@endif
+    @endif
                                         </div>
 
                                         <ul class="list-group list-group-flush border-bottom-0 month-expenses">
-@forelse ($monthExpenses as $expense)
+    @forelse ($monthExpenses as $expense)
                                             <li class="list-group-item small bg-transparent">{{ $expense->designation . ' : ' . formatDecimalNumber($expense->amount) . ' $' }}</li>
-@empty
+    @empty
                                             <li class="list-group-item small bg-transparent py-3">Il n'y a aucune dépense pour ce mois</li>
-@endforelse
+    @endforelse
                                         </ul>
 
                                         <div class="card-body update-month-expense d-none">
                                             <form action="{{ route('expenses.store.other_expense') }}" method="POST">
-@csrf
+    @csrf
                                                 <input type="hidden" name="month_data_id" value="{{ $monthDataID }}">
 
                                                 <label for="expense_designation_month" class="form-label m-0">Designation</label>
@@ -274,11 +278,11 @@
                                                                 </div>
                                                                 <div>
                                                                     <div class="form-check form-switch">
-@if ($tithePaid)
+    @if ($tithePaid)
                                                                         <label class="form-check-label text-success" for="tithePaid">Payée</label>
-@else
+    @else
                                                                         <label class="form-check-label text-danger" for="tithePaid">Non payée</label>
-@endif
+    @endif
                                                                         <input class="form-check-input" type="checkbox" role="switch" id="tithePaid" onclick="event.preventDefault(); performAction('change', 'tithe_paid', 'item-{{ !$monthDataID ? 0 : $monthDataID }}')">
                                                                     </div>
                                                                 </div>
@@ -291,6 +295,7 @@
                                     </div>
                                 </div>
                             </div>
+@endif
 
                             {{-- <!-- Table footer -->
                             <div id="tableFooter" class="card card-body rounded-0 pb-0 border-0">
