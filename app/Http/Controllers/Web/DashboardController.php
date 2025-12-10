@@ -110,7 +110,7 @@ class DashboardController extends Controller
 
                     $price = $rentedFace->price;
                     $totalTaxes = $taxeAffichageAmount + $taxeImplantationAmount;
-                        $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
+                    $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
 
                     return [
                         'rented_face_id' => $rentedFace->id,
