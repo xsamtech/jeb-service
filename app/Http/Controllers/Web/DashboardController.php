@@ -83,8 +83,8 @@ class DashboardController extends Controller
             return [
                 'id' => $panel->id,
                 'panel' => $panel->location,
-                'taxe_implantation' => $taxeImplantation ? $taxeImplantation->amount : 0,
-                'expenses' => $panel->faces->map(function ($face) use ($taxeImplantationAmount) {
+                'taxe_implantation' => $taxeImplantationAmount,
+                'expenses' => $panel->faces->map(function ($face) {
 
                     $rentedFace = $face->rented_faces->sortByDesc('created_at')->first();
 
@@ -110,8 +110,7 @@ class DashboardController extends Controller
                     $totalOtherExpenses = $otherExpenses->sum('amount');
 
                     $price = $rentedFace->price;
-                    $totalTaxes = $taxeAffichageAmount + $taxeImplantationAmount;
-                    $remainingAmount = $price - ($totalTaxes + $totalOtherExpenses);
+                    $remainingAmount = $price - ($taxeAffichageAmount + $totalOtherExpenses);
 
                     return [
                         'rented_face_id' => $rentedFace->id,
@@ -134,8 +133,16 @@ class DashboardController extends Controller
             ];
         });
 
+        // Calculer la somme de toutes les dépenses "Taxe implantation"
+        $totalTaxeImplantation = 0;
+
+        foreach ($panels as $panel) {
+            // Ajouter la somme des montants des dépenses "Taxe implantation" pour ce panneau
+            $totalTaxeImplantation += $panel->expenses->where('designation', 'Taxe implantation')->sum('amount');
+        }
+
         // Total des restes à la caisse pour le mois
-        $totalRemainingFromRentedFace = RentedFace::getRemainingAmountByMonthYear($month, $year);
+        $totalRemainingFromRentedFace = RentedFace::getRemainingAmountByMonthYear($month, $year) - $totalTaxeImplantation;
         $monthData = MonthData::where('month', $month)->where('year', $year)->first();
         $monthDataID = $monthData ? $monthData->id : 0;
         $totalRemaining = $monthData ? $monthData->remaining_amount : $totalRemainingFromRentedFace;
@@ -149,6 +156,7 @@ class DashboardController extends Controller
         return view('home', [
             'admin' => $admin_role,
             'panelsData' => $panelsData,
+            'totalTaxeImplantation' => $totalTaxeImplantation,
             'month' => $month,
             'year' => $year,
             'monthName' => $monthName,
@@ -987,18 +995,29 @@ class DashboardController extends Controller
         }
 
         if ($entity == 'tithe_paid') {
+            // Vérification que les données sont valides
+            if (!$request->has('month') || !$request->has('year') || !$request->has('remaining_amount')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les données de mois, année ou montant restant sont manquantes.'
+                ]);
+            }
+
             $monthData = MonthData::find($id);
 
             if (!$monthData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Données du mois non trouvées',
-                ], 404);
+                MonthData::create([
+                    'month' => $request->month,
+                    'year' => $request->year,
+                    'remaining_amount' => $request->remaining_amount,
+                    'tithe_paid' => 1,
+                ]);
+
+            } else {
+                $tithePaid = $monthData->tithe_paid == 0 ? 1 : 0;
+
+                $monthData->update(['tithe_paid' => $tithePaid]);
             }
-
-            $tithePaid = $monthData->tithe_paid == 0 ? 1 : 0;
-
-            $monthData->update(['tithe_paid' => $tithePaid]);
 
             return response()->json([
                 'success' => true,

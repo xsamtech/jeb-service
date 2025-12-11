@@ -60,10 +60,19 @@ class RentedFace extends Model
      */
     public static function getRemainingAmountByMonthYear($month, $year)
     {
-        // Obtenez toutes les faces louées pour le mois et l'année donnés
+        // Récupérer toutes les faces louées pour le mois et l'année donnés
         $rentedFaces = self::whereHas('face', function ($query) use ($month, $year) {
-                                $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
-                            })->with('expenses')->get();
+                                // Ici on filtre uniquement par la date de mise à jour de la location (updated_at)
+                                $query->whereMonth('updated_at', $month)
+                                    ->whereYear('updated_at', $year);
+                            })
+                            // Charger les dépenses associées à chaque `rentedFace`, filtrées par le mois et l'année de `outflow_date`
+                            ->with(['expenses' => function ($query) use ($month, $year) {
+                                // Appliquer le filtre de mois et année uniquement sur les dépenses (outflow_date)
+                                $query->whereMonth('outflow_date', $month)
+                                    ->whereYear('outflow_date', $year);
+                            }])
+                            ->get();
 
         $totalRemainingAmount = 0;
 
@@ -72,7 +81,7 @@ class RentedFace extends Model
             $totalPrice = $rentedFace->price;
 
             // Somme des dépenses associées à cette face louée pour le mois et l'année donnés
-            $totalExpenses = $rentedFace->expenses->whereMonth('outflow_date', $month)->whereYear('outflow_date', $year)->sum('amount');
+            $totalExpenses = $rentedFace->expenses->sum('amount');
 
             // Calcul du montant restant
             $remainingAmount = $totalPrice - $totalExpenses;

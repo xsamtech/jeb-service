@@ -67,7 +67,7 @@ class HomeController extends Controller
      */
     public function storeTaxeImplantation(Request $request)
     {
-        if (empty($request->amount) OR formatIntegerNumber($request->amount) == 0) {
+        if (empty($request->amount) OR !is_numeric($request->amount) OR formatIntegerNumber($request->amount) == 0) {
             return back()->with('error_message', 'Veuillez mettre un montant valide et supérieur à zéro.');
         }
 
@@ -83,7 +83,6 @@ class HomeController extends Controller
 
         if ($expense) {
             $expense->update([
-                'designation' => 'Taxe implantation',
                 'amount' => $request->amount,
                 'outflow_date' => !empty($request->outflow_date) ? Carbon::createFromFormat('d/m/Y H:i', $request->outflow_date)->format('Y-m-d H:i:s') : now(),
                 'updated_by' => auth()->id(),
@@ -110,7 +109,7 @@ class HomeController extends Controller
      */
     public function storeTaxeAffichage(Request $request)
     {
-        if (empty($request->amount) OR formatIntegerNumber($request->amount) == 0) {
+        if (empty($request->amount) OR !is_numeric($request->amount) OR formatIntegerNumber($request->amount) == 0) {
             return back()->with('error_message', 'Veuillez mettre un montant valide et supérieur à zéro.');
         }
 
@@ -126,7 +125,6 @@ class HomeController extends Controller
 
         if ($expense) {
             $expense->update([
-                'designation' => 'Taxe affichage',
                 'amount' => $request->amount,
                 'outflow_date' => !empty($request->outflow_date) ? Carbon::createFromFormat('d/m/Y H:i', $request->outflow_date)->format('Y-m-d H:i:s') : now(),
                 'updated_by' => auth()->id(),
@@ -177,7 +175,7 @@ class HomeController extends Controller
             return back()->with('error_message', 'Veuillez donner une désignation pour cette dépense.');
         }
 
-        if (empty($request->amount) OR formatIntegerNumber($request->amount) == 0) {
+        if (empty($request->amount) OR !is_numeric($request->amount) OR formatIntegerNumber($request->amount) == 0) {
             return back()->with('error_message', 'Veuillez mettre un montant valide et supérieur à zéro.');
         }
 

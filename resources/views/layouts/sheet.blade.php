@@ -280,6 +280,25 @@
 
                 if (action === 'change') {
                     var entityId = parseInt(entity_id.split('-')[1]);
+                    var element = document.getElementById(entity_id);
+                    var remainingAmount = element.dataset.totalremaining;
+                    var month = element.dataset.month;
+                    var year = element.dataset.year;
+
+                    // Vérification des données avant l'envoi
+                    if (!remainingAmount || !month || !year) {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: 'Les données nécessaires sont manquantes.',
+                            icon: 'error'
+                        });
+
+                        return; // Arrêter le processus si les données sont invalides
+                    }
+
+                    console.log(`Montant total : ${remainingAmount}`);
+                    console.log(`Mois : ${month}`);
+                    console.log(`Année : ${year}`);
 
                     Swal.fire({
                         title: 'Attention modification',
@@ -297,9 +316,8 @@
                                 headers: headers,
                                 type: 'POST',
                                 url: `${currentHost}/change/${entity}/${entityId}`,
-                                contentType: false,
-                                processData: false,
-                                data: JSON.stringify({ 'entity' : entity, 'id' : entityId }),
+                                contentType: 'application/json',  // Défini explicitement le type de contenu
+                                data: (entity === 'tithe_paid' ? JSON.stringify({ 'entity' : entity, 'id' : entityId, 'month' : month, 'year' : year, 'remaining_amount' : remainingAmount }) : JSON.stringify({ 'entity' : entity, 'id' : entityId })),
                                 success: function (result) {
                                     if (!result.success) {
                                         Swal.fire({

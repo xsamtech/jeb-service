@@ -67,13 +67,21 @@
                                         <div class="row g-0">
                                             <!-- Nom du panneau -->
                                             <div class="col-sm-7">
-                                                <div class="card card-body h-100 border-0 rounded-0 text-start" style="background-color: rgba(300,300,300,0.07);">
-                                                    <a href="{{ route('dashboard.home.datas', ['entity' => 'panel', 'id' => $panel['id']]) }}" class="btn btn-sm btn-link p-0 mb-3 text-start text-decoration-none">
-                                                        {{ $panel['panel'] }}
-                                                    </a>
-                                                    <a role="button" class="btn btn-sm btn-danger ms-sm-1 py-0 rounded-pill" onclick="event.preventDefault(); performAction('delete', 'panel', 'item-{{ $panel['id'] }}')">
-                                                        <i class="bi bi-trash me-2"></i>Supprimer
-                                                    </a>
+                                                <div class="card card-body h-100 border-0 rounded-0" style="background-color: rgba(300,300,300,0.07);">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <p class="m-0">{{ $panel['panel'] }}</p>
+
+                                                        <div class="dropdown">
+                                                            <a role="button" class="btn btn-link p-0" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </a>
+
+                                                            <ul class="dropdown-menu bg-dark py-0">
+                                                                <li><a class="dropdown-item py-2" href="{{ route('dashboard.home.datas', ['entity' => 'panel', 'id' => $panel['id']]) }}">Modifier</a></li>
+                                                                <li><a role="button" class="dropdown-item py-2" onclick="event.preventDefault(); performAction('delete', 'panel', 'item-{{ $panel['id'] }}')">Supprimer</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -97,7 +105,7 @@
                                                             <label for="amount_taxe_implantation_{{ $loop->index }}" class="form-label m-0">Montant</label>
                                                             <input type="number" name="amount" step="0.01" id="amount_taxe_implantation_{{ $loop->index }}" class="form-control">
 
-                                                            <label for="outflow_date_taxe_implantation_{{ $loop->index }}" class="form-label m-0">Date de sortie</label>
+                                                            <label for="outflow_date_taxe_implantation_{{ $loop->index }}" class="form-label mt-2 mb-0">Date de sortie</label>
                                                             <input type="datetime" name="outflow_date" id="outflow_date_taxe_implantation_{{ $loop->index }}" class="form-control">
 
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
@@ -133,14 +141,14 @@
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('expenses.store.taxe_affichage') }}" method="POST">
         @csrf
-                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ !empty($face['rented_face_id']) ? $face['rented_face_id'] : $face['face_id'] }}">
                                                             <input type="hidden" name="year" value="{{ request()->get('year', now()->year) }}">
                                                             <input type="hidden" name="month" value="{{ request()->get('month', now()->month) }}">
 
                                                             <label for="amount_taxe_affichage_{{ $loop->index }}" class="form-label m-0">Montant</label>
                                                             <input type="number" name="amount" step="0.01" id="amount_taxe_affichage_{{ $loop->index }}" class="form-control">
 
-                                                            <label for="outflow_date_taxe_affichage_{{ $loop->index }}" class="form-label m-0">Date de sortie</label>
+                                                            <label for="outflow_date_taxe_affichage_{{ $loop->index }}" class="form-label mt-2 mb-0">Date de sortie</label>
                                                             <input type="datetime" name="outflow_date" id="outflow_date_taxe_affichage_{{ $loop->index }}" class="form-control">
 
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
@@ -170,7 +178,7 @@
                                                     <div class="update-data d-none">
                                                         <form action="{{ route('rented_faces.update_price') }}" method="POST">
         @csrf
-                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
 
                                                             <input type="number" name="price" step="0.01" value="{{ $face['face_price'] }}" class="form-control">
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 w-75 rounded-pill text-white">Enregistrer</button>
@@ -188,19 +196,26 @@
                                                     <span class="d-sm-none d-inline-block me-2 mb-2 text-decoration-underline">Autres dépenses</span>
                                                     <div class="d-flex justify-content-between show-data">
                                                         <span class="d-sm-inline-block d-block me-2">{{ formatDecimalNumber($face['total_other_expenses']) }} $</span>
-        @if ($face['taxe_affichage'] > 0)
+        @if (!$tithePaid)
+            @if ($face['face_price'] > 0)
                                                         <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-pencil"></i></a>
+            @endif
+        @else
+                                                        <a role="button" class="btn btn-link p-0 switch-view"><i class="bi bi-eye-fill"></i></a>
         @endif
                                                     </div>
                                                     <div class="update-data d-none">
-                                                        <form action="{{ route('expenses.store.other_expense') }}" method="POST">
         @foreach ($face['other_expenses'] as $expense)
-                                                            <p class="mb-1">{{ $expense['designation'] . ' : ' . formatDecimalNumber($expense['amount']) . ' $' }}</p>
+                                                        <p class="mb-1">
+                                                            <strong>{{ $expense['designation'] }}</strong><br>
+                                                            {{ formatDecimalNumber($expense['amount']) . ' $' }}
+                                                        </p>
         @endforeach
 
-        @csrf
-                                                            <input type="hidden" name="rented_face_id" value="{{ $face['face_id'] }}">
-                                                            <input type="hidden" name="face_id" value="{{ $face['face_id'] }}">
+        @if (!$tithePaid)
+                                                        <form action="{{ route('expenses.store.other_expense') }}" method="POST">
+            @csrf
+                                                            <input type="hidden" name="rented_face_id" value="{{ $face['rented_face_id'] }}">
 
                                                             <label for="designation_other_expense_{{ $loop->index }}" class="form-label m-0">Designation</label>
                                                             <input type="text" name="designation" id="designation_other_expense_{{ $loop->index }}" class="form-control mb-2" placeholder="Designation">
@@ -208,12 +223,13 @@
                                                             <label for="amount_other_expense_{{ $loop->index }}" class="form-label m-0">Montant</label>
                                                             <input type="number" name="amount" step="0.01" id="amount_other_expense_{{ $loop->index }}" class="form-control">
 
-                                                            <label for="outflow_date_other_expense_{{ $loop->index }}" class="form-label m-0">Date de sortie</label>
+                                                            <label for="outflow_date_other_expense_{{ $loop->index }}" class="form-label mt-2 mb-0">Date de sortie</label>
                                                             <input type="datetime" name="outflow_date" id="outflow_date_other_expense_{{ $loop->index }}" class="form-control">
 
                                                             <button class="btn btn-sm bg-gradient-primary-to-secondary mt-1 me-1 pb-1 rounded-pill text-white">Enregistrer</button>
-                                                            <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view"><i class="bi bi-x-lg"></i></a>
                                                         </form>
+        @endif
+                                                        <a role="button" class="btn btn-sm btn-danger mt-1 pb-1 px-1 rounded-pill switch-view"><i class="bi bi-x-lg"></i></a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -245,7 +261,7 @@
 
 @if (count($panelsData) > 0)
                             <div class="row mt-4">
-                                <div class="col-lg-3 col-sm-6 col-12 ms-auto">
+                                <div class="col-lg-4 col-sm-6 col-12 ms-auto">
                                     <div class="card p-0 rounded-0">
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             <p class="m-0">Dépenses du mois</p>
@@ -276,7 +292,7 @@
                                                 <label for="amount_month_data" class="form-label m-0">Montant</label>
                                                 <input type="number" name="amount" step="0.01" id="amount_month_data" class="form-control">
 
-                                                <label for="outflow_date" class="form-label m-0">Date de sortie</label>
+                                                <label for="outflow_date" class="form-label mt-2 mb-0">Date de sortie</label>
                                                 <input type="datetime" name="outflow_date" id="outflow_date_month_data" class="form-control">
 
                                                 <button class="btn btn-sm bg-gradient-primary-to-secondary mt-2 px-3 pb-1 rounded-pill text-white">Enregistrer</button>
@@ -290,7 +306,11 @@
                                             <table class="table table-bordered m-0">
                                                 <tbody>
                                                     <tr>
-                                                        <td class="text-uppercase" style="max-width: 100px;">Reste du mois</td>
+                                                        <td class="text-uppercase">Taxes d'implantation du mois</td>
+                                                        <td>{{ formatDecimalNumber($totalTaxeImplantation) }} $</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-uppercase">Reste du mois</td>
                                                         <td>{{ formatDecimalNumber($totalRemaining) }} $</td>
                                                     </tr>
                                                     <tr>
@@ -302,11 +322,11 @@
                                                                 <div>
                                                                     <div class="form-check form-switch">
     @if ($tithePaid)
-                                                                        <label class="form-check-label text-success" for="tithePaid">Payée</label>
+                                                                        <label class="form-check-label text-success" for="item-{{ !$monthDataID ? 0 : $monthDataID }}">Payée</label>
     @else
-                                                                        <label class="form-check-label text-danger" for="tithePaid">Non payée</label>
+                                                                        <label class="form-check-label text-danger" for="item-{{ !$monthDataID ? 0 : $monthDataID }}">Non payée</label>
     @endif
-                                                                        <input class="form-check-input" type="checkbox" role="switch" id="tithePaid" onclick="event.preventDefault(); performAction('change', 'tithe_paid', 'item-{{ !$monthDataID ? 0 : $monthDataID }}')">
+                                                                        <input class="form-check-input" type="checkbox" role="switch" id="item-{{ !$monthDataID ? 0 : $monthDataID }}" data-totalremaining="{{ $totalRemaining }}" data-month="{{ $month }}" data-year="{{ $year }}" onclick="event.preventDefault(); performAction('change', 'tithe_paid', 'item-{{ !$monthDataID ? 0 : $monthDataID }}')">
                                                                     </div>
                                                                 </div>
                                                             </div>
