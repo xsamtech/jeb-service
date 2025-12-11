@@ -3,11 +3,11 @@
                                 <div class="row">
 @if ($entity == 'panel')
                                     <!-- Item details -->
-                                    <div class="col-lg-7 col-sm-6">
-                                    </div>
+                                    {{-- <div class="col-lg-7 col-sm-6">
+                                    </div> --}}
 
                                     <!-- Update item -->
-                                    <div class="col-lg-5 col-sm-6">
+                                    <div class="col-lg-5 col-sm-6 mx-auto">
                                         <div class="card card-body">
                                             <h4 class="card-title mb-0 text-gradient text-center fw-bold">Modifier le panneau</h4>
 
