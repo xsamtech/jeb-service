@@ -1460,7 +1460,7 @@ class DashboardController extends Controller
         // Mise à jour des autres champs du panneau
         $panel->update([
             'dimensions' => $request->dimensions ?? $panel->dimensions,
-            'price' => $request->price ?? $panel->price,
+            // 'price' => $request->price ?? $panel->price,
             'location' => $request->location ?? $panel->location,
             'updated_by' => Auth::id(),
         ]);
