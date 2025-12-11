@@ -13,6 +13,7 @@ use App\Models\File;
 use App\Models\MonthData;
 use App\Models\Panel;
 use App\Models\PasswordReset;
+use App\Models\RentedFace;
 use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -134,10 +135,10 @@ class DashboardController extends Controller
         });
 
         // Total des restes à la caisse pour le mois
-        // $totalRemaining = $panelsData->flatMap(fn($panel) => $panel['expenses'])->sum('remaining_amount');
+        $totalRemainingFromRentedFace = RentedFace::getRemainingAmountByMonthYear($month, $year);
         $monthData = MonthData::where('month', $month)->where('year', $year)->first();
-        $monthDataID = $monthData ? $monthData->id : null;
-        $totalRemaining = $monthData ? $monthData->remaining_amount : 0;
+        $monthDataID = $monthData ? $monthData->id : 0;
+        $totalRemaining = $monthData ? $monthData->remaining_amount : $totalRemainingFromRentedFace;
         $tithePaid = $monthData ? $monthData->tithe_paid : 0;
         // Dîme
         $tithe = $totalRemaining > 0 ? ($totalRemaining / 10) : 0;
